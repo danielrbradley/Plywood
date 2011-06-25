@@ -72,7 +72,7 @@ namespace Plywood.Tests.UnitTesting
         {
             Group group = null;
             string actual;
-            actual = ReadStream(Serialisation.Serialise(group));
+            actual = ReadStream(group.Serialise());
             Assert.Fail("Should not reach this point.");
         }
 
@@ -90,7 +90,7 @@ namespace Plywood.Tests.UnitTesting
                 }
             };
             string actual;
-            actual = ReadStream(Serialisation.Serialise(group));
+            actual = ReadStream(group.Serialise());
             Assert.Fail("Should not reach this point.");
         }
 
@@ -108,7 +108,7 @@ namespace Plywood.Tests.UnitTesting
                 }
             };
             string actual;
-            actual = ReadStream(Serialisation.Serialise(group));
+            actual = ReadStream(group.Serialise());
             Assert.Fail("Should not reach this point.");
         }
 
@@ -122,7 +122,7 @@ namespace Plywood.Tests.UnitTesting
             };
             string expected = "Key\r\n\t828d4f6d1a0d4606aad1517a45758d01\r\nName\r\n\tTest";
             string actual;
-            actual = ReadStream(Serialisation.Serialise(group));
+            actual = ReadStream(group.Serialise());
             Assert.AreEqual(expected, actual);
         }
 
@@ -137,7 +137,7 @@ namespace Plywood.Tests.UnitTesting
             };
             string expected = "Key\r\n\t828d4f6d1a0d4606aad1517a45758d01\r\nName\r\n\tTest";
             string actual;
-            actual = ReadStream(Serialisation.Serialise(group));
+            actual = ReadStream(group.Serialise());
             Assert.AreEqual(expected, actual);
         }
 
@@ -155,7 +155,7 @@ namespace Plywood.Tests.UnitTesting
             };
             string expected = "Key\r\n\t828d4f6d1a0d4606aad1517a45758d01\r\nName\r\n\tTest\r\nTag\r\n\tLabel";
             string actual;
-            actual = ReadStream(Serialisation.Serialise(group));
+            actual = ReadStream(group.Serialise());
             Assert.AreEqual(expected, actual);
         }
 
@@ -174,7 +174,7 @@ namespace Plywood.Tests.UnitTesting
             };
             string expected = "Key\r\n\t828d4f6d1a0d4606aad1517a45758d01\r\nName\r\n\tTest\r\nTag1\r\n\tA\r\nTag2\r\n\tB";
             string actual;
-            actual = ReadStream(Serialisation.Serialise(group));
+            actual = ReadStream(group.Serialise());
             Assert.AreEqual(expected, actual);
         }
 

@@ -22,8 +22,8 @@ namespace Plywood
                 throw new ArgumentNullException("target", "Target cannot be null.");
             if (target.GroupKey == Guid.Empty)
                 throw new ArgumentException("Group key cannot be empty.", "target.GroupKey");
-            
-            using (var stream = Serialisation.Serialise(target))
+
+            using (var stream = target.Serialise())
             {
                 try
                 {
@@ -99,7 +99,7 @@ namespace Plywood
                     {
                         using (var stream = res.ResponseStream)
                         {
-                            return Serialisation.ParseTarget(stream);
+                            return new Target(stream);
                         }
                     }
                 }
@@ -167,8 +167,8 @@ namespace Plywood
             var existingTarget = GetTarget(target.Key);
             // Don't allow moving between groups.
             target.GroupKey = existingTarget.GroupKey;
-            
-            using (var stream = Serialisation.Serialise(target))
+
+            using (var stream = target.Serialise())
             {
                 try
                 {

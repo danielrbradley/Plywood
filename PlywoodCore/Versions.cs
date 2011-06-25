@@ -34,7 +34,7 @@ namespace Plywood
 
                     var indexesController = new Internal.Indexes(Context);
 
-                    using (var stream = Serialisation.Serialise(version))
+                    using (var stream = version.Serialise())
                     {
                         string indexPath = GetAppVersionsIndexPath(version.AppKey);
                         var index = indexesController.LoadIndex(indexPath);
@@ -108,7 +108,7 @@ namespace Plywood
                     {
                         using (var stream = res.ResponseStream)
                         {
-                            return Serialisation.ParseVersion(stream);
+                            return new Version(stream);
                         }
                     }
                 }
@@ -298,7 +298,7 @@ namespace Plywood
             version.AppKey = existingVersion.AppKey;
             version.GroupKey = existingVersion.GroupKey;
 
-            using (var stream = Serialisation.Serialise(version))
+            using (var stream = version.Serialise())
             {
                 try
                 {

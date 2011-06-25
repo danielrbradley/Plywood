@@ -23,7 +23,7 @@ namespace Plywood
             if (logEntry.InstanceKey == Guid.Empty)
                 throw new ArgumentException("Instance key must be set to a non-empty guid.");
 
-            using (var stream = Serialisation.Serialise(logEntry))
+            using (var stream = logEntry.Serialise())
             {
                 var instancesController = new Instances(Context);
                 if (!instancesController.InstanceExists(logEntry.InstanceKey))
@@ -110,7 +110,7 @@ namespace Plywood
                     {
                         using (var stream = res.ResponseStream)
                         {
-                            return Serialisation.ParseLogEntry(stream);
+                            return new LogEntry(stream);
                         }
                     }
                 }

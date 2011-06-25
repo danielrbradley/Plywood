@@ -23,7 +23,7 @@ namespace Plywood
             if (group == null)
                 throw new ArgumentNullException("group", "Group cannot be null.");
 
-            using (var stream = Serialisation.Serialise(group))
+            using (var stream = group.Serialise())
             {
                 try
                 {
@@ -84,7 +84,7 @@ namespace Plywood
                     {
                         using (var stream = res.ResponseStream)
                         {
-                            return Serialisation.ParseGroup(stream);
+                            return new Group(stream);
                         }
                     }
                 }
@@ -174,7 +174,7 @@ namespace Plywood
             if (group == null)
                 throw new ArgumentNullException("group", "Group cannot be null.");
 
-            using (var stream = Serialisation.Serialise(group))
+            using (var stream = group.Serialise())
             {
                 try
                 {

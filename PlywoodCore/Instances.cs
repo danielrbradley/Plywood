@@ -23,7 +23,7 @@ namespace Plywood
             if (instance.TargetKey == Guid.Empty)
                 throw new ArgumentException("Target key cannot be empty.", "instance.TargetKey");
 
-            using (var stream = Serialisation.Serialise(instance))
+            using (var stream = instance.Serialise())
             {
                 try
                 {
@@ -125,7 +125,7 @@ namespace Plywood
                     {
                         using (var stream = res.ResponseStream)
                         {
-                            return Serialisation.ParseInstance(stream);
+                            return new Instance(stream);
                         }
                     }
                 }
@@ -194,7 +194,7 @@ namespace Plywood
             // Don't allow moving between targets.
             updatedInstance.TargetKey = existingInstance.TargetKey;
 
-            using (var stream = Serialisation.Serialise(updatedInstance))
+            using (var stream = updatedInstance.Serialise())
             {
                 try
                 {

@@ -49,7 +49,7 @@ namespace Plywood
             if (app.GroupKey == Guid.Empty)
                 throw new ArgumentException("Group key cannot be empty.", "app.GroupKey");
 
-            using (var stream = Serialisation.Serialise(app))
+            using (var stream = app.Serialise())
             {
                 try
                 {
@@ -125,7 +125,7 @@ namespace Plywood
                     {
                         using (var stream = res.ResponseStream)
                         {
-                            return Serialisation.ParseApp(stream);
+                            return new App(stream);
                         }
                     }
                 }
@@ -203,7 +203,7 @@ namespace Plywood
             // Don't allow moving between groups right now as would have to recursively update references from versions and targets within app.
             app.GroupKey = existingApp.GroupKey;
 
-            using (var stream = Serialisation.Serialise(app))
+            using (var stream = app.Serialise())
             {
                 try
                 {

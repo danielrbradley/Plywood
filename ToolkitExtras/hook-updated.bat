@@ -1,0 +1,1 @@
+START "Updating Service" /SEPARATE toolkit-install.bat

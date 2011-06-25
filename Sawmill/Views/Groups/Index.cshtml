@@ -1,0 +1,41 @@
+﻿@model Plywood.GroupList
+@{
+  ViewBag.Title = "Sawmill";
+}
+<div class="pagesizer">
+  @Html.PageSizeSwitcher(Url.Action("Index"), Model.PageSize, new int[] { 10, 25, 50 })
+</div>
+<div class="breadcrumbs">
+  Groups
+</div>
+<div class="paging">
+  @Html.NextPrevPager(Url.Action("Index"), Model.PageSize, Model.Offset, Model.TotalCount)
+</div>
+<table>
+  <tr>
+    <th>
+      Name
+    </th>
+    <th>
+    </th>
+  </tr>
+  @foreach (var group in Model.Groups)
+  {
+    <tr>
+      <td>
+        @Html.ActionLink(group.Name, "Details", "Groups", new { id = group.Key }, null)
+      </td>
+      <td>
+        @Html.ActionLink("Apps", "Index", "Apps", new { gid = group.Key }, null)
+        |
+        @Html.ActionLink("Targets", "Index", "Targets", new { gid = group.Key }, null)
+      </td>
+    </tr>
+  }
+</table>
+<div class="paging">
+  @Html.NextPrevPager(Url.Action("Index"), Model.PageSize, Model.Offset, Model.TotalCount)
+</div>
+<div>
+  @Html.ActionLink("Create Group", "Create")
+</div>

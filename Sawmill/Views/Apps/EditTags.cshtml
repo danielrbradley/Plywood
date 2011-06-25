@@ -1,0 +1,161 @@
+﻿@model Plywood.Sawmill.Models.AppDetails
+@{
+  ViewBag.Title = "Edit Tags";
+}
+<div class="breadcrumbs">
+  @Html.ActionLink("Groups", "Index", "Groups")
+  >
+  @Html.ActionLink(Model.Group.Name, "Details", "Groups", new { id = Model.Group.Key }, null)
+  >
+  @Html.ActionLink("Apps", "Index", "Apps", new { gid = Model.Group.Key }, null)
+  >
+  @Html.ActionLink(Model.App.Name, "Details", new { id = Model.App.Key }, null)
+  > Edit Tags
+</div>
+<div>
+  <fieldset>
+    <legend>App Details</legend>
+    <div class="display-label">
+      Key</div>
+    <div class="display-field">@Model.App.Key</div>
+    <div class="display-label">
+      Name</div>
+    <div class="display-field">@Model.App.Name</div>
+  </fieldset>
+</div>
+<fieldset>
+  <legend>Tags</legend>
+  @if (Model.App.Tags.Count > 0)
+  {
+    <table>
+      <tr>
+        <th>
+          Key
+        </th>
+        <th>
+          Value
+        </th>
+        <th>
+        </th>
+      </tr>
+      @foreach (var tag in Model.App.Tags)
+      {
+        <tr>
+          <td>
+            <input class="name" type="text" disabled="disabled" name="name" value="@tag.Key" />
+            <input class="old-name" type="hidden" name="oldName" value="@tag.Key" />
+          </td>
+          <td>
+            <input class="old-value" type="hidden" value="@tag.Value" />
+            <textarea class="value" name="value" cols="30" rows="4" disabled="disabled">@tag.Value</textarea>
+          </td>
+          <td>
+            <input class="edit-tag" type="button" value="Edit" />
+            <input class="delete-tag" type="button" value="Delete" />
+            <input class="save-tag" type="button" value="Save" style="display: none;" />
+            <input class="cancel-tag" type="button" value="Cancel" style="display: none;" />
+          </td>
+        </tr>
+      }
+    </table>
+  }
+  else
+  {
+    <div class="display-label">
+      No tags currently assigned to the app.
+    </div>
+  }
+</fieldset>
+<script type="text/javascript">
+  $(function () {
+    $('.edit-tag').click(function () {
+      var row = $(this).parent().parent();
+      $('.name, .value', row).removeAttr("disabled");
+      $('.edit-tag, .delete-tag', row).hide();
+      $('.save-tag, .cancel-tag', row).show();
+    });
+    $('.delete-tag').click(function () {
+      var name = $('.old-name', $(this).parent().parent()).val();
+      $('#dialog-confirm-delete').dialog({
+        resizable: false,
+        height: 175,
+        modal: true,
+        buttons: {
+          "Delete Tag": function () {
+            $.ajax({
+              url: '@Url.Action("RemoveTag", new { id = Model.App.Key })',
+              dataType: 'json',
+              type: 'POST',
+              data: {
+                name: name
+              },
+              success: function () {
+                location.reload();
+              }
+            });
+            $(this).dialog("close");
+          },
+          Cancel: function () {
+            $(this).dialog("close");
+          }
+        }
+      });
+    });
+    $('.save-tag').click(function () {
+      var row = $(this).parent().parent();
+      $.ajax({
+        url: '@Url.Action("UpdateTag", new { id = Model.App.Key })',
+        dataType: 'json',
+        type: 'POST',
+        data: {
+          oldName: $('.old-name', row).val(),
+          name: $('.name', row).val(),
+          value: $('.value', row).val()
+        },
+        success: function () {
+          location.reload();
+        }
+      });
+    });
+    $('.cancel-tag').click(function () {
+      var row = $(this).parent().parent();
+      $('.name', row).attr("disabled", "disabled").val($('.old-name', row).val());
+      $('.value', row).attr("disabled", "disabled").val($('.old-value', row).val());
+      $('.save-tag, .cancel-tag', row).hide();
+      $('.edit-tag, .delete-tag', row).show();
+    });
+  });
+</script>
+<fieldset>
+  <legend>Add Tag</legend>
+  @using (Html.BeginForm("AddTag", "Apps", new { id = Model.App.Key }, FormMethod.Post))
+  {
+    <div class="editor-label">
+      <label for="name">
+        Key</label>
+    </div>
+    <div class="editor-field">
+      <input type="text" name="name" />
+    </div>
+    <div class="editor-label">
+      <label for="value">
+        Value</label>
+    </div>
+    <div class="editor-field">
+      <textarea name="value" cols="30" rows="4"></textarea>
+    </div>
+    <div>
+      <input type="submit" value="Add Tag" />
+    </div>
+  }
+</fieldset>
+<div id="dialogs" style="display: none;">
+  <div id="dialog-confirm-delete" title="Delete tag">
+    <p>
+      Please confirm you wish to perminantly delete this tag.
+    </p>
+  </div>
+</div>
+<p>
+  @Html.ActionLink("Back to App", "Details", new { id = Model.App.Key })
+</p>

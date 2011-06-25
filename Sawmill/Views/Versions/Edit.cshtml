@@ -1,0 +1,39 @@
+﻿@model Plywood.Sawmill.Models.VersionDetails
+@{
+  ViewBag.Title = "Edit Version";
+}
+<div class="breadcrumbs">
+  @Html.ActionLink("Groups", "Index", "Groups")
+  >
+  @Html.ActionLink(Model.Group.Name, "Details", "Groups", new { id = Model.Group.Key }, null)
+  >
+  @Html.ActionLink("Apps", "Index", "Apps", new { gid = Model.Group.Key }, null)
+  >
+  @Html.ActionLink(Model.App.Name, "Details", "Apps", new { id = Model.App.Key }, null)
+  >
+  @Html.ActionLink("Versions", "Index", "Versions", new { aid = Model.App.Key }, null)
+  >
+  @Html.ActionLink(Model.Version.Name, "Details", "Versions", new { id = Model.Version.Key }, null)
+  > Edit
+</div>
+<script src="@Url.Content("~/Scripts/jquery.validate.min.js")" type="text/javascript"></script>
+<script src="@Url.Content("~/Scripts/jquery.validate.unobtrusive.min.js")" type="text/javascript"></script>
+@using (Html.BeginForm())
+{
+  @Html.ValidationSummary(true)
+  <fieldset>
+    <legend>Version Details</legend>
+    <div class="editor-label">
+      <label for="name">
+        Name</label>
+    </div>
+    <div class="editor-field">
+      <input type="text" name="name" value="@Model.Version.Name" />
+      @Html.ValidationMessage("name")
+    </div>
+    <p>
+      <input type="submit" value="Save" />
+      @Html.ActionLink("Cancel", "Details", new { id = Model.Version.Key })
+    </p>
+  </fieldset>
+}

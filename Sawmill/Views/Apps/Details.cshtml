@@ -1,0 +1,61 @@
+﻿@model Plywood.Sawmill.Models.AppDetails
+@{
+  ViewBag.Title = Model.App.Name;
+}
+<div class="breadcrumbs">
+  @Html.ActionLink("Groups", "Index", "Groups")
+  > @Html.ActionLink(Model.Group.Name, "Details", "Groups", new { id = Model.Group.Key }, null)
+  > @Html.ActionLink("Apps", "Index", "Apps", new { gid = Model.Group.Key }, null)
+  > @Model.App.Name
+</div>
+<ul class="page-tabs">
+  <li class="selected">@Html.ActionLink("App Details", "Details", new { id = Model.App.Key })</li>
+  <li>@Html.ActionLink("Versions", "Index", "Versions", new { aid = Model.App.Key }, null)</li>
+</ul>
+<div class="page-tab-content">
+  <div class="display-label">
+    Key
+  </div>
+  <div class="display-field">
+    @Model.App.Key
+  </div>
+  <div class="display-label">
+    Name
+  </div>
+  <div class="display-field">
+    @Model.App.Name
+  </div>
+  <div class="display-label">
+    Deployment Directory Name
+  </div>
+  <div class="display-field">
+    @Model.App.DeploymentDirectory
+  </div>
+  <div class="display-label">
+    Major Version
+  </div>
+  <div class="display-field">
+    @Model.App.MajorVersion
+  </div>
+  <div class="display-label">
+    Revision
+  </div>
+  <div class="display-field">
+    @Model.App.Revision
+  </div>
+  <fieldset>
+    <legend>Tags</legend>
+    @foreach (var tag in Model.App.Tags)
+    {
+      <div class="display-label">
+        @tag.Key</div>
+      <div class="display-field">@tag.Value</div>
+    }
+  </fieldset>
+  <p>
+    @Html.ActionLink("Edit", "Edit", new { id = Model.App.Key }) |
+    @Html.ActionLink("Edit Tags", "EditTags", new { id = Model.App.Key }) |
+    @Html.ActionLink("Delete", "ConfirmDelete", new { id = Model.App.Key }) |
+    @Html.ActionLink("Back to Apps", "Index", new { gid = Model.Group.Key })
+  </p>
+</div>

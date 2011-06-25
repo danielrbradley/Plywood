@@ -1,0 +1,47 @@
+﻿@model Plywood.Group
+@{
+  ViewBag.Title = Model.Name + " Group Details";
+}
+<div class="breadcrumbs">
+  @Html.ActionLink("Groups", "Index", "Groups") >
+  @Model.Name
+</div>
+<ul class="page-tabs">
+  <li class="selected">@Html.ActionLink("Group Details", "Details", new { id = Model.Key })</li>
+  <li>@Html.ActionLink("Apps", "Index", "Apps", new { gid = Model.Key }, null)</li>
+  <li>@Html.ActionLink("Targets", "Index", "Targets", new { gid = Model.Key }, null)</li>
+</ul>
+<div class="page-tab-content">
+  <div>
+    <div class="display-label">
+      Key</div>
+    <div class="display-field">@Model.Key</div>
+    <div class="display-label">
+      Name</div>
+    <div class="display-field">@Model.Name</div>
+  </div>
+  <fieldset>
+    <legend>Tags</legend>
+    @if (Model.Tags.Count > 0)
+    {
+      foreach (var tag in Model.Tags)
+      {
+      <div class="display-label">
+        @tag.Key</div>
+      <div class="display-field">@tag.Value</div>
+      }
+    }
+    else
+    {
+      <div class="display-label">
+        No tags currently assigned to the group.
+      </div>
+    }
+  </fieldset>
+  <p>
+    @Html.ActionLink("Edit", "Edit", new { id = Model.Key }) |
+    @Html.ActionLink("Edit Tags", "EditTags", new { id = Model.Key }) |
+    @Html.ActionLink("Delete", "ConfirmDelete", new { id = Model.Key }) |
+    @Html.ActionLink("Back to Groups", "Index")
+  </p>
+</div>

@@ -1,0 +1,51 @@
+﻿@model Plywood.Sawmill.Models.LogIndex
+@{
+  ViewBag.Title = Model.Group.Name + " " + Model.Target.Name + " " + Model.Instance.Name + " Logs";
+}
+<div class="pagesizer">
+  @Html.PageSizeSwitcher(Url.Action("Index"), Model.LogEntryPage.PageSize, new int[] { 10, 25, 50 })
+</div>
+<div class="breadcrumbs">
+  @Html.ActionLink("Groups", "Index", "Groups") >
+  @Html.ActionLink(Model.Group.Name, "Details", "Groups", new { id = Model.Group.Key }, null) >
+  @Html.ActionLink("Targets", "Index", "Targets", new { gid = Model.Group.Key }, null) >
+  @Html.ActionLink(Model.Target.Name, "Details", "Targets", new { id = Model.Target.Key }, null) >
+  @Html.ActionLink("Instances", "Index", "Instances", new { tid = Model.Target.Key }, null) >
+  @Html.ActionLink(Model.Instance.Name, "Details", "Instances", new { id = Model.Instance.Key }, null)
+  > Logs
+</div>
+<ul class="page-tabs">
+  <li>@Html.ActionLink("Instance Details", "Details", "Instances", new { id = Model.Instance.Key }, null)</li>
+  <li class="selected">@Html.ActionLink("Logs", "Index", "Logs", new { iid = Model.Instance.Key }, null)</li>
+</ul>
+<div class="page-tab-content">
+  <div class="paging">
+    
+  </div>
+  <table>
+    <tr>
+      <th>
+        Name
+      </th>
+      <th>
+      </th>
+    </tr>
+    @foreach (var logEntry in Model.LogEntryPage.LogEntries)
+    {
+      <tr>
+        <td>
+          @Html.ActionLink(logEntry.Timestamp.ToString("r"), "Details", "Logs", new { iid = Model.Instance.Key, t = logEntry.Timestamp.Ticks, s = logEntry.Status }, null)
+        </td>
+        <td>
+          @logEntry.Status
+        </td>
+      </tr>
+    }
+  </table>
+  <div class="paging">
+    
+  </div>
+  <div>
+    @Html.ActionLink("Back to Instances", "Index", "Instances", new { tid = Model.Target.Key }, null)
+  </div>
+</div>

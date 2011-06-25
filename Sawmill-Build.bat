@@ -1,0 +1,2 @@
+"C:\WINDOWS\Microsoft.NET\Framework\v4.0.30319\MSBuild.exe" Sawmill\Sawmill.csproj /T:Package /P:Configuration=Release;PackageLocation="C:\Packages\Sawmill\Sawmill.zip"
+xcopy Sawmill\PlywoodIISDeployment.config C:\Packages\Sawmill /Y

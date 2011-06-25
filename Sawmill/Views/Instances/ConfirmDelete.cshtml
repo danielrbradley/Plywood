@@ -1,0 +1,45 @@
+﻿@model Plywood.Sawmill.Models.InstanceDetails
+@{
+  ViewBag.Title = "Delete Target";
+}
+<div class="breadcrumbs">
+  @Html.ActionLink("Groups", "Index", "Groups")
+  >
+  @Html.ActionLink(Model.Group.Name, "Details", "Groups", new { id = Model.Group.Key }, null)
+  >
+  @Html.ActionLink("Targets", "Index", "Targets", new { gid = Model.Group.Key }, null)
+  >
+  @Html.ActionLink(Model.Target.Name, "Details", new { id = Model.Target.Key }, null)
+  >
+  @Html.ActionLink("Instances", "Index", "Instances", new { tid = Model.Target.Key }, null)
+  >
+  @Html.ActionLink(Model.Instance.Name, "Details", new { id = Model.Instance.Key }, null)
+  > Delete
+</div>
+<div>
+  <fieldset>
+    <legend>Target Details</legend>
+    <div class="display-label">
+      Key</div>
+    <div class="display-field">@Model.Instance.Key</div>
+    <div class="display-label">
+      Name</div>
+    <div class="display-field">@Model.Instance.Name</div>
+  </fieldset>
+</div>
+@using (Html.BeginForm("Delete", "Instances", FormMethod.Post))
+{
+  @Html.ValidationSummary(true)
+  @Html.ValidationMessage("Error")
+  <fieldset>
+    <legend>Delete App</legend>
+    <input type="hidden" name="id" value="@Model.Instance.Key" />
+    <p>
+      Please confirm you want to delete this instance?
+    </p>
+    <p>
+      <input type="submit" value="Delete" />
+      @Html.ActionLink("Cancel", "Details", new { id = Model.Instance.Key })
+    </p>
+  </fieldset>
+}

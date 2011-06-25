@@ -1,0 +1,35 @@
+﻿@model Plywood.Sawmill.Models.TargetDetails
+@{
+  ViewBag.Title = "Edit Target";
+}
+<div class="breadcrumbs">
+  @Html.ActionLink("Groups", "Index", "Groups")
+  >
+  @Html.ActionLink(Model.Group.Name, "Details", "Groups", new { id = Model.Group.Key }, null)
+  >
+  @Html.ActionLink("Targets", "Index", "Targets", new { gid = Model.Group.Key }, null)
+  >
+  @Html.ActionLink(Model.Target.Name, "Details", new { id = Model.Target.Key }, null)
+  > Edit
+</div>
+<script src="@Url.Content("~/Scripts/jquery.validate.min.js")" type="text/javascript"></script>
+<script src="@Url.Content("~/Scripts/jquery.validate.unobtrusive.min.js")" type="text/javascript"></script>
+@using (Html.BeginForm())
+{
+  @Html.ValidationSummary(true)
+  <fieldset>
+    <legend>Target Details</legend>
+    <div class="editor-label">
+      <label for="name">
+        Name</label>
+    </div>
+    <div class="editor-field">
+      <input type="text" name="name" value="@Model.Target.Name" />
+      @Html.ValidationMessage("name")
+    </div>
+    <p>
+      <input type="submit" value="Save" />
+      @Html.ActionLink("Cancel", "Details", new { id = Model.Target.Key })
+    </p>
+  </fieldset>
+}

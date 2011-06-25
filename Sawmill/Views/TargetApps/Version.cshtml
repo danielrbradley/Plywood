@@ -1,0 +1,99 @@
+﻿@model Plywood.Sawmill.Models.TargetAppVersionDetails
+@{
+  ViewBag.Title = Model.Target.Name + " - " + Model.App.Name + " - Deployed Version";
+}
+<div class="breadcrumbs">
+  @Html.ActionLink("Groups", "Index", "Groups")
+  >
+  @Html.ActionLink(Model.Group.Name, "Details", "Groups", new { id = Model.Group.Key }, null)
+  >
+  @Html.ActionLink("Targets", "Index", "Targets", new { gid = Model.Group.Key }, null)
+  >
+  @Html.ActionLink(Model.Target.Name, "Details", "Targets", new { id = Model.Target.Key }, null)
+  >
+  @Html.ActionLink("Apps", "Index", "TargetApps", new { tid = Model.Target.Key }, null)
+  >
+  @Model.App.Name
+  - Deployed Version
+</div>
+<fieldset>
+  <legend>Deployed Version</legend>
+  @if (Model.Version != null)
+  {
+    <div class="display-label">
+      Key
+    </div>
+    <div class="display-field">
+      @Model.Version.Key
+    </div>
+    <div class="display-label">
+      Date
+    </div>
+    <div class="display-field">
+      @Model.Version.Timestamp
+    </div>
+    <div class="display-label">
+      Name
+    </div>
+    <div class="display-field">
+      @Html.ActionLink(Model.Version.Name, "Details", "Versions", new { id = Model.Version.Key }, null)
+    </div>
+  }
+  else
+  {
+    <div>
+      No version set.</div>
+  }
+</fieldset>
+<fieldset>
+  <legend>Change Deployed Version</legend>
+  @using (Html.BeginForm("ChangeVersion", "TargetApps", FormMethod.Post))
+  {
+    <input type="hidden" name="tid" value="@Model.Target.Key" />
+    <input type="hidden" name="aid" value="@Model.App.Key" />
+    <input id="version-key" type="hidden" name="vid" />
+    <label for="version-name-search">
+      Version</label>
+    <input id="version-name-search" type="text" />
+    <input type="submit" value="Change" />
+  }
+  @using (Html.BeginForm("RemoveVersion", "TargetApps", FormMethod.Post))
+  {
+    <input type="hidden" name="tid" value="@Model.Target.Key" />
+    <input type="hidden" name="aid" value="@Model.App.Key" />
+    <input type="submit" value="Remove Deployed Version" />
+  }
+</fieldset>
+<script type="text/javascript">
+  $(function () {
+    var autocompleteSource;
+    $('#version-name-search').autocomplete({
+      source: function (req, res) {
+        $.ajax({
+          url: '@Url.Action("Autocomplete", "Versions")',
+          dataType: "json",
+          type: "POST",
+          data: {
+            aid: '@Model.App.Key',
+            query: req.term
+          },
+          success: function (data) {
+            autocompleteSource = data.Versions;
+            res($.map(data.Versions, function (item) {
+              return {
+                label: item.Name,
+                value: item.Key
+              };
+            }));
+          }
+        });
+      },
+      minLength: 0,
+      select: function (event, ui) {
+        $('#version-name-search').val(ui.item.label);
+        $('#version-key').val(ui.item.value);
+        return false;
+      }
+    });
+  });
+</script>

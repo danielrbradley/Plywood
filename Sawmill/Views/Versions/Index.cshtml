@@ -1,0 +1,48 @@
+﻿@model Plywood.Sawmill.Models.VersionIndex
+@{
+  ViewBag.Title = Model.App.Name + " Versions";
+}
+<div class="breadcrumbs">
+  @Html.ActionLink("Groups", "Index", "Groups")
+  > @Html.ActionLink(Model.Group.Name, "Details", "Groups", new { id = Model.Group.Key }, null)
+  > @Html.ActionLink("Apps", "Index", "Apps", new { gid = Model.Group.Key }, null)
+  > @Html.ActionLink(Model.App.Name, "Details", "Apps", new { id = Model.App.Key }, null)
+  > Versions
+</div>
+<ul class="page-tabs">
+  <li>@Html.ActionLink("App Details", "Details", "Apps", new { id = Model.App.Key }, null)</li>
+  <li class="selected">@Html.ActionLink("Versions", "Index", "Versions", new { aid = Model.App.Key }, null)</li>
+</ul>
+<div class="page-tab-content">
+  <div class="paging">
+    @Html.NextPrevPager(Url.Action("Index"), Model.VersionList.PageSize, Model.VersionList.Offset, Model.VersionList.TotalCount)
+  </div>
+  <table>
+    <tr>
+      <th>
+        Date
+      </th>
+      <th>
+        Name
+      </th>
+    </tr>
+    @foreach (var version in Model.VersionList.Versions)
+    {
+      <tr>
+        <td>
+          @version.Timestamp.ToString()
+        </td>
+        <td>
+          @Html.ActionLink(version.Name, "Details", "Versions", new { id = version.Key }, null)
+        </td>
+      </tr>
+    }
+  </table>
+  <div class="paging">
+    @Html.NextPrevPager(Url.Action("Index"), Model.VersionList.PageSize, Model.VersionList.Offset, Model.VersionList.TotalCount)
+  </div>
+  <div>
+    @Html.ActionLink("Create Version", "Create", new { aid = Model.App.Key }) |
+    @Html.ActionLink("Back to Apps", "Index", "Apps", new { gid = Model.Group.Key }, null)
+  </div>
+</div>

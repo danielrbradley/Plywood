@@ -1,0 +1,19 @@
+Current Tasks
+=============
+
+Framework
+---------
+
+> Improve exception handling.
+
+> Add NLogging.
+
+> BREAKING CHNANGE: Use XML for info files (for better validation using xsd).
+
+> Re-style sawmill - custom colours and rounded corners.
+
+> Create desktop application interface.
+
+> Create visual studio integration.
+
+> Add latest versions to the front page.

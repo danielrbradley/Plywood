@@ -1,0 +1,38 @@
+﻿@model Plywood.Sawmill.Models.TargetDetails
+@{
+  ViewBag.Title = Model.Target.Name;
+}
+<div class="breadcrumbs">
+  @Html.ActionLink("Groups", "Index", "Groups")
+  > @Html.ActionLink(Model.Group.Name, "Details", "Groups", new { id = Model.Group.Key }, null)
+  > @Html.ActionLink("Targets", "Index", "Targets", new { gid = Model.Group.Key }, null)
+  > @Model.Target.Name
+</div>
+<ul class="page-tabs">
+  <li class="selected">@Html.ActionLink("Target Details", "Details", new { id = Model.Target.Key })</li>
+  <li>@Html.ActionLink("Apps", "Index", "TargetApps", new { tid = Model.Target.Key }, null)</li>
+  <li>@Html.ActionLink("Instances", "Index", "Instances", new { tid = Model.Target.Key }, null)</li>
+</ul>
+<div class="page-tab-content">
+  <div class="display-label">
+    Key</div>
+  <div class="display-field">@Model.Target.Key</div>
+  <div class="display-label">
+    Name</div>
+  <div class="display-field">@Model.Target.Name</div>
+  <fieldset>
+    <legend>Tags</legend>
+    @foreach (var tag in Model.Target.Tags)
+    {
+      <div class="display-label">
+        @tag.Key</div>
+      <div class="display-field">@tag.Value</div>
+    }
+  </fieldset>
+  <p>
+    @Html.ActionLink("Edit", "Edit", new { id = Model.Target.Key }) |
+    @Html.ActionLink("Edit Tags", "EditTags", new { id = Model.Target.Key }) |
+    @Html.ActionLink("Delete", "ConfirmDelete", new { id = Model.Target.Key }) |
+    @Html.ActionLink("Back to List", "Index")
+  </p>
+</div>

@@ -1,0 +1,46 @@
+﻿@model Plywood.Sawmill.Models.VersionDetails
+@{
+  ViewBag.Title = "Create Version";
+}
+<div class="breadcrumbs">
+  @Html.ActionLink("Groups", "Index", "Groups")
+  > @Html.ActionLink(Model.Group.Name, "Details", "Groups", new { id = Model.Group.Key }, null)
+  > @Html.ActionLink("Apps", "Index", "Apps", new { gid = Model.Group.Key }, null)
+  > @Html.ActionLink(Model.App.Name, "Details", "Apps", new { id = Model.App.Key }, null)
+  > @Html.ActionLink("Versions", "Index", "Versions", new { aid = Model.App.Key }, null)
+  > Create Version
+</div>
+<h2>
+  Create Version</h2>
+<script src="@Url.Content("~/Scripts/jquery.validate.min.js")" type="text/javascript"></script>
+<script src="@Url.Content("~/Scripts/jquery.validate.unobtrusive.min.js")" type="text/javascript"></script>
+@using (Html.BeginForm())
+{
+  @Html.ValidationSummary(true)
+  <fieldset>
+    <legend>Version Details</legend>
+    <input type="hidden" name="gid" value="@Model.App.GroupKey" />
+    <div class="editor-label">
+      <label for="name">
+        Name</label>
+    </div>
+    <div class="editor-field">
+      <input type="text" name="name" value="@Model.Version.Name" />
+      @Html.ValidationMessage("name")
+    </div>
+    <div class="editor-label">
+      <label for="timestamp">
+        Date</label>
+    </div>
+    <div class="editor-field">
+      <input type="text" name="timestamp" value="@Model.Version.Timestamp.ToString("u")" />
+      @Html.ValidationMessage("timestamp")
+    </div>
+    <p>
+      <input type="submit" value="Create" />
+    </p>
+  </fieldset>
+}
+<div>
+  @Html.ActionLink("Back to Versions", "Index", new { aid = Model.App.Key })
+</div>

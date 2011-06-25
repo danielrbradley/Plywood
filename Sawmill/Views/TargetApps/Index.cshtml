@@ -1,0 +1,107 @@
+﻿@model Plywood.Sawmill.Models.TargetAppsIndex
+@{
+  ViewBag.Title = Model.Target.Name + " Apps";
+}
+<div class="pagesizer">
+  @Html.PageSizeSwitcher(Url.Action("Index"), Model.TargetAppList.PageSize, new int[] { 10, 25, 50 })
+</div>
+<div class="breadcrumbs">
+  @Html.ActionLink("Groups", "Index", "Groups")
+  >
+  @Html.ActionLink(Model.Group.Name, "Details", "Groups", new { id = Model.Group.Key }, null)
+  >
+  @Html.ActionLink("Targets", "Index", "Targets", new { gid = Model.Group.Key }, null)
+  >
+  @Html.ActionLink(Model.Target.Name, "Details", "Targets", new { id = Model.Target.Key }, null)
+  > Apps
+</div>
+<ul class="page-tabs">
+  <li>@Html.ActionLink("Target Details", "Details", "Targets", new { id = Model.Target.Key }, null)</li>
+  <li class="selected">@Html.ActionLink("Apps", "Index", "TargetApps", new { tid = Model.Target.Key }, null)</li>
+  <li>@Html.ActionLink("Instances", "Index", "Instances", new { tid = Model.Target.Key }, null)</li>
+</ul>
+<div class="page-tab-content">
+  <div class="paging">
+    @Html.NextPrevPager(Url.Action("Index"), Model.TargetAppList.PageSize, Model.TargetAppList.Offset, Model.TargetAppList.TotalCount)
+  </div>
+  <table>
+    <tr>
+      <th>
+        Name
+      </th>
+      <th>
+      </th>
+      <th>
+      </th>
+    </tr>
+    @foreach (var app in Model.TargetAppList.Apps)
+    {
+      <tr>
+        <td>
+          @Html.ActionLink(app.Name, "Details", "Apps", new { id = app.Key }, null)
+        </td>
+        <td>
+          @Html.ActionLink("Deployed Version", "Version", "TargetApps", new { tid = Model.Target.Key, aid = app.Key }, null)
+        </td>
+        <td>
+          @using (Html.BeginForm("RemoveApp", "TargetApps", FormMethod.Post))
+          {
+            <div>
+              <input type="hidden" name="tid" value="@Model.Target.Key" />
+              <input type="hidden" name="aid" value="@app.Key" />
+              <input type="submit" value="Remove" />
+            </div>
+          }
+        </td>
+      </tr>
+    }
+  </table>
+  <div class="paging">
+    @Html.NextPrevPager(Url.Action("Index"), Model.TargetAppList.PageSize, Model.TargetAppList.Offset, Model.TargetAppList.TotalCount)
+  </div>
+</div>
+<script type="text/javascript">
+  $(function () {
+    var autocompleteSource;
+    $('#app-name-search').autocomplete({
+      source: function (req, res) {
+        $.ajax({
+          url: '@Url.Action("Autocomplete", "Apps")',
+          dataType: "json",
+          type: "POST",
+          data: {
+            gid: '@Model.Group.Key',
+            query: req.term
+          },
+          success: function (data) {
+            autocompleteSource = data.Apps;
+            res($.map(data.Apps, function (item) {
+              return {
+                label: item.Name,
+                value: item.Key
+              };
+            }));
+          }
+        });
+      },
+      minLength: 3,
+      select: function (event, ui) {
+        $('#app-name-search').val(ui.item.label);
+        $('#app-id').val(ui.item.value);
+        return false;
+      }
+    });
+  });
+</script>
+@using (Html.BeginForm("AddApp", "TargetApps", FormMethod.Post))
+{
+  <fieldset>
+    <legend>Add App</legend>
+    <input name="tid" type="hidden" value="@Model.Target.Key" />
+    <input id="app-id" type="hidden" name="aid" />
+    <label for="app-name-search">
+      App Name</label>
+    <input id="app-name-search" type="text" value="" />
+    <input type="submit" value="Add App" />
+  </fieldset>
+}

@@ -1,0 +1,49 @@
+﻿@model Plywood.Sawmill.Models.AppIndex
+@{
+  ViewBag.Title = Model.Group.Name + " Apps";
+}
+<div class="pagesizer">
+  @Html.PageSizeSwitcher(Url.Action("Index"), Model.AppList.PageSize, new int[] { 10, 25, 50 })
+</div>
+<div class="breadcrumbs">
+  @Html.ActionLink("Groups", "Index", "Groups") >
+  @Html.ActionLink(Model.Group.Name, "Details", "Groups", new { id = Model.Group.Key }, null)
+  > Apps
+</div>
+<ul class="page-tabs">
+  <li>@Html.ActionLink("Group Details", "Details", "Groups", new { id = Model.Group.Key }, null)</li>
+  <li class="selected">@Html.ActionLink("Apps", "Index", "Apps", new { gid = Model.Group.Key }, null)</li>
+  <li>@Html.ActionLink("Targets", "Index", "Targets", new { gid = Model.Group.Key }, null)</li>
+</ul>
+<div class="page-tab-content">
+  <div class="paging">
+    @Html.NextPrevPager(Url.Action("Index"), Model.AppList.PageSize, Model.AppList.Offset, Model.AppList.TotalCount)
+  </div>
+  <table>
+    <tr>
+      <th>
+        Name
+      </th>
+      <th>
+      </th>
+    </tr>
+    @foreach (var app in Model.AppList.Apps)
+    {
+      <tr>
+        <td>
+          @Html.ActionLink(app.Name, "Details", "Apps", new { id = app.Key }, null)
+        </td>
+        <td>
+          @Html.ActionLink("Versions", "Index", "Versions", new { aid = app.Key }, null)
+        </td>
+      </tr>
+    }
+  </table>
+  <div class="paging">
+    @Html.NextPrevPager(Url.Action("Index"), Model.AppList.PageSize, Model.AppList.Offset, Model.AppList.TotalCount)
+  </div>
+</div>
+<div>
+  @Html.ActionLink("Create App", "Create", new { gid = Model.Group.Key }) |
+  @Html.ActionLink("Back to Groups", "Index", "Groups")
+</div>

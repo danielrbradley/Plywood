@@ -1,0 +1,7 @@
+install-excludes.txt
+hook-installed.bat
+hook-uninstalled.bat
+hook-update.bat
+hook-updated.bat
+toolkit-install.bat
+toolkit-uninstall.bat

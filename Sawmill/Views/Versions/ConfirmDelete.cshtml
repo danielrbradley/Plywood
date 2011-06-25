@@ -1,0 +1,48 @@
+﻿@model Plywood.Sawmill.Models.VersionDetails
+@{
+  ViewBag.Title = "Delete Version";
+}
+<div class="breadcrumbs">
+  @Html.ActionLink("Groups", "Index", "Groups")
+  >
+  @Html.ActionLink(Model.Group.Name, "Details", "Groups", new { id = Model.Group.Key }, null)
+  >
+  @Html.ActionLink("Apps", "Index", "Apps", new { gid = Model.Group.Key }, null)
+  >
+  @Html.ActionLink(Model.App.Name, "Details", "Apps", new { id = Model.App.Key }, null)
+  >
+  @Html.ActionLink("Versions", "Index", "Versions", new { aid = Model.App.Key }, null)
+  >
+  @Html.ActionLink(Model.Version.Name, "Details", "Versions", new { id = Model.Version.Key }, null)
+  > Delete
+</div>
+<div>
+  <fieldset>
+    <legend>Version Details</legend>
+    <div class="display-label">
+      Key</div>
+    <div class="display-field">@Model.Version.Key</div>
+    <div class="display-label">
+      Name</div>
+    <div class="display-field">@Model.Version.Name</div>
+    <div class="display-label">
+      Date</div>
+    <div class="display-field">@Model.Version.Timestamp</div>
+  </fieldset>
+</div>
+@using (Html.BeginForm("Delete", "Versions", FormMethod.Post))
+{
+  @Html.ValidationSummary(true)
+  @Html.ValidationMessage("Error")
+  <fieldset>
+    <legend>Delete App</legend>
+    <input type="hidden" name="id" value="@Model.Version.Key" />
+    <p>
+      Please confirm you want to delete this version?
+    </p>
+    <p>
+      <input type="submit" value="Delete" />
+      @Html.ActionLink("Cancel", "Details", new { id = Model.App.Key })
+    </p>
+  </fieldset>
+}

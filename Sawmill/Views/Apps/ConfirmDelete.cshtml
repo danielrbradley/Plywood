@@ -1,0 +1,41 @@
+﻿@model Plywood.Sawmill.Models.AppDetails
+@{
+  ViewBag.Title = "Delete App";
+}
+<div class="breadcrumbs">
+  @Html.ActionLink("Groups", "Index", "Groups")
+  >
+  @Html.ActionLink(Model.Group.Name, "Details", "Groups", new { id = Model.Group.Key }, null)
+  >
+  @Html.ActionLink("Apps", "Index", "Apps", new { gid = Model.Group.Key }, null)
+  >
+  @Html.ActionLink(Model.App.Name, "Details", new { id = Model.App.Key }, null)
+  > Delete
+</div>
+<div>
+  <fieldset>
+    <legend>App Details</legend>
+    <div class="display-label">
+      Key</div>
+    <div class="display-field">@Model.App.Key</div>
+    <div class="display-label">
+      Name</div>
+    <div class="display-field">@Model.App.Name</div>
+  </fieldset>
+</div>
+@using (Html.BeginForm("Delete", "Apps", FormMethod.Post))
+{
+  @Html.ValidationSummary(true)
+  @Html.ValidationMessage("Error")
+  <fieldset>
+    <legend>Delete App</legend>
+    <input type="hidden" name="id" value="@Model.App.Key" />
+    <p>
+      Please confirm you want to delete this app?
+    </p>
+    <p>
+      <input type="submit" value="Delete" />
+      @Html.ActionLink("Cancel", "Details", new { id = Model.App.Key })
+    </p>
+  </fieldset>
+}

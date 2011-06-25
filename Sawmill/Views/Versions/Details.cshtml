@@ -1,0 +1,45 @@
+﻿@model Plywood.Sawmill.Models.VersionDetails
+@{
+  ViewBag.Title = "Details";
+}
+<div class="breadcrumbs">
+  @Html.ActionLink("Groups", "Index", "Groups")
+  > @Html.ActionLink(Model.Group.Name, "Details", "Groups", new { id = Model.Group.Key }, null)
+  > @Html.ActionLink("Apps", "Index", "Apps", new { gid = Model.Group.Key }, null)
+  > @Html.ActionLink(Model.App.Name, "Details", "Apps", new { id = Model.App.Key }, null)
+  > @Html.ActionLink("Versions", "Index", "Versions", new { aid = Model.App.Key }, null)
+  > @Model.Version.Name
+</div>
+<div class="display-label">
+  Key
+</div>
+<div class="display-field">
+  @Model.Version.Key
+</div>
+<div class="display-label">
+  Date
+</div>
+<div class="display-field">
+  @Model.Version.Timestamp
+</div>
+<div class="display-label">
+  Name
+</div>
+<div class="display-field">
+  @Model.Version.Name
+</div>
+<fieldset>
+  <legend>Tags</legend>
+  @foreach (var tag in Model.Version.Tags)
+  {
+    <div class="display-label">
+      @tag.Key</div>
+    <div class="display-field">@tag.Value</div>
+  }
+</fieldset>
+<p>
+  @Html.ActionLink("Edit", "Edit", new { id = Model.Version.Key }) |
+  @Html.ActionLink("Edit Tags", "EditTags", new { id = Model.Version.Key }) |
+  @Html.ActionLink("Delete", "ConfirmDelete", new { id = Model.Version.Key }) |
+  @Html.ActionLink("Back to List", "Index", new { aid = Model.App.Key })
+</p>

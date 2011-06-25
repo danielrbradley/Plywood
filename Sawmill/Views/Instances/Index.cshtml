@@ -1,0 +1,51 @@
+﻿@model Plywood.Sawmill.Models.InstanceIndex
+@{
+  ViewBag.Title = Model.Group.Name + " " + Model.Target.Name + " Instances";
+}
+<div class="pagesizer">
+  @Html.PageSizeSwitcher(Url.Action("Index"), Model.InstanceList.PageSize, new int[] { 10, 25, 50 })
+</div>
+<div class="breadcrumbs">
+  @Html.ActionLink("Groups", "Index", "Groups") >
+  @Html.ActionLink(Model.Group.Name, "Details", "Groups", new { id = Model.Group.Key }, null) >
+  @Html.ActionLink("Targets", "Index", "Targets", new { gid = Model.Group.Key }, null) >
+  @Html.ActionLink(Model.Target.Name, "Details", "Targets", new { id = Model.Target.Key }, null)
+  > Instances
+</div>
+<ul class="page-tabs">
+  <li>@Html.ActionLink("Target Details", "Details", "Targets", new { id = Model.Target.Key }, null)</li>
+  <li>@Html.ActionLink("Apps", "Index", "TargetApps", new { tid = Model.Target.Key }, null)</li>
+  <li class="selected">@Html.ActionLink("Instances", "Index", "Instances", new { tid = Model.Target.Key }, null)</li>
+</ul>
+<div class="page-tab-content">
+  <div class="paging">
+    @Html.NextPrevPager(Url.Action("Index"), Model.InstanceList.PageSize, Model.InstanceList.Offset, Model.InstanceList.TotalCount)
+  </div>
+  <table>
+    <tr>
+      <th>
+        Name
+      </th>
+      <th>
+      </th>
+    </tr>
+    @foreach (var instance in Model.InstanceList.Instances)
+    {
+      <tr>
+        <td>
+          @Html.ActionLink(instance.Name, "Details", "Instances", new { id = instance.Key }, null)
+        </td>
+        <td>
+          @Html.ActionLink("Logs", "Index", "Logs", new { iid = instance.Key }, null)
+        </td>
+      </tr>
+    }
+  </table>
+  <div class="paging">
+    @Html.NextPrevPager(Url.Action("Index"), Model.InstanceList.PageSize, Model.InstanceList.Offset, Model.InstanceList.TotalCount)
+  </div>
+  <div>
+    @Html.ActionLink("Create Instance", "Create", new { tid = Model.Target.Key }) |
+    @Html.ActionLink("Back to Targets", "Index", "Targets", new { gid = Model.Group.Key }, null)
+  </div>
+</div>

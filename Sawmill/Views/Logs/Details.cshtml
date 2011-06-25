@@ -1,0 +1,37 @@
+﻿@model Plywood.Sawmill.Models.LogDetails
+@{
+  ViewBag.Title = Model.Target.Name;
+}
+<div class="breadcrumbs">
+  @Html.ActionLink("Groups", "Index", "Groups")
+  >
+  @Html.ActionLink(Model.Group.Name, "Details", "Groups", new { id = Model.Group.Key }, null)
+  >
+  @Html.ActionLink("Targets", "Index", "Targets", new { gid = Model.Group.Key }, null)
+  >
+  @Html.ActionLink(Model.Target.Name, "Details", "Targets", new { id = Model.Target.Key }, null)
+  >
+  @Html.ActionLink("Instances", "Index", "Instances", new { tid = Model.Target.Key }, null)
+  >
+  @Html.ActionLink(Model.Instance.Name, "Details", "Instances", new { id = Model.Instance.Key }, null)
+  >
+  @Html.ActionLink("Logs", "Index", "Logs", new { iid = Model.Instance.Key }, null)
+  >
+  @Model.LogEntry.Timestamp.ToString("r") (@Model.LogEntry.Status)
+</div>
+<div class="page-tab-content">
+  <div class="display-label">
+    Timestamp</div>
+  <div class="display-field">@Model.LogEntry.Timestamp.ToString("r")</div>
+  <div class="display-label">
+    Status</div>
+  <div class="display-field">@Model.LogEntry.Status</div>
+  <div class="display-label">
+    Log Content</div>
+  <div class="display-field">
+    <pre>@Model.LogEntry.LogContent</pre>
+  </div>
+  <p>
+    @Html.ActionLink("Back to List", "Index", new { iid = Model.Instance.Key })
+  </p>
+</div>

@@ -1,0 +1,184 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="unqualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="webApplicationDeployment">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="applicationPool" minOccurs="1" maxOccurs="unbounded">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="cpu" minOccurs="0" maxOccurs="1">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="action" type="xs:string" minOccurs="0" maxOccurs="1" />
+                    <xs:element name="limit" type="xs:long" minOccurs="0" maxOccurs="1" />
+                    <xs:element name="resetInterval" type="xs:time" minOccurs="0" maxOccurs="1" />
+                    <xs:element name="smtpAffinitized" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+                    <xs:element name="smpProcessorAffinityMask" type="xs:long" minOccurs="0" maxOccurs="1" />
+                    <xs:element name="smpProcessorAffinityMask2" type="xs:long" minOccurs="0" maxOccurs="1" />
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+              <xs:element name="failure" minOccurs="0" maxOccurs="1">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="autoShutdownExe" type="xs:string" minOccurs="0" maxOccurs="1" />
+                    <xs:element name="autoShutdownParams" type="xs:string" minOccurs="0" maxOccurs="1" />
+                    <xs:element name="loadBalancerCapabilities" type="xs:string" minOccurs="0" maxOccurs="1" />
+                    <xs:element name="orphanActionExe" type="xs:string" minOccurs="0" maxOccurs="1" />
+                    <xs:element name="orphanActionParams" type="xs:string" minOccurs="0" maxOccurs="1" />
+                    <xs:element name="orphanWorkerProcess" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+                    <xs:element name="rapidFailProtection" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+                    <xs:element name="rapidFailProtectionInterval" type="xs:time" minOccurs="0" maxOccurs="1" />
+                    <xs:element name="rapidFailProtectionMaxCrashes" type="xs:long" minOccurs="0" maxOccurs="1" />
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+              <xs:element name="processModel" minOccurs="0" maxOccurs="1">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="identityType" type="xs:string" minOccurs="0" maxOccurs="1" />
+                    <xs:element name="idleTimeout" type="xs:time" minOccurs="0" maxOccurs="1" />
+                    <xs:element name="loadUserProfile" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+                    <xs:element name="maxProcesses" type="xs:long" minOccurs="0" maxOccurs="1" />
+                    <xs:element name="password" type="xs:string" minOccurs="0" maxOccurs="1" />
+                    <xs:element name="pingingEnabled" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+                    <xs:element name="pingInterval" type="xs:time" minOccurs="0" maxOccurs="1" />
+                    <xs:element name="pingResponseTime" type="xs:time" minOccurs="0" maxOccurs="1" />
+                    <xs:element name="shutdownTimeLimit" type="xs:time" minOccurs="0" maxOccurs="1" />
+                    <xs:element name="startupTimeLimit" type="xs:time" minOccurs="0" maxOccurs="1" />
+                    <xs:element name="userName" type="xs:string" minOccurs="0" maxOccurs="1" />
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+              <xs:element name="recycling" minOccurs="0" maxOccurs="1">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="disallowOverlappingRotation" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+                    <xs:element name="disallowRotationOnConfigChange" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+                    <xs:element name="logEventOnRecycle" type="xs:string" minOccurs="0" maxOccurs="1" />
+                    <xs:element name="periodicRestart" minOccurs="0" maxOccurs="1">
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element name="memory" type="xs:long" minOccurs="0" maxOccurs="1" />
+                          <xs:element name="privateMemory" type="xs:long" minOccurs="0" maxOccurs="1" />
+                          <xs:element name="requests" type="xs:long" minOccurs="0" maxOccurs="1" />
+                          <xs:element name="schedule" minOccurs="0" maxOccurs="1">
+                            <xs:complexType>
+                              <xs:sequence>
+                                <xs:element name="time" type="xs:time" minOccurs="0" maxOccurs="unbounded" />
+                              </xs:sequence>
+                            </xs:complexType>
+                          </xs:element>
+                          <xs:element name="time" type="xs:time" minOccurs="0" maxOccurs="1" />
+                        </xs:sequence>
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+            <xs:attribute name="name" type="xs:string" use="required" />
+            <xs:attribute name="autoStart" type="xs:boolean" use="optional" default="false" />
+            <xs:attribute name="enable32BitAppOnWin64" type="xs:boolean" use="optional" />
+            <xs:attribute name="managedPipelineMode" type="xs:string" use="optional" />
+            <xs:attribute name="managedRuntimeVersion" type="xs:string" use="optional" />
+            <xs:attribute name="queueLength" type="xs:long" use="optional" />
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="site" minOccurs="1" maxOccurs="unbounded">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="applicationDefaults" minOccurs="0" maxOccurs="1">
+                <xs:complexType>
+                  <xs:attribute name="applicationPoolName" type="xs:string" use="required" />
+                  <xs:attribute name="enabledProtocols" type="xs:string" use="required" />
+                </xs:complexType>
+              </xs:element>
+              <xs:element name="applications">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="clear" minOccurs="0" maxOccurs="1" />
+                    <xs:element name="add" minOccurs="1" maxOccurs="unbounded">
+                      <xs:complexType>
+                        <xs:attribute name="path" type="xs:string" use="required" />
+                        <xs:attribute name="physicalPath" type="xs:string" use="required" />
+                        <xs:attribute name="applicationPoolName" type="xs:string" use="required" />
+                        <xs:attribute name="enabledProtocols" type="xs:string" use="required" />
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+              <xs:element name="bindings" minOccurs="1" maxOccurs="1">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="clear" minOccurs="0" maxOccurs="1" />
+                    <xs:element name="add" minOccurs="1" maxOccurs="unbounded">
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element name="certificateHash" minOccurs="0" maxOccurs="1" />
+                          <xs:element name="certificateStoreName" minOccurs="0" maxOccurs="1" />
+                          <xs:element name="useDsMapper" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+                        </xs:sequence>
+                        <xs:attribute name="protocol" type="xs:string" use="required" />
+                        <xs:attribute name="information" type="xs:string" use="required" />
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+              <xs:element name="limits" minOccurs="0" maxOccurs="1">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="connectionTimeout" type="xs:time" minOccurs="0" maxOccurs="1" />
+                    <xs:element name="maxBandwidth" type="xs:long" minOccurs="0" maxOccurs="1" />
+                    <xs:element name="maxConnections" type="xs:long" minOccurs="0" maxOccurs="1" />
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+              <xs:element name="logFile" minOccurs="0" maxOccurs="1">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="customLogPluginClsid" type="xs:string" minOccurs="0" maxOccurs="1" />
+                    <xs:element name="directory" type="xs:string" minOccurs="0" maxOccurs="1" />
+                    <xs:element name="enabled" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+                    <xs:element name="localTimeRollover" type="xs:time" minOccurs="0" maxOccurs="1" />
+                    <xs:element name="logExtFileFlags" type="xs:string" minOccurs="0" maxOccurs="1" />
+                    <xs:element name="logFormat" type="xs:string" minOccurs="0" maxOccurs="1" />
+                    <xs:element name="period" type="xs:string" minOccurs="0" maxOccurs="1" />
+                    <xs:element name="truncateSize" type="xs:long" minOccurs="0" maxOccurs="1" />
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+              <xs:element name="traceFailedRequestsLogging" minOccurs="0" maxOccurs="1">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="directory" type="xs:string" minOccurs="0" maxOccurs="1" />
+                    <xs:element name="enabled" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+                    <xs:element name="maxLogFiles" type="xs:long" minOccurs="0" maxOccurs="1" />
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+              <xs:element name="virtualDirectoryDefaults" minOccurs="0" maxOccurs="1">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="logonMethod" type="xs:string" minOccurs="0" maxOccurs="1" />
+                    <xs:element name="password" type="xs:string" minOccurs="0" maxOccurs="1" />
+                    <xs:element name="userName" type="xs:string" minOccurs="0" maxOccurs="1" />
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+            <xs:attribute name="name" type="xs:string" use="required" />
+            <xs:attribute name="serverAutoStart" type="xs:boolean" use="required" />
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="package" minOccurs="1" maxOccurs="unbounded">
+          <xs:complexType>
+            <xs:attribute name="path" type="xs:string" use="required" />
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

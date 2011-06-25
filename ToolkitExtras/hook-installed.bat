@@ -1,0 +1,1 @@
+START "Installing Service" /SEPARATE toolkit-install.bat

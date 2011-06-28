@@ -72,10 +72,10 @@ namespace Plywood.Tests.UnitTesting
         {
             Group group = null;
             string actual;
-            actual = ReadStream(group.Serialise());
+            actual = ReadStream(Group.Serialise(group));
             Assert.Fail("Should not reach this point.");
         }
-
+        
         [TestMethod()]
         [ExpectedException(typeof(ArgumentException))]
         public void KeyTag()

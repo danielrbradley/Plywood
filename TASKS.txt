@@ -1,8 +1,8 @@
 Current Tasks
 =============
 
-Framework
----------
+Framework _- In no particular order
+---------'
 
 > Improve exception handling.
 
@@ -17,3 +17,9 @@ Framework
 > Create visual studio integration.
 
 > Add latest versions to the front page.
+
+> More intelligent indexes (remove concurrent index update issues)
+>> Split by terms & have a separate index file per term.
+>> Queries load indexes that apply to the query.
+>> Indexes limited to a set number of items (~100)
+>> Use S3 object listing for default (non-queried) listings.

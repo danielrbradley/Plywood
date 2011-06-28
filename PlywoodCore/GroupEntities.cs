@@ -4,6 +4,10 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using Plywood.Utils;
+using System.Xml.Linq;
+using System.Xml.Schema;
+using System.Reflection;
+using System.Xml;
 
 namespace Plywood
 {
@@ -17,21 +21,22 @@ namespace Plywood
         }
 
         public Group(string source)
-            : base()
-        {
-            Extend(Group.Parse(source));
-        }
+            : this(Group.Parse(source)) { }
 
         public Group(Stream source)
-            : base()
-        {
-            Extend(Group.Parse(source));
-        }
+            : this(Group.Parse(source)) { }
 
         public Group(TextReader source)
-            : base()
+            : this(Group.Parse(source)) { }
+
+        public Group(XmlTextReader source)
+            : this(Group.Parse(source)) { }
+
+        public Group(Group other)
         {
-            Extend(Group.Parse(source));
+            this.Key = other.Key;
+            this.Name = other.Name;
+            this.Tags = other.Tags;
         }
 
         #endregion
@@ -39,13 +44,6 @@ namespace Plywood
         public Guid Key { get; set; }
         public string Name { get; set; }
         public Dictionary<string, string> Tags { get; set; }
-
-        private void Extend(Group prototype)
-        {
-            this.Key = prototype.Key;
-            this.Name = prototype.Name;
-            this.Tags = prototype.Tags;
-        }
 
         public Stream Serialise()
         {
@@ -60,24 +58,25 @@ namespace Plywood
                 throw new ArgumentNullException("group", "Group cannot be null.");
             if (!Validation.IsNameValid(group.Name))
                 throw new ArgumentException("Name must be valid (not blank & only a single line).");
-            if (group.Tags != null)
+
+            var doc = new XDocument(
+                new XDeclaration("1.0", "UTF-8", "yes"),
+                new XElement("group",
+                    new XAttribute("key", group.Key),
+                    new XElement("name", group.Name),
+                    new XElement("tags")));
+
+            if (group.Tags != null && group.Tags.Count > 0)
             {
-                if (group.Tags.ContainsKey("Key"))
-                    throw new ArgumentException("Tags cannot use the reserved name \"Key\"");
-                if (group.Tags.ContainsKey("Name"))
-                    throw new ArgumentException("Tags cannot use the reserved name \"Name\"");
+                doc.Root.Element("tags").Add(
+                    group.Tags.Select(t =>
+                        new XElement("tag",
+                            new XAttribute("key", t.Key),
+                            t.Value
+                            )));
             }
 
-            var values = new List<KeyValuePair<string, string>>()
-            {
-                new KeyValuePair<string,string>("Key", group.Key.ToString("N")),
-                new KeyValuePair<string,string>("Name", group.Name),
-            };
-
-            if (group.Tags != null)
-                values.AddRange(group.Tags.ToList());
-
-            return Serialisation.Serialise(values);
+            return Serialisation.Serialise(doc);
         }
 
         public static Group Parse(string source)
@@ -87,39 +86,90 @@ namespace Plywood
 
         public static Group Parse(Stream source)
         {
-            return Parse(new StreamReader(source));
+            return Parse(new XmlTextReader(source));
         }
 
         public static Group Parse(TextReader source)
         {
-            var group = new Group();
-            var properties = Serialisation.ReadProperties(source);
+            return Parse(new XmlTextReader(source));
+        }
 
-            if (!properties.ContainsKey("Key"))
+        public static Group Parse(XmlReader source)
+        {
+            XDocument doc;
+            try
             {
-                throw new DeserialisationException("Failed deserialising group: missing property \"Key\"");
+                doc = XDocument.Load(source);
             }
-            if (!properties.ContainsKey("Name"))
+            catch (Exception ex)
             {
-                throw new DeserialisationException("Failed deserialising group: missing property \"Name\"");
+                throw new DeserialisationException("Failed deserialising group.", ex);
             }
+
+            if (!ValidateGroupXml(doc))
+                throw new DeserialisationException("Serialised group xml is not valid.");
 
             Guid key;
-            if (!Guid.TryParseExact(properties["Key"], "N", out key))
+
+            if (!Guid.TryParse(doc.Root.Attribute("key").Value, out key))
+                throw new DeserialisationException("Serialised group key is not a valid guid.");
+
+            var group = new Group()
             {
-                throw new DeserialisationException("Failed deserialising group: invalid property value for \"Key\"");
+                Key = key,
+                Name = doc.Root.Element("name").Value,
+            };
+
+            if (!Validation.IsNameValid(group.Name))
+                throw new DeserialisationException("Serialised group name is not a valid name string.");
+
+            var tagsElement = doc.Root.Element("tags");
+            if (tagsElement != null && tagsElement.HasElements)
+            {
+                group.Tags = tagsElement.Elements("tag").ToDictionary(t => t.Attribute("key").Value, t => t.Value);
             }
-
-            group.Key = key;
-            group.Name = properties["Name"];
-
-            properties.Remove("Key");
-            properties.Remove("Name");
-
-            group.Tags = properties;
+            else
+            {
+                group.Tags = new Dictionary<string, string>();
+            }
 
             return group;
         }
+
+        public static bool ValidateGroupXml(XDocument groupDoc)
+        {
+            bool valid = true;
+            groupDoc.Validate(Schemas, (o, e) =>
+            {
+                valid = false;
+            });
+            return valid;
+        }
+
+        public static XmlSchemaSet Schemas
+        {
+            get
+            {
+                if (schemas == null)
+                {
+                    lock (schemasLock)
+                    {
+                        if (schemas == null)
+                        {
+                            schemas = new XmlSchemaSet();
+                            using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Plywood.Schemas.Group.xsd"))
+                            {
+                                schemas.Add("", XmlReader.Create(stream));
+                            }
+                        }
+                    }
+                }
+                return schemas;
+            }
+        }
+
+        private static XmlSchemaSet schemas;
+        private static object schemasLock = new object();
 
         #endregion
 

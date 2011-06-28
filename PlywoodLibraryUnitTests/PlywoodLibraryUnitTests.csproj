@@ -57,9 +57,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Entities\AppTests.cs" />
+    <Compile Include="Entities\GroupTests.cs" />
     <Compile Include="FilesTest.cs" />
-    <Compile Include="GroupSerialiseTest.cs" />
-    <Compile Include="GroupDeSerialiseTest.cs" />
+    <Compile Include="KeyValuePairDeSerialiseTest.cs" />
     <Compile Include="HooksTest.cs" />
     <Compile Include="TimestampFromKeyTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

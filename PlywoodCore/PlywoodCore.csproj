@@ -81,9 +81,15 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Schemas\App.xml" />
+    <Content Include="Schemas\Group.xml" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Schemas\App.xsd">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Schemas\Group.xsd">
       <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>

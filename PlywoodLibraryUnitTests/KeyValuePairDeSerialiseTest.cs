@@ -15,7 +15,7 @@ namespace Plywood.Tests.UnitTesting
     ///to contain all EntitySerializationTest Unit Tests
     ///</summary>
     [TestClass()]
-    public class GroupDeSerialiseTest
+    public class KeyValuePairDeSerialiseTest
     {
         private TestContext testContextInstance;
 

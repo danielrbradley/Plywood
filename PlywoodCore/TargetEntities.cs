@@ -4,6 +4,10 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using Plywood.Utils;
+using System.Xml.Linq;
+using System.Xml.Schema;
+using System.Xml;
+using System.Reflection;
 
 namespace Plywood
 {
@@ -14,24 +18,27 @@ namespace Plywood
         public Target()
         {
             Key = Guid.NewGuid();
+            Tags = new Dictionary<string, string>();
         }
 
         public Target(string source)
-            : base()
-        {
-            Extend(Target.Parse(source));
-        }
+            : this(Target.Parse(source)) { }
 
         public Target(Stream source)
-            : base()
-        {
-            Extend(Target.Parse(source));
-        }
+            : this(Target.Parse(source)) { }
 
         public Target(TextReader source)
-            : base()
+            : this(Target.Parse(source)) { }
+
+        public Target(XmlTextReader source)
+            : this(Target.Parse(source)) { }
+
+        public Target(Target prototype)
         {
-            Extend(Target.Parse(source));
+            this.Key = prototype.Key;
+            this.Name = prototype.Name;
+            this.Tags = prototype.Tags;
+            this.GroupKey = prototype.GroupKey;
         }
 
         #endregion
@@ -40,14 +47,6 @@ namespace Plywood
         public Guid GroupKey { get; set; }
         public string Name { get; set; }
         public Dictionary<string, string> Tags { get; set; }
-
-        private void Extend(Target prototype)
-        {
-            this.Key = prototype.Key;
-            this.Name = prototype.Name;
-            this.Tags = prototype.Tags;
-            this.GroupKey = prototype.GroupKey;
-        }
 
         public Stream Serialise()
         {
@@ -62,27 +61,26 @@ namespace Plywood
                 throw new ArgumentNullException("target", "Target cannot be null.");
             if (!Validation.IsNameValid(target.Name))
                 throw new ArgumentException("Name must be valid (not blank & only a single line).");
-            if (target.Tags != null)
+
+            var doc = new XDocument(
+                new XDeclaration("1.0", "UTF-8", "yes"),
+                new XElement("target",
+                    new XAttribute("key", target.Key),
+                    new XElement("groupKey", target.GroupKey),
+                    new XElement("name", target.Name),
+                    new XElement("tags")));
+
+            if (target.Tags != null && target.Tags.Count > 0)
             {
-                if (target.Tags.ContainsKey("Key"))
-                    throw new ArgumentException("Tags cannot use the reserved name \"Key\"");
-                if (target.Tags.ContainsKey("Name"))
-                    throw new ArgumentException("Tags cannot use the reserved name \"Name\"");
-                if (target.Tags.ContainsKey("GroupKey"))
-                    throw new ArgumentException("Tags cannot use the reserved name \"GroupKey\"");
+                doc.Root.Element("tags").Add(
+                    target.Tags.Select(t =>
+                        new XElement("tag",
+                            new XAttribute("key", t.Key),
+                            t.Value
+                            )));
             }
 
-            var values = new List<KeyValuePair<string, string>>()
-            {
-                new KeyValuePair<string,string>("Key", target.Key.ToString("N")),
-                new KeyValuePair<string,string>("Name", target.Name),
-                new KeyValuePair<string,string>("GroupKey", target.GroupKey.ToString("N")),
-            };
-
-            if (target.Tags != null)
-                values.AddRange(target.Tags.ToList());
-
-            return Serialisation.Serialise(values);
+            return Serialisation.Serialise(doc);
         }
 
         public static Target Parse(string source)
@@ -92,50 +90,90 @@ namespace Plywood
 
         public static Target Parse(Stream source)
         {
-            return Parse(new StreamReader(source));
+            return Parse(new XmlTextReader(source));
         }
 
         public static Target Parse(TextReader source)
         {
-            var target = new Target();
-            var properties = Serialisation.ReadProperties(source);
+            return Parse(new XmlTextReader(source));
+        }
 
-            if (!properties.ContainsKey("Key"))
+        public static Target Parse(XmlReader source)
+        {
+            XDocument doc;
+            try
             {
-                throw new DeserialisationException("Failed deserialising target: missing property \"Key\"");
+                doc = XDocument.Load(source);
             }
-            if (!properties.ContainsKey("Name"))
+            catch (Exception ex)
             {
-                throw new DeserialisationException("Failed deserialising target: missing property \"Name\"");
-            }
-            if (!properties.ContainsKey("GroupKey"))
-            {
-                throw new DeserialisationException("Failed deserialising target: missing property \"GroupKey\"");
-            }
-
-            Guid key;
-            if (!Guid.TryParseExact(properties["Key"], "N", out key))
-            {
-                throw new DeserialisationException("Failed deserialising target: invalid property value for \"Key\"");
-            }
-            Guid groupKey;
-            if (!Guid.TryParseExact(properties["GroupKey"], "N", out groupKey))
-            {
-                throw new DeserialisationException("Failed deserialising target: invalid property value for \"GroupKey\"");
+                throw new DeserialisationException("Failed deserialising target.", ex);
             }
 
-            target.Key = key;
-            target.Name = properties["Name"];
-            target.GroupKey = groupKey;
+            if (!ValidateTargetXml(doc))
+                throw new DeserialisationException("Serialised target xml is not valid.");
 
-            properties.Remove("Key");
-            properties.Remove("Name");
-            properties.Remove("GroupKey");
+            Guid key, groupKey;
 
-            target.Tags = properties;
+            if (!Guid.TryParse(doc.Root.Attribute("key").Value, out key))
+                throw new DeserialisationException("Serialised target key is not a valid guid.");
+            if (!Guid.TryParse(doc.Root.Element("groupKey").Value, out groupKey))
+                throw new DeserialisationException("Serialised target group key is not a valid guid.");
+
+            var target = new Target()
+            {
+                Key = key,
+                GroupKey = groupKey,
+                Name = doc.Root.Element("name").Value,
+            };
+
+            var tagsElement = doc.Root.Element("tags");
+            if (tagsElement != null && tagsElement.HasElements)
+            {
+                target.Tags = tagsElement.Elements("tag").ToDictionary(t => t.Attribute("key").Value, t => t.Value);
+            }
+            else
+            {
+                target.Tags = new Dictionary<string, string>();
+            }
 
             return target;
         }
+
+        public static bool ValidateTargetXml(XDocument targetDoc)
+        {
+            bool valid = true;
+            targetDoc.Validate(Schemas, (o, e) =>
+            {
+                valid = false;
+            });
+            return valid;
+        }
+
+        public static XmlSchemaSet Schemas
+        {
+            get
+            {
+                if (schemas == null)
+                {
+                    lock (schemasLock)
+                    {
+                        if (schemas == null)
+                        {
+                            schemas = new XmlSchemaSet();
+                            using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Plywood.Schemas.Target.xsd"))
+                            {
+                                schemas.Add("", XmlReader.Create(stream));
+                            }
+                        }
+                    }
+                }
+                return schemas;
+            }
+        }
+
+        private static XmlSchemaSet schemas;
+        private static object schemasLock = new object();
 
         #endregion
 

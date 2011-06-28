@@ -120,9 +120,6 @@ namespace Plywood
                 Name = doc.Root.Element("name").Value,
             };
 
-            if (!Validation.IsNameValid(group.Name))
-                throw new DeserialisationException("Serialised group name is not a valid name string.");
-
             var tagsElement = doc.Root.Element("tags");
             if (tagsElement != null && tagsElement.HasElements)
             {

@@ -98,11 +98,6 @@ namespace Plywood
                 Revision = revision,
             };
 
-            if (!Validation.IsNameValid(app.Name))
-                throw new DeserialisationException("Serialised app name is not a valid name string.");
-            if (!Validation.IsMajorVersionValid(app.MajorVersion))
-                throw new DeserialisationException("Serialised app major version is not a valid version string.");
-
             var tagsElement = doc.Root.Element("tags");
             if (tagsElement != null && tagsElement.HasElements)
             {

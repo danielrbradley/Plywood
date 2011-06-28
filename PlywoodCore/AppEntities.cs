@@ -23,27 +23,26 @@ namespace Plywood
         }
 
         public App(string source)
-            : base()
-        {
-            Extend(App.Parse(source));
-        }
+            : this(App.Parse(source)) { }
 
         public App(Stream source)
-            : base()
-        {
-            Extend(App.Parse(source));
-        }
+            : this(App.Parse(source)) { }
 
         public App(TextReader source)
-            : base()
-        {
-            Extend(App.Parse(source));
-        }
+            : this(App.Parse(source)) { }
 
         public App(XmlReader source)
-            : base()
+            : this(App.Parse(source)) { }
+
+        public App(App other)
         {
-            Extend(App.Parse(source));
+            this.DeploymentDirectory = other.DeploymentDirectory;
+            this.GroupKey = other.GroupKey;
+            this.Key = other.Key;
+            this.MajorVersion = other.MajorVersion;
+            this.Name = other.Name;
+            this.Revision = other.Revision;
+            this.Tags = other.Tags;
         }
 
         #endregion
@@ -55,17 +54,6 @@ namespace Plywood
         public string MajorVersion { get; set; }
         public int Revision { get; set; }
         public Dictionary<string, string> Tags { get; set; }
-
-        private void Extend(App prototype)
-        {
-            this.DeploymentDirectory = prototype.DeploymentDirectory;
-            this.GroupKey = prototype.GroupKey;
-            this.Key = prototype.Key;
-            this.MajorVersion = prototype.MajorVersion;
-            this.Name = prototype.Name;
-            this.Revision = prototype.Revision;
-            this.Tags = prototype.Tags;
-        }
 
         public Stream Serialise()
         {

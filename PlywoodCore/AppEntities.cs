@@ -20,6 +20,7 @@ namespace Plywood
         {
             Key = Guid.NewGuid();
             MajorVersion = "0.1";
+            Tags = new Dictionary<string, string>();
         }
 
         public App(string source)
@@ -97,6 +98,8 @@ namespace Plywood
                 Revision = revision,
             };
 
+            if (!Validation.IsNameValid(app.Name))
+                throw new DeserialisationException("Serialised app name is not a valid name string.");
             if (!Validation.IsMajorVersionValid(app.MajorVersion))
                 throw new DeserialisationException("Serialised app major version is not a valid version string.");
 
@@ -104,10 +107,6 @@ namespace Plywood
             if (tagsElement != null && tagsElement.HasElements)
             {
                 app.Tags = tagsElement.Elements("tag").ToDictionary(t => t.Attribute("key").Value, t => t.Value);
-            }
-            else
-            {
-                app.Tags = new Dictionary<string, string>();
             }
 
             return app;

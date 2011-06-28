@@ -10,7 +10,7 @@
         <xs:element name="revision" type="xs:integer" />
         <xs:element name="tags">
           <xs:complexType>
-            <xs:sequence>
+            <xs:sequence minOccurs="0">
               <xs:element maxOccurs="unbounded" name="tag">
                 <xs:complexType>
                   <xs:simpleContent>

@@ -98,5 +98,35 @@ namespace Plywood.Tests.UnitTesting.Entities
             }
 
         }
+
+        [TestMethod]
+        public void AppSerialiseDeserialiseNullTags()
+        {
+            var originalApp = new App()
+            {
+                Key = Guid.NewGuid(),
+                Name = "Test App",
+                GroupKey = Guid.NewGuid(),
+                DeploymentDirectory = "DeploymentDirectory",
+                MajorVersion = "1.51.0",
+                Revision = 1,
+            };
+
+            App secondApp;
+            using (var stream = originalApp.Serialise())
+            {
+                secondApp = new App(stream);
+            }
+
+            Assert.AreEqual(originalApp.Key, secondApp.Key);
+            Assert.AreEqual(originalApp.Name, secondApp.Name);
+            Assert.AreEqual(originalApp.GroupKey, secondApp.GroupKey);
+            Assert.AreEqual(originalApp.DeploymentDirectory, secondApp.DeploymentDirectory);
+            Assert.AreEqual(originalApp.MajorVersion, secondApp.MajorVersion);
+            Assert.AreEqual(originalApp.Revision, secondApp.Revision);
+
+            Assert.AreEqual(originalApp.Tags.Count, secondApp.Tags.Count);
+        }
+
     }
 }

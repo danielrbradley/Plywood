@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<app key="11b34a90-e78f-4ecc-91ed-05bc20324c4c">
+  <groupKey>fe4a6676-5661-41c0-8801-6cfb8c2e9d02</groupKey>
+  <name>App Name</name>
+  <deploymentDirectory>directoryname</deploymentDirectory>
+  <majorVersion>1.1.0</majorVersion>
+  <revision>1</revision>
+  <tags>
+    <tag key="tagKey">Tag Value</tag>
+    <tag key="anotherTagKey">Another Tag Value</tag>
+  </tags>
+</app>

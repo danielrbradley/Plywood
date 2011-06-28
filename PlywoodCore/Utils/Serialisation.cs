@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
+using System.Xml.Linq;
+using System.Xml;
 
 namespace Plywood.Utils
 {
@@ -268,6 +270,19 @@ namespace Plywood.Utils
             {
                 properties.Add(property, value.Remove(value.Length - 2, 2).ToString());
             }
+        }
+
+        public static Stream Serialise(XDocument doc)
+        {
+            var stream = new MemoryStream();
+            var writer = new XmlTextWriter(stream, Encoding.UTF8);
+
+            doc.WriteTo(writer);
+
+            writer.Flush();
+            stream.Seek(0, SeekOrigin.Begin);
+
+            return stream;
         }
 
         #endregion

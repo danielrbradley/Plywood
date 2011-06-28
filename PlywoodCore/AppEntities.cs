@@ -4,6 +4,10 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using Plywood.Utils;
+using System.Xml.Linq;
+using System.Xml;
+using System.Xml.Schema;
+using System.Reflection;
 
 namespace Plywood
 {
@@ -31,6 +35,12 @@ namespace Plywood
         }
 
         public App(TextReader source)
+            : base()
+        {
+            Extend(App.Parse(source));
+        }
+
+        public App(XmlReader source)
             : base()
         {
             Extend(App.Parse(source));
@@ -64,71 +74,65 @@ namespace Plywood
 
         #region Static Serialisation
 
-        public static App Parse(TextReader source)
+        public static App Parse(XmlReader source)
         {
-            var app = new App();
-            var properties = Utils.Serialisation.ReadProperties(source);
-
-            if (!properties.ContainsKey("Key"))
+            XDocument doc;
+            try
             {
-                throw new DeserialisationException("Failed deserialising app: missing property \"Key\"");
+                doc = XDocument.Load(source);
             }
-            if (!properties.ContainsKey("Name"))
+            catch (Exception ex)
             {
-                throw new DeserialisationException("Failed deserialising app: missing property \"Name\"");
-            }
-            if (!properties.ContainsKey("GroupKey"))
-            {
-                throw new DeserialisationException("Failed deserialising app: missing property \"GroupKey\"");
-            }
-            if (!properties.ContainsKey("DeploymentDirectory"))
-            {
-                throw new DeserialisationException("Failed deserialising app: missing property \"DeploymentDirectory\"");
+                throw new DeserialisationException("Failed deserialising app.", ex);
             }
 
-            Guid key;
-            if (!Guid.TryParseExact(properties["Key"], "N", out key))
+            if (!ValidateAppXml(doc))
+                throw new DeserialisationException("Serialised app xml is not valid.");
+
+            Guid key, groupKey;
+            int revision;
+
+            if (!Guid.TryParse(doc.Root.Attribute("key").Value, out key))
+                throw new DeserialisationException("Serialised app key is not a valid guid.");
+            if (!Guid.TryParse(doc.Root.Element("groupKey").Value, out groupKey))
+                throw new DeserialisationException("Serialised app group key is not a valid guid.");
+            if (!int.TryParse(doc.Root.Element("revision").Value, out revision))
+                throw new DeserialisationException("Serialised app revision is not a valid integer.");
+
+            var app = new App()
             {
-                throw new DeserialisationException("Failed deserialising app: invalid property value for \"Key\"");
-            }
-            Guid groupKey;
-            if (!Guid.TryParseExact(properties["GroupKey"], "N", out groupKey))
+                Key = key,
+                GroupKey = groupKey,
+                Name = doc.Root.Element("name").Value,
+                DeploymentDirectory = doc.Root.Element("deploymentDirectory").Value,
+                MajorVersion = doc.Root.Element("majorVersion").Value,
+                Revision = revision,
+            };
+
+            if (!Validation.IsMajorVersionValid(app.MajorVersion))
+                throw new DeserialisationException("Serialised app major version is not a valid version string.");
+
+            var tagsElement = doc.Root.Element("tags");
+            if (tagsElement != null && tagsElement.HasElements)
             {
-                throw new DeserialisationException("Failed deserialising app: invalid property value for \"GroupKey\"");
+                app.Tags = tagsElement.Elements("tag").ToDictionary(t => t.Attribute("key").Value, t => t.Value);
             }
-
-            app.Key = key;
-            app.Name = properties["Name"];
-            app.GroupKey = groupKey;
-            app.DeploymentDirectory = properties["DeploymentDirectory"];
-
-            properties.Remove("Key");
-            properties.Remove("Name");
-            properties.Remove("GroupKey");
-            properties.Remove("DeploymentDirectory");
-
-            if (properties.ContainsKey("MajorVersion"))
+            else
             {
-                app.MajorVersion = properties["MajorVersion"];
-                properties.Remove("MajorVersion");
+                app.Tags = new Dictionary<string, string>();
             }
-
-            if (properties.ContainsKey("Revision"))
-            {
-                int revision;
-                if (int.TryParse(properties["Revision"], out revision))
-                    app.Revision = revision;
-                properties.Remove("Revision");
-            }
-
-            app.Tags = properties;
 
             return app;
         }
 
+        public static App Parse(TextReader source)
+        {
+            return Parse(new XmlTextReader(source));
+        }
+
         public static App Parse(Stream source)
         {
-            return Parse(new StreamReader(source));
+            return Parse(new XmlTextReader(source));
         }
 
         public static App Parse(string source)
@@ -149,40 +153,66 @@ namespace Plywood
             if (app.Revision < 0)
                 throw new ArgumentOutOfRangeException("app.Revision", app.Revision, "App revision must be a positive integer.");
 
-            if (app.Tags != null)
+            var doc = new XDocument(
+                new XDeclaration("1.0", "UTF-8", "yes"),
+                new XElement("app",
+                    new XAttribute("key", app.Key),
+                    new XElement("groupKey", app.GroupKey),
+                    new XElement("name", app.Name),
+                    new XElement("deploymentDirectory", app.DeploymentDirectory),
+                    new XElement("majorVersion", app.MajorVersion),
+                    new XElement("revision", app.Revision),
+                    new XElement("tags")));
+
+            if (app.Tags != null && app.Tags.Count > 0)
             {
-                if (app.Tags.ContainsKey("Key"))
-                    throw new ArgumentException("Tags cannot use the reserved name \"Key\"");
-                if (app.Tags.ContainsKey("Name"))
-                    throw new ArgumentException("Tags cannot use the reserved name \"Name\"");
-                if (app.Tags.ContainsKey("GroupKey"))
-                    throw new ArgumentException("Tags cannot use the reserved name \"GroupKey\"");
-                if (app.Tags.ContainsKey("DeploymentDirectory"))
-                    throw new ArgumentException("Tags cannot use the reserved name \"DeploymentDirectory\"");
-                if (app.Tags.ContainsKey("MajorVersion"))
-                    throw new ArgumentException("Tags cannot use the reserved name \"MajorVersion\"");
-                if (app.Tags.ContainsKey("Revision"))
-                    throw new ArgumentException("Tags cannot use the reserved name \"Revision\"");
+                doc.Root.Element("tags").Add(
+                    app.Tags.Select(t =>
+                        new XElement("tag",
+                            new XAttribute("key", t.Key),
+                            t.Value
+                            )));
             }
 
-            var values = new List<KeyValuePair<string, string>>()
-            {
-                new KeyValuePair<string,string>("Key", app.Key.ToString("N")),
-                new KeyValuePair<string,string>("Name", app.Name),
-                new KeyValuePair<string,string>("GroupKey", app.GroupKey.ToString("N")),
-                new KeyValuePair<string,string>("DeploymentDirectory", app.DeploymentDirectory),
-                new KeyValuePair<string,string>("MajorVersion", app.MajorVersion),
-                new KeyValuePair<string,string>("Revision", app.Revision.ToString()),
-            };
-
-            if (app.Tags != null)
-                values.AddRange(app.Tags.ToList());
-
-            return Serialisation.Serialise(values);
+            return Serialisation.Serialise(doc);
         }
 
-        #endregion
+        public static bool ValidateAppXml(XDocument appDoc)
+        {
+            bool valid = true;
+            appDoc.Validate(Schemas, (o, e) =>
+                {
+                    valid = false;
+                });
+            return valid;
+        }
 
+        public static XmlSchemaSet Schemas
+        {
+            get
+            {
+                if (schemas == null)
+                {
+                    lock (schemasLock)
+                    {
+                        if (schemas == null)
+                        {
+                            schemas = new XmlSchemaSet();
+                            using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Plywood.Schemas.App.xsd"))
+                            {
+                                schemas.Add("", XmlReader.Create(stream));
+                            }
+                        }
+                    }
+                }
+                return schemas;
+            }
+        }
+
+        private static XmlSchemaSet schemas;
+        private static object schemasLock = new object();
+
+        #endregion
     }
 
     public class AppList

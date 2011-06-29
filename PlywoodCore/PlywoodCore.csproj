@@ -81,6 +81,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Schemas\App.xml" />
+    <Content Include="Schemas\Version.xml" />
     <Content Include="Schemas\Target.xml" />
     <Content Include="Schemas\Group.xml" />
   </ItemGroup>
@@ -96,6 +97,11 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Schemas\Target.xsd">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Schemas\Version.xsd">
       <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>

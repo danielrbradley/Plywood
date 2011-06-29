@@ -69,7 +69,12 @@ namespace Plywood.Sawmill.Controllers
 
             var app = apps.GetApp(aid);
             var group = groups.GetGroup(app.GroupKey);
-            var version = new Version() { AppKey = aid, GroupKey = group.Key };
+            var version = new Version()
+            {
+                AppKey = aid,
+                GroupKey = group.Key,
+                VersionNumber = string.Format("{0}.{1}", app.MajorVersion, app.Revision)
+            };
 
             var model = new VersionDetails()
             {
@@ -82,22 +87,31 @@ namespace Plywood.Sawmill.Controllers
         }
 
         [HttpPost]
-        public ActionResult Create(Guid aid, string name, DateTime timestamp)
+        public ActionResult Create(Guid aid, string comment, DateTime timestamp)
         {
+            var apps = new Apps();
+            var app = apps.GetApp(aid);
+
             var newVersion = new Version()
             {
                 AppKey = aid,
-                Name = name,
-                Timestamp = timestamp
+                Comment = comment,
+                Timestamp = timestamp,
+                VersionNumber = string.Format("{0}.{1}", app.MajorVersion, app.Revision),
             };
 
-            if (string.IsNullOrWhiteSpace(name)) ModelState.AddModelError("name", "Name is required.");
+            if (string.IsNullOrWhiteSpace(comment)) ModelState.AddModelError("comment", "Comment is required.");
+
             if (ModelState.IsValid)
             {
                 try
                 {
                     var versions = new Versions();
                     versions.CreateVersion(newVersion);
+
+                    app.Revision += 1;
+                    apps.UpdateApp(app);
+
                     return RedirectToAction("Details", new { id = newVersion.Key });
                 }
                 catch (Exception ex)
@@ -106,10 +120,8 @@ namespace Plywood.Sawmill.Controllers
                 }
             }
 
-            var apps = new Apps();
             var groups = new Groups();
 
-            var app = apps.GetApp(aid);
             var group = groups.GetGroup(app.GroupKey);
 
             var model = new VersionDetails()
@@ -193,14 +205,14 @@ namespace Plywood.Sawmill.Controllers
         }
 
         [HttpPost]
-        public ActionResult Edit(Guid id, string name)
+        public ActionResult Edit(Guid id, string comment)
         {
             Version version = null;
             try
             {
                 var versions = new Versions();
                 version = versions.GetVersion(id);
-                version.Name = name;
+                version.Comment = comment;
                 versions.UpdateVersion(version);
                 return RedirectToAction("Details", new { id = version.Key });
             }

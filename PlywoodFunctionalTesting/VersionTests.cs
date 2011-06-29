@@ -17,10 +17,11 @@ namespace Plywood.Tests.Functional
             Debug.Assert(searchEmpty.TotalCount == 0);
             Debug.Assert(searchEmpty.Versions.Count() == 0);
 
-            var testVersion = new Plywood.Version() { Name = "Test Version", AppKey = appKey };
+            var testVersion = new Plywood.Version() { VersionNumber = "0.0.1", Comment = "Test Version", AppKey = appKey };
             versionsController.CreateVersion(testVersion);
             var createdVersion = versionsController.GetVersion(testVersion.Key);
-            Debug.Assert(createdVersion.Name == testVersion.Name);
+            Debug.Assert(createdVersion.VersionNumber == testVersion.VersionNumber);
+            Debug.Assert(createdVersion.Comment == testVersion.Comment);
             Debug.Assert(DateTimeEquals(createdVersion.Timestamp, testVersion.Timestamp));
             Debug.Assert(createdVersion.GroupKey == testVersion.GroupKey);
 
@@ -28,7 +29,8 @@ namespace Plywood.Tests.Functional
             Debug.Assert(searchSingle.TotalCount == 1);
             Debug.Assert(searchSingle.Versions.Count() == 1);
             Debug.Assert(searchSingle.Versions.First().Key == createdVersion.Key);
-            Debug.Assert(searchSingle.Versions.First().Name == createdVersion.Name);
+            Debug.Assert(searchSingle.Versions.First().VersionNumber == createdVersion.VersionNumber);
+            Debug.Assert(searchSingle.Versions.First().Comment == createdVersion.Comment);
             Debug.Assert(DateTimeEquals(searchSingle.Versions.First().Timestamp, createdVersion.Timestamp));
 
             createdVersion.Tags.Add("Foo", "Bar");
@@ -42,21 +44,25 @@ namespace Plywood.Tests.Functional
             Debug.Assert(searchUpdated.TotalCount == 1);
             Debug.Assert(searchUpdated.Versions.Count() == 1);
             Debug.Assert(searchUpdated.Versions.First().Key == createdVersion.Key);
-            Debug.Assert(searchUpdated.Versions.First().Name == createdVersion.Name);
+            Debug.Assert(searchUpdated.Versions.First().VersionNumber == createdVersion.VersionNumber);
+            Debug.Assert(searchUpdated.Versions.First().Comment == createdVersion.Comment);
             Debug.Assert(DateTimeEquals(searchUpdated.Versions.First().Timestamp, createdVersion.Timestamp));
 
-            taggedVersion.Name = "Updated Test Version";
+            taggedVersion.VersionNumber = "0.0.2";
+            taggedVersion.Comment = "Updated Test Version";
             versionsController.UpdateVersion(taggedVersion);
 
             var renamedVersion = versionsController.GetVersion(testVersion.Key);
-            Debug.Assert(renamedVersion.Name == taggedVersion.Name);
+            Debug.Assert(renamedVersion.VersionNumber == taggedVersion.VersionNumber);
+            Debug.Assert(renamedVersion.Comment == taggedVersion.Comment);
             Debug.Assert(DateTimeEquals(renamedVersion.Timestamp, taggedVersion.Timestamp));
             Debug.Assert(renamedVersion.GroupKey == taggedVersion.GroupKey);
             var searchRenamed = versionsController.SearchAppVersions(appKey);
             Debug.Assert(searchRenamed.TotalCount == 1);
             Debug.Assert(searchRenamed.Versions.Count() == 1);
             Debug.Assert(searchRenamed.Versions.First().Key == taggedVersion.Key);
-            Debug.Assert(searchRenamed.Versions.First().Name == taggedVersion.Name);
+            Debug.Assert(searchRenamed.Versions.First().VersionNumber == taggedVersion.VersionNumber);
+            Debug.Assert(searchRenamed.Versions.First().Comment == taggedVersion.Comment);
             Debug.Assert(DateTimeEquals(searchRenamed.Versions.First().Timestamp, taggedVersion.Timestamp));
 
             Searching(appKey, versionsController, createdVersion);
@@ -66,7 +72,8 @@ namespace Plywood.Tests.Functional
             Debug.Assert(searchReset.TotalCount == 1);
             Debug.Assert(searchReset.Versions.Count() == 1);
             Debug.Assert(searchReset.Versions.First().Key == testVersion.Key);
-            Debug.Assert(searchReset.Versions.First().Name == testVersion.Name);
+            Debug.Assert(searchReset.Versions.First().VersionNumber == testVersion.VersionNumber);
+            Debug.Assert(searchReset.Versions.First().Comment == testVersion.Comment);
             Debug.Assert(DateTimeEquals(searchReset.Versions.First().Timestamp, testVersion.Timestamp));
 
             return testVersion;
@@ -74,10 +81,10 @@ namespace Plywood.Tests.Functional
 
         private static void Searching(Guid appKey, Versions versionsController, Plywood.Version createdVersion)
         {
-            var aSecondApp = new Plywood.Version() { Name = "A Second Version", AppKey = appKey };
+            var aSecondApp = new Plywood.Version() { VersionNumber = "0.1.1", Comment = "A Second Version", AppKey = appKey };
             versionsController.CreateVersion(aSecondApp);
             System.Threading.Thread.Sleep(TimeSpan.FromSeconds(1));
-            var zThirdApp = new Plywood.Version() { Name = "Z Third Version", AppKey = appKey };
+            var zThirdApp = new Plywood.Version() { VersionNumber = "0.2.1", Comment = "Z Third Version", AppKey = appKey };
             versionsController.CreateVersion(zThirdApp);
 
             var search1 = versionsController.SearchAppVersions(appKey);

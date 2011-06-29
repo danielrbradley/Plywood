@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<version key="89c4db2e-9c7a-4a39-bf3b-a23b68540358">
+  <groupKey>fe4a6676-5661-41c0-8801-6cfb8c2e9d02</groupKey>
+  <appKey>11b34a90-e78f-4ecc-91ed-05bc20324c4c</appKey>
+  <timestamp>0001-01-01T00:00:00</timestamp>
+  <versionNumber>10.8.2.1</versionNumber>
+  <comment>Version Name</comment>
+  <tags>
+    <tag key="tagKey">Tag Value</tag>
+    <tag key="anotherTagKey">Another Tag Value</tag>
+  </tags>
+</version>

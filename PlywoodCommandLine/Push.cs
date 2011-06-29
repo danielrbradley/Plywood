@@ -22,7 +22,8 @@ namespace Plywood.Ply
             var revision = appsController.PushAppRevision(appKey);
             var newVersion = new Version()
             {
-                Name = string.Format("{0} {1}", revision, comment),
+                VersionNumber = revision,
+                Comment = comment,
                 AppKey = appKey,
             };
             versionsController.PushVersion(new DirectoryInfo(directoryPath), newVersion.Key);

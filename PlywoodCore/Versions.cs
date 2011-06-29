@@ -257,7 +257,8 @@ namespace Plywood
                     {
                         Key = e.Key,
                         Timestamp = DateTime.Parse(e.Name.Substring(0, e.Name.IndexOf(' '))),
-                        Name = e.Name.Substring(e.Name.IndexOf(' ') + 1)
+                        VersionNumber = e.Name.Substring(e.Name.IndexOf(' ') + 1, e.Name.IndexOf(' ', e.Name.IndexOf(' ') + 1) - (e.Name.IndexOf(' ') + 1)),
+                        Comment = e.Name.Substring(e.Name.IndexOf(' ', e.Name.IndexOf(' ') + 1) + 1),
                     }).ToList();
 
                 var list = new VersionList()
@@ -365,7 +366,7 @@ namespace Plywood
 
         public static string CreateVersionIndexName(Version version)
         {
-            return String.Format("{0:s} {1}", version.Timestamp, version.Name);
+            return String.Format("{0:s} {1} {2}", version.Timestamp, version.VersionNumber, version.Comment);
         }
 
     }

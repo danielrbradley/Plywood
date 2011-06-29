@@ -65,7 +65,7 @@ namespace Plywood.Tests.UnitTesting.Entities
             var originalGroup = new Group()
             {
                 Key = Guid.NewGuid(),
-                Name = "Test App",
+                Name = "Test Group",
                 Tags = new Dictionary<string, string>()
                 {
                     { "tagKey", "Some tag value." },
@@ -96,7 +96,7 @@ namespace Plywood.Tests.UnitTesting.Entities
             var originalGroup = new Group()
             {
                 Key = Guid.NewGuid(),
-                Name = "Test App",
+                Name = "Test Group",
                 Tags = new Dictionary<string, string>()
                 {
                     { "tagKey", "Some tag value." },

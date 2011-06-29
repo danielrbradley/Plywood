@@ -4,6 +4,10 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using Plywood.Utils;
+using System.Xml.Linq;
+using System.Xml.Schema;
+using System.Reflection;
+using System.Xml;
 
 namespace Plywood
 {
@@ -15,40 +19,37 @@ namespace Plywood
         {
             Key = Guid.NewGuid();
             Name = "New Instance " + DateTime.UtcNow.ToString("r");
+            Tags = new Dictionary<string, string>();
         }
 
         public Instance(string source)
-            : base()
-        {
-            Extend(Instance.Parse(source));
-        }
+            : this(Instance.Parse(source)) { }
 
         public Instance(Stream source)
-            : base()
-        {
-            Extend(Instance.Parse(source));
-        }
+            : this(Instance.Parse(source)) { }
 
         public Instance(TextReader source)
-            : base()
+            : this(Instance.Parse(source)) { }
+
+        public Instance(XmlTextReader source)
+            : this(Instance.Parse(source)) { }
+
+        private Instance(Instance other)
         {
-            Extend(Instance.Parse(source));
+            this.Key = other.Key;
+            this.GroupKey = other.GroupKey;
+            this.TargetKey = other.TargetKey;
+            this.Name = other.Name;
+            this.Tags = other.Tags;
         }
 
         #endregion
 
         public Guid Key { get; set; }
+        public Guid GroupKey { get; set; }
         public Guid TargetKey { get; set; }
         public string Name { get; set; }
         public Dictionary<string, string> Tags { get; set; }
-
-        private void Extend(Instance prototype)
-        {
-            this.Key = prototype.Key;
-            this.TargetKey = prototype.TargetKey;
-            this.Name = prototype.Name;
-            this.Tags = prototype.Tags;
-        }
 
         public Stream Serialise()
         {
@@ -63,27 +64,27 @@ namespace Plywood
                 throw new ArgumentNullException("version", "Version cannot be null.");
             if (!Validation.IsNameValid(instance.Name))
                 throw new ArgumentException("Name must be valid (not blank & only a single line).");
-            if (instance.Tags != null)
+
+            var doc = new XDocument(
+                new XDeclaration("1.0", "UTF-8", "yes"),
+                new XElement("instance",
+                    new XAttribute("key", instance.Key),
+                    new XElement("groupKey", instance.GroupKey),
+                    new XElement("targetKey", instance.TargetKey),
+                    new XElement("name", instance.Name),
+                    new XElement("tags")));
+
+            if (instance.Tags != null && instance.Tags.Count > 0)
             {
-                if (instance.Tags.ContainsKey("Key"))
-                    throw new ArgumentException("Tags cannot use the reserved name \"Key\"");
-                if (instance.Tags.ContainsKey("Name"))
-                    throw new ArgumentException("Tags cannot use the reserved name \"Name\"");
-                if (instance.Tags.ContainsKey("TargetKey"))
-                    throw new ArgumentException("Tags cannot use the reserved name \"TargetKey\"");
+                doc.Root.Element("tags").Add(
+                    instance.Tags.Select(t =>
+                        new XElement("tag",
+                            new XAttribute("key", t.Key),
+                            t.Value
+                            )));
             }
 
-            var values = new List<KeyValuePair<string, string>>()
-            {
-                new KeyValuePair<string,string>("Key", instance.Key.ToString("N")),
-                new KeyValuePair<string,string>("Name", instance.Name),
-                new KeyValuePair<string,string>("TargetKey", instance.TargetKey.ToString("N")),
-            };
-
-            if (instance.Tags != null)
-                values.AddRange(instance.Tags.ToList());
-
-            return Serialisation.Serialise(values);
+            return Serialisation.Serialise(doc);
         }
 
         public static Instance Parse(string source)
@@ -93,41 +94,93 @@ namespace Plywood
 
         public static Instance Parse(Stream source)
         {
-            return Parse(new StreamReader(source));
+            return Parse(new XmlTextReader(source));
         }
 
         public static Instance Parse(TextReader source)
         {
-            var instance = new Instance();
-            var properties = Serialisation.ReadProperties(source);
+            return Parse(new XmlTextReader(source));
+        }
 
-            if (!properties.ContainsKey("Key"))
-                throw new DeserialisationException("Failed deserialising instance: missing property \"Key\"");
-            if (!properties.ContainsKey("Name"))
-                throw new DeserialisationException("Failed deserialising instance: missing property \"Name\"");
-            if (!properties.ContainsKey("TargetKey"))
-                throw new DeserialisationException("Failed deserialising instance: missing property \"TargetKey\"");
+        public static Instance Parse(XmlReader source)
+        {
+            XDocument doc;
+            try
+            {
+                doc = XDocument.Load(source);
+            }
+            catch (Exception ex)
+            {
+                throw new DeserialisationException("Failed deserialising instance.", ex);
+            }
 
-            Guid key;
-            Guid targetKey;
+            if (!ValidateInstanceXml(doc))
+                throw new DeserialisationException("Serialised instance xml is not valid.");
 
-            if (!Guid.TryParseExact(properties["Key"], "N", out key))
-                throw new DeserialisationException("Failed deserialising version: invalid property value for \"Key\"");
-            if (!Guid.TryParseExact(properties["TargetKey"], "N", out targetKey))
-                throw new DeserialisationException("Failed deserialising version: invalid property value for \"TargetKey\"");
+            Guid key, groupKey, targetKey;
 
-            instance.Key = key;
-            instance.Name = properties["Name"];
-            instance.TargetKey = targetKey;
+            if (!Guid.TryParse(doc.Root.Attribute("key").Value, out key))
+                throw new DeserialisationException("Serialised instance key is not a valid guid.");
+            if (!Guid.TryParse(doc.Root.Element("groupKey").Value, out groupKey))
+                throw new DeserialisationException("Serialised instance group key is not a valid guid.");
+            if (!Guid.TryParse(doc.Root.Element("targetKey").Value, out targetKey))
+                throw new DeserialisationException("Serialised instance target key is not a valid guid.");
 
-            properties.Remove("Key");
-            properties.Remove("Name");
-            properties.Remove("TargetKey");
+            var instance = new Instance()
+            {
+                Key = key,
+                GroupKey = groupKey,
+                TargetKey = targetKey,
+                Name = doc.Root.Element("name").Value,
+            };
 
-            instance.Tags = properties;
+            var tagsElement = doc.Root.Element("tags");
+            if (tagsElement != null && tagsElement.HasElements)
+            {
+                instance.Tags = tagsElement.Elements("tag").ToDictionary(t => t.Attribute("key").Value, t => t.Value);
+            }
+            else
+            {
+                instance.Tags = new Dictionary<string, string>();
+            }
 
             return instance;
         }
+
+        public static bool ValidateInstanceXml(XDocument targetDoc)
+        {
+            bool valid = true;
+            targetDoc.Validate(Schemas, (o, e) =>
+            {
+                valid = false;
+            });
+            return valid;
+        }
+
+        public static XmlSchemaSet Schemas
+        {
+            get
+            {
+                if (schemas == null)
+                {
+                    lock (schemasLock)
+                    {
+                        if (schemas == null)
+                        {
+                            schemas = new XmlSchemaSet();
+                            using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Plywood.Schemas.Instance.xsd"))
+                            {
+                                schemas.Add("", XmlReader.Create(stream));
+                            }
+                        }
+                    }
+                }
+                return schemas;
+            }
+        }
+
+        private static XmlSchemaSet schemas;
+        private static object schemasLock = new object();
 
         #endregion
 

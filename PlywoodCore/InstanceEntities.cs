@@ -167,11 +167,12 @@ namespace Plywood
                     {
                         if (schemas == null)
                         {
-                            schemas = new XmlSchemaSet();
+                            var newSchemas = new XmlSchemaSet();
                             using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Plywood.Schemas.Instance.xsd"))
                             {
-                                schemas.Add("", XmlReader.Create(stream));
+                                newSchemas.Add("", XmlReader.Create(stream));
                             }
+                            schemas = newSchemas;
                         }
                     }
                 }

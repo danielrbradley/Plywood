@@ -81,7 +81,12 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Schemas\App.xml" />
-    <Content Include="Schemas\Instance.xml" />
+    <Content Include="Schemas\LogEntry.xml">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="Schemas\Instance.xml">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="Schemas\Version.xml" />
     <Content Include="Schemas\Target.xml" />
     <Content Include="Schemas\Group.xml" />
@@ -108,6 +113,11 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Schemas\Instance.xsd">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Schemas\LogEntry.xsd">
       <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>

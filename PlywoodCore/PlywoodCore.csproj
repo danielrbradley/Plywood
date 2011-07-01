@@ -60,6 +60,7 @@
     <Compile Include="Internal\Indexes.cs" />
     <Compile Include="TargetApps.cs" />
     <Compile Include="Utils\Hooks.cs" />
+    <Compile Include="Utils\Indexes.cs" />
     <Compile Include="Utils\Registry.cs" />
     <Compile Include="Utils\Serialisation.cs" />
     <Compile Include="GroupEntities.cs" />

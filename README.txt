@@ -52,6 +52,32 @@ Second to this is the fact that security is much easier to controll where server
 Core Concepts
 -------------
 
+Example Plywood Setup Structure
+-------------------------------
+
+Groups
+|- Department Group A
+  |- Apps
+   |- Web App 1
+    |- Versions
+     |- 1.0.0 GA Release
+	 |- 1.0.1 Alpha Release
+  |- Targets
+   |- Staging Server
+    |- Apps
+	 |- Web App 1 : 1.0.1
+	|- Instances
+	 |- Test Instance
+	  |- Update Logs
+   |- Production Server
+    |- Apps
+	||- Web App 1 : 1.0.0
+	|-Instances
+	 |- Zone A Instance
+	  |- Update Logs
+	 |- Zone B Instance
+	  |- Update Logs
+
 Groups
 ------
 Groups are nothing more than a high-level devide within the system to separate applications, targets and the versions. Arguably these are not so vital as multiple instances could also be set up. However, that would then introduce the need to manage more instances of the system which is an undesirable maintainance requirement.

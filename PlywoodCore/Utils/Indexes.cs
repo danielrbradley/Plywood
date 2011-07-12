@@ -89,6 +89,20 @@ namespace Plywood.Utils
                 ticks = (long)hashNum;
             return new DateTime(ticks, DateTimeKind.Utc);
         }
+
+        // TODO: Unit test index entry validation funciton.
+        public static bool IsIndexEntryValid(IndexEntry indexEntry)
+        {
+            if (indexEntry == null || (indexEntry.SortHash == null | indexEntry.EntryText == null | indexEntry.EntryKey == Guid.Empty))
+                return false;
+
+            if (indexEntry.SortHash.Length > 41)
+                return false;
+            if (indexEntry.EntryText.Length > 60)
+                return false;
+
+            return true;
+        }
     }
 
     public class IndexEntry
@@ -100,6 +114,11 @@ namespace Plywood.Utils
         public override string ToString()
         {
             return Indexes.GetIndexEntryFilename(this);
+        }
+
+        public bool IsValid()
+        {
+            return Indexes.IsIndexEntryValid(this);
         }
     }
 }

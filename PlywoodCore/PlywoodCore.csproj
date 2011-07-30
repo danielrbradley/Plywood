@@ -39,6 +39,7 @@
     <Reference Include="System.configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Security" />
+    <Reference Include="System.Web" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -49,6 +50,11 @@
     <Compile Include="AppDeployment.cs" />
     <Compile Include="AppEntities.cs" />
     <Compile Include="Configuration.cs" />
+    <Compile Include="Indexes\Hashing.cs" />
+    <Compile Include="Indexes\IndexEntries.cs" />
+    <Compile Include="Indexes\IndexEntry.cs" />
+    <Compile Include="Indexes\IndexQueryResult.cs" />
+    <Compile Include="Indexes\ITokeniser.cs" />
     <Compile Include="LogEntities.cs" />
     <Compile Include="InstanceEntities.cs" />
     <Compile Include="Logs.cs" />
@@ -59,8 +65,8 @@
     <Compile Include="Exceptions.cs" />
     <Compile Include="Internal\Indexes.cs" />
     <Compile Include="TargetApps.cs" />
+    <Compile Include="Indexes\SimpleTokeniser.cs" />
     <Compile Include="Utils\Hooks.cs" />
-    <Compile Include="Utils\Indexes.cs" />
     <Compile Include="Utils\Registry.cs" />
     <Compile Include="Utils\Serialisation.cs" />
     <Compile Include="GroupEntities.cs" />

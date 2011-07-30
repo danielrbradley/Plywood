@@ -7,6 +7,7 @@ using Amazon.S3;
 using Amazon.S3.Model;
 using System.IO;
 using Plywood.Utils;
+using Plywood.Indexes;
 
 namespace Plywood
 {
@@ -29,24 +30,16 @@ namespace Plywood
                 {
                     using (var client = new AmazonS3Client(Context.AwsAccessKeyId, Context.AwsSecretAccessKey))
                     {
-                        var indexesController = new Internal.Indexes(Context);
-                        var index = indexesController.LoadIndex(STR_GROUP_INDEX_PATH);
-                        if (index.Entries.Any(e => e.Key == group.Key))
-                        {
-                            throw new DeploymentException("Index already contains entry for given key!");
-                        }
-
                         using (var putResponse = client.PutObject(new PutObjectRequest()
                         {
                             BucketName = Context.BucketName,
                             Key = string.Format("{0}/{1}/{2}", STR_GROUPS_CONTAINER_PATH, group.Key.ToString("N"), STR_INFO_FILE_NAME),
                             InputStream = stream,
                         })) { }
-
-                        index.Entries.Add(new Internal.EntityIndexEntry() { Key = group.Key, Name = group.Name });
-                        Internal.Indexes.NameSortIndex(index);
-                        indexesController.UpdateIndex(STR_GROUP_INDEX_PATH, index);
                     }
+
+                    var indexEntries = new IndexEntries(Context);
+                    indexEntries.PutIndexEntry(group.GetIndexEntry());
                 }
                 catch (AmazonS3Exception awsEx)
                 {
@@ -57,12 +50,13 @@ namespace Plywood
 
         public void DeleteGroup(Guid key)
         {
+            var group = GetGroup(key);
             try
             {
                 Plywood.Internal.AwsHelpers.SoftDeleteFolders(Context, string.Format("{0}/{1}", STR_GROUPS_CONTAINER_PATH, key.ToString("N")));
 
-                var indexesController = new Internal.Indexes(Context);
-                indexesController.DeleteIndexEntry(STR_GROUP_INDEX_PATH, key);
+                var indexEntries = new IndexEntries(Context);
+                indexEntries.DeleteIndexEntry(group.GetIndexEntry());
             }
             catch (AmazonS3Exception awsEx)
             {
@@ -128,10 +122,8 @@ namespace Plywood
             }
         }
 
-        public GroupList SearchGroups(string query = null, int offset = 0, int pageSize = 50)
+        public GroupList SearchGroups(string query = null, string marker = null, int pageSize = 50)
         {
-            if (offset < 0)
-                throw new ArgumentOutOfRangeException("offset", "Offset cannot be a negative number.");
             if (pageSize < 1)
                 throw new ArgumentOutOfRangeException("pageSize", "Page size cannot be less than 1.");
             if (pageSize > 100)
@@ -139,26 +131,23 @@ namespace Plywood
 
             try
             {
-                var indexesController = new Internal.Indexes(Context);
-                var index = indexesController.LoadIndex(STR_GROUP_INDEX_PATH);
-
-                var filteredIndex = index.Entries.AsQueryable();
-
+                var indexEntries = new IndexEntries(Context);
+                IEnumerable<string> tokens = null;
                 if (!string.IsNullOrWhiteSpace(query))
-                {
-                    var queryParts = query.ToLower().Split(new char[] { ' ', '\t', ',' }).Where(qp => !string.IsNullOrWhiteSpace(qp)).ToArray();
-                    filteredIndex = filteredIndex.Where(e => queryParts.Any(q => e.Name.ToLower().Contains(q)));
-                }
+                    tokens = new SimpleTokeniser().Tokenise(query);
+                var queryResults = indexEntries.QueryIndex(pageSize, marker, "gi", tokens);
 
-                var count = filteredIndex.Count();
-                var listItems = filteredIndex.Skip(offset).Take(pageSize).Select(e => new GroupListItem() { Key = e.Key, Name = e.Name }).ToList();
                 var list = new GroupList()
                 {
-                    Groups = listItems,
+                    Groups = queryResults.Results.Select(r => new GroupListItem()
+                    {
+                        Key = r.EntryKey,
+                        Name = r.EntryText,
+                    }),
                     Query = query,
-                    Offset = offset,
+                    Marker = marker,
                     PageSize = pageSize,
-                    TotalCount = count,
+                    NextMarker = queryResults.NextMarker,
                 };
 
                 return list;
@@ -174,6 +163,8 @@ namespace Plywood
             if (group == null)
                 throw new ArgumentNullException("group", "Group cannot be null.");
 
+            var oldGroup = GetGroup(group.Key);
+
             using (var stream = group.Serialise())
             {
                 try
@@ -186,10 +177,10 @@ namespace Plywood
                             Key = string.Format("{0}/{1}/{2}", STR_GROUPS_CONTAINER_PATH, group.Key.ToString("N"), STR_INFO_FILE_NAME),
                             InputStream = stream,
                         })) { }
-
-                        var indexesController = new Internal.Indexes(Context);
-                        indexesController.PutIndexEntry(STR_GROUP_INDEX_PATH, new Internal.EntityIndexEntry() { Key = group.Key, Name = group.Name });
                     }
+
+                    var indexEntries = new IndexEntries(Context);
+                    indexEntries.UpdateIndexEntry(oldGroup.GetIndexEntry(), group.GetIndexEntry());
                 }
                 catch (AmazonS3Exception awsEx)
                 {

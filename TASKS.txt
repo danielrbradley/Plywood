@@ -4,12 +4,6 @@ Current Tasks
 Framework _- In no particular order
 ---------'
 
-> More intelligent indexes (remove concurrent index update issues)
- 1 > Split by terms & have a separate index file per term.
- 2 > Queries load indexes that apply to the query.
- 3 > Indexes limited to a set number of items (~100)
- 4 > Use S3 object listing for default (non-queried) listings.
-
 > Instance health monitoring.
  1 > Put a file named the instance key/name with a new guid on each check.
  2 > Check S3 last modified times.

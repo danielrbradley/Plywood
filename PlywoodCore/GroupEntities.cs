@@ -8,11 +8,13 @@ using System.Xml.Linq;
 using System.Xml.Schema;
 using System.Reflection;
 using System.Xml;
+using Plywood.Indexes;
 
 namespace Plywood
 {
     public class Group
     {
+
         #region Constructors
 
         public Group()
@@ -48,6 +50,18 @@ namespace Plywood
         public Stream Serialise()
         {
             return Group.Serialise(this);
+        }
+
+        public IndexEntry GetIndexEntry()
+        {
+            return new IndexEntry()
+            {
+                BasePath = "gi",
+                EntryKey = Key,
+                EntryText = Name,
+                SortHash = Hashing.CreateHash(Name),
+                Tokens = new SimpleTokeniser().Tokenise(Name)
+            };
         }
 
         #region Static Serialisation Methods
@@ -177,9 +191,9 @@ namespace Plywood
     {
         public IEnumerable<GroupListItem> Groups { get; set; }
         public string Query { get; set; }
-        public int Offset { get; set; }
+        public string Marker { get; set; }
+        public string NextMarker { get; set; }
         public int PageSize { get; set; }
-        public int TotalCount { get; set; }
     }
 
     public class GroupListItem

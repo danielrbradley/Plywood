@@ -63,7 +63,11 @@
     <Compile Include="Entities\TargetTests.cs" />
     <Compile Include="Entities\GroupTests.cs" />
     <Compile Include="FilesTest.cs" />
-    <Compile Include="IndexesTest.cs" />
+    <Compile Include="Indexes\GetIndexEntryFromPathTests.cs" />
+    <Compile Include="Indexes\SimpleTokeniserTests.cs" />
+    <Compile Include="Indexes\StringHashing.cs" />
+    <Compile Include="Indexes\GetIndexEntryPathsTests.cs" />
+    <Compile Include="Indexes\TokenHashTests.cs" />
     <Compile Include="KeyValuePairDeSerialiseTest.cs" />
     <Compile Include="HooksTest.cs" />
     <Compile Include="TimestampFromKeyTest.cs" />

@@ -18,9 +18,9 @@ namespace Plywood
         {
             try
             {
-                var indexes = new Indexes(Context);
+                //var indexes = new Indexes(Context);
                 // We don't need the name so just set to a dash.
-                indexes.PutIndexEntry(GetTargetAppsIndexPath(targetKey), new EntityIndexEntry() { Key = appKey, Name = "-" });
+                //indexes.PutIndexEntry(GetTargetAppsIndexPath(targetKey), new EntityIndexEntry() { Key = appKey, Name = "-" });
             }
             catch (Exception ex)
             {
@@ -32,55 +32,56 @@ namespace Plywood
         {
             try
             {
-                var indexes = new Indexes(Context);
-                var index = indexes.LoadIndex(GetTargetAppsIndexPath(targetKey));
-                return index.Entries.Select(e => e.Key);
+                //var indexes = new Indexes(Context);
+                //var index = indexes.LoadIndex(GetTargetAppsIndexPath(targetKey));
+                //return index.Entries.Select(e => e.Key);
             }
             catch (Exception ex)
             {
                 throw new DeploymentException(string.Format("Failed getting app keys for target \"{0}\".", targetKey), ex);
             }
+            throw new NotImplementedException();
         }
 
         public TargetAppList SearchTargetApps(Guid targetKey, string query = null, int offset = 0, int pageSize = 50)
         {
             try
             {
-                var indexes = new Indexes(Context);
+                //var indexes = new Indexes(Context);
                 var targets = new Targets(Context);
                 var apps = new Apps(Context);
-                var index = indexes.LoadIndex(GetTargetAppsIndexPath(targetKey));
+                //var index = indexes.LoadIndex(GetTargetAppsIndexPath(targetKey));
                 var target = targets.GetTarget(targetKey);
-                var groupAppIndex = indexes.LoadIndex(Apps.GetGroupAppsIndexPath(target.GroupKey));
+                //var groupAppIndex = indexes.LoadIndex(Apps.GetGroupAppsIndexPath(target.GroupKey));
 
-                var filteredIndex = index.Entries.AsQueryable();
+                //var filteredIndex = index.Entries.AsQueryable();
 
                 if (!string.IsNullOrWhiteSpace(query))
                 {
                     var queryParts = query.ToLower().Split(new char[] { ' ', '\t', ',' }).Where(qp => !string.IsNullOrWhiteSpace(qp)).ToArray();
-                    filteredIndex = filteredIndex.Where(e => queryParts.Any(q => e.Name.ToLower().Contains(q)));
+                    //filteredIndex = filteredIndex.Where(e => queryParts.Any(q => e.Name.ToLower().Contains(q)));
                 }
 
-                var count = filteredIndex.Count();
+                //var count = filteredIndex.Count();
 
-                var listItems = filteredIndex.Skip(offset).Take(pageSize).ToList().Select(e =>
-                    {
-                        var groupApp = groupAppIndex.Entries.FirstOrDefault(a => a.Key == e.Key);
-                        return new AppListItem()
-                        {
-                            Key = e.Key,
-                            Name = (groupApp != null) ? groupApp.Name : TryResolveAppNameDirect(e.Key, apps)
-                        };
-                    }).ToList().OrderBy(app => app.Name);
+                //var listItems = filteredIndex.Skip(offset).Take(pageSize).ToList().Select(e =>
+                //    {
+                //        var groupApp = groupAppIndex.Entries.FirstOrDefault(a => a.Key == e.Key);
+                //        return new AppListItem()
+                //        {
+                //            Key = e.Key,
+                //            Name = (groupApp != null) ? groupApp.Name : TryResolveAppNameDirect(e.Key, apps)
+                //        };
+                //    }).ToList().OrderBy(app => app.Name);
 
                 var list = new TargetAppList()
                 {
-                    Apps = listItems,
+                    //Apps = listItems,
                     TargetKey = targetKey,
                     Query = query,
                     Offset = offset,
                     PageSize = pageSize,
-                    TotalCount = count,
+                    //TotalCount = count,
                 };
 
                 return list;
@@ -110,13 +111,14 @@ namespace Plywood
         {
             try
             {
-                var indexes = new Indexes(Context);
-                indexes.DeleteIndexEntry(GetTargetAppsIndexPath(targetKey), appKey);
+                //var indexes = new Indexes(Context);
+                //indexes.DeleteIndexEntry(GetTargetAppsIndexPath(targetKey), appKey);
             }
             catch (Exception ex)
             {
                 throw new DeploymentException(string.Format("Failed removing app with key \"{0}\" from target \"{1}\".", appKey, targetKey), ex);
             }
+            throw new NotImplementedException();
         }
 
         public string GetTargetAppsIndexPath(Guid targetKey)

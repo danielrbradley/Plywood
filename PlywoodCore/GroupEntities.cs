@@ -194,6 +194,7 @@ namespace Plywood
         public string Marker { get; set; }
         public string NextMarker { get; set; }
         public int PageSize { get; set; }
+        public bool IsTruncated { get; set; }
     }
 
     public class GroupListItem

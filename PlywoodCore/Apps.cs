@@ -5,13 +5,16 @@ using System.Text;
 using Plywood.Utils;
 using Amazon.S3;
 using Amazon.S3.Model;
+using Plywood.Indexes;
 
 namespace Plywood
 {
     public class Apps : ControllerBase
     {
+        [Obsolete]
         public const string STR_APP_INDEX_PATH = ".apps.index";
-        public const string STR_APPS_CONTAINER_PATH = "apps";
+        [Obsolete]
+        public const string STR_APPS_CONTAINER_PATH = "a";
 
         public Apps() : base() { }
         public Apps(ControllerConfiguration context) : base(context) { }
@@ -25,7 +28,7 @@ namespace Plywood
                     using (var res = client.GetObjectMetadata(new GetObjectMetadataRequest()
                     {
                         BucketName = Context.BucketName,
-                        Key = string.Format("{0}/{1}/{2}", STR_APPS_CONTAINER_PATH, key.ToString("N"), STR_INFO_FILE_NAME),
+                        Key = Paths.GetAppDetailsKey(key),
                     })) { return true; }
                 }
             }
@@ -59,25 +62,15 @@ namespace Plywood
                         if (!groupsController.GroupExists(app.GroupKey))
                             throw new GroupNotFoundException(String.Format("Group with the key {0} could not be found.", app.GroupKey));
 
-                        var indexesController = new Internal.Indexes(Context);
-
-                        string indexPath = GetGroupAppsIndexPath(app.GroupKey);
-                        var appIndex = indexesController.LoadIndex(indexPath);
-                        if (appIndex.Entries.Any(e => e.Key == app.Key))
-                        {
-                            throw new DeploymentException("Index already contains entry for given key!");
-                        }
-
                         using (var putResponse = client.PutObject(new PutObjectRequest()
                         {
                             BucketName = Context.BucketName,
-                            Key = string.Format("{0}/{1}/{2}", STR_APPS_CONTAINER_PATH, app.Key.ToString("N"), STR_INFO_FILE_NAME),
+                            Key = Paths.GetAppDetailsKey(app.Key),
                             InputStream = stream,
                         })) { }
 
-                        appIndex.Entries.Add(new Internal.EntityIndexEntry() { Key = app.Key, Name = app.Name });
-                        Internal.Indexes.NameSortIndex(appIndex);
-                        indexesController.UpdateIndex(indexPath, appIndex);
+                        var indexEntries = new IndexEntries(Context);
+                        indexEntries.PutIndexEntry(app.GetIndexEntry());
                     }
                 }
                 catch (AmazonS3Exception awsEx)
@@ -92,18 +85,10 @@ namespace Plywood
             var app = GetApp(key);
             try
             {
-                Plywood.Internal.AwsHelpers.SoftDeleteFolders(Context, string.Format("{0}/{1}", STR_APPS_CONTAINER_PATH, key.ToString("N")));
+                Plywood.Internal.AwsHelpers.SoftDeleteFolders(Context, Paths.GetAppDetailsKey(key));
 
-                var indexesController = new Internal.Indexes(Context);
-
-                string indexPath = GetGroupAppsIndexPath(app.GroupKey);
-                var appIndex = indexesController.LoadIndex(indexPath);
-                if (appIndex.Entries.Any(e => e.Key == key))
-                {
-                    appIndex.Entries.Remove(appIndex.Entries.Single(e => e.Key == key));
-                    Internal.Indexes.NameSortIndex(appIndex);
-                    indexesController.UpdateIndex(indexPath, appIndex);
-                }
+                var indexEntries = new IndexEntries(Context);
+                indexEntries.DeleteIndexEntry(app.GetIndexEntry());
             }
             catch (AmazonS3Exception awsEx)
             {
@@ -120,7 +105,7 @@ namespace Plywood
                     using (var res = client.GetObject(new GetObjectRequest()
                     {
                         BucketName = Context.BucketName,
-                        Key = string.Format("{0}/{1}/{2}", STR_APPS_CONTAINER_PATH, key.ToString("N"), STR_INFO_FILE_NAME),
+                        Key = Paths.GetAppDetailsKey(key),
                     }))
                     {
                         using (var stream = res.ResponseStream)
@@ -152,10 +137,8 @@ namespace Plywood
             return thisRevision;
         }
 
-        public AppList SearchGroupApps(Guid groupKey, string query = null, int offset = 0, int pageSize = 50)
+        public AppList SearchGroupApps(Guid groupKey, string query = null, string marker = null, int pageSize = 50)
         {
-            if (offset < 0)
-                throw new ArgumentOutOfRangeException("offset", "Offset cannot be a negative number.");
             if (pageSize < 1)
                 throw new ArgumentOutOfRangeException("pageSize", "Page size cannot be less than 1.");
             if (pageSize > 100)
@@ -163,27 +146,23 @@ namespace Plywood
 
             try
             {
-                var indexesController = new Internal.Indexes(Context);
-                var index = indexesController.LoadIndex(GetGroupAppsIndexPath(groupKey));
+                var indexEntries = new IndexEntries(Context);
 
-                var filteredIndex = index.Entries.AsQueryable();
-
+                IEnumerable<string> tokens = null;
                 if (!string.IsNullOrWhiteSpace(query))
-                {
-                    var queryParts = query.ToLower().Split(new char[] { ' ', '\t', ',' }).Where(qp => !string.IsNullOrWhiteSpace(qp)).ToArray();
-                    filteredIndex = filteredIndex.Where(e => queryParts.Any(q => e.Name.ToLower().Contains(q)));
-                }
+                    tokens = new SimpleTokeniser().Tokenise(query);
+                var queryResults = indexEntries.QueryIndex(pageSize, marker, Paths.GetAppIndexBaseKey(groupKey), tokens);
 
-                var count = filteredIndex.Count();
-                var listItems = filteredIndex.Skip(offset).Take(pageSize).Select(e => new AppListItem() { Key = e.Key, Name = e.Name }).ToList();
+                var listItems = queryResults.Results.Select(r => new AppListItem() { Key = r.EntryKey, Name = r.EntryText }).ToList();
                 var list = new AppList()
                 {
                     GroupKey = groupKey,
                     Apps = listItems,
                     Query = query,
-                    Offset = offset,
+                    Marker = marker,
                     PageSize = pageSize,
-                    TotalCount = count,
+                    NextMarker = queryResults.NextMarker,
+                    IsTruncated = queryResults.IsTruncated,
                 };
 
                 return list;
@@ -209,7 +188,6 @@ namespace Plywood
                 {
                     using (var client = new AmazonS3Client(Context.AwsAccessKeyId, Context.AwsSecretAccessKey))
                     {
-                        var indexesController = new Internal.Indexes(Context);
                         // This will not currently get called.
                         if (existingApp.GroupKey != app.GroupKey)
                         {
@@ -217,22 +195,16 @@ namespace Plywood
                             if (!groupsController.GroupExists(app.GroupKey))
                                 throw new GroupNotFoundException(string.Format("Group with key \"{0}\" to move app into cannot be found.", app.GroupKey));
                         }
+
                         using (var putResponse = client.PutObject(new PutObjectRequest()
                         {
                             BucketName = Context.BucketName,
-                            Key = string.Format("{0}/{1}/{2}", STR_APPS_CONTAINER_PATH, app.Key.ToString("N"), STR_INFO_FILE_NAME),
+                            Key = Paths.GetAppDetailsKey(app.Key),
                             InputStream = stream,
                         })) { }
 
-                        // This will not currently get called.
-                        if (existingApp.GroupKey != app.GroupKey)
-                        {
-                            string oldAppIndexPath = GetGroupAppsIndexPath(existingApp.GroupKey);
-                            indexesController.DeleteIndexEntry(oldAppIndexPath, app.Key);
-                        }
-
-                        string newAppIndexPath = GetGroupAppsIndexPath(app.GroupKey);
-                        indexesController.PutIndexEntry(newAppIndexPath, new Internal.EntityIndexEntry() { Key = app.Key, Name = app.Name });
+                        var indexEntries = new IndexEntries(Context);
+                        indexEntries.UpdateIndexEntry(existingApp.GetIndexEntry(), app.GetIndexEntry());
                     }
                 }
                 catch (AmazonS3Exception awsEx)
@@ -242,6 +214,7 @@ namespace Plywood
             }
         }
 
+        [Obsolete]
         public static string GetGroupAppsIndexPath(Guid groupKey)
         {
             return string.Format("{0}/{1}/{2}", Groups.STR_GROUPS_CONTAINER_PATH, groupKey.ToString("N"), STR_APP_INDEX_PATH);

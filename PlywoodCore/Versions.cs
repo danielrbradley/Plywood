@@ -11,7 +11,9 @@ namespace Plywood
 {
     public class Versions : ControllerBase
     {
+        [Obsolete]
         public const string STR_VERSION_INDEX_PATH = ".versions.index";
+        [Obsolete]
         public const string STR_VERSIONS_CONTAINER_PATH = "versions";
 
         public Versions() : base() { }
@@ -46,7 +48,7 @@ namespace Plywood
                         using (var putResponse = client.PutObject(new PutObjectRequest()
                         {
                             BucketName = Context.BucketName,
-                            Key = string.Format("{0}/{1}/{2}", STR_VERSIONS_CONTAINER_PATH, version.Key.ToString("N"), STR_INFO_FILE_NAME),
+                            Key = Paths.GetVersionDetailsKey(version.Key),
                             InputStream = stream,
                         })) { }
 

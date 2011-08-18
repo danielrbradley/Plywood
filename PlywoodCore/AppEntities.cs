@@ -8,6 +8,7 @@ using System.Xml.Linq;
 using System.Xml;
 using System.Xml.Schema;
 using System.Reflection;
+using Plywood.Indexes;
 
 namespace Plywood
 {
@@ -59,6 +60,18 @@ namespace Plywood
         public Stream Serialise()
         {
             return App.Serialise(this);
+        }
+
+        public IndexEntry GetIndexEntry()
+        {
+            return new IndexEntry()
+            {
+                BasePath = "gi",
+                EntryKey = Key,
+                EntryText = Name,
+                SortHash = Hashing.CreateHash(Name),
+                Tokens = new SimpleTokeniser().Tokenise(Name)
+            };
         }
 
         #region Static Serialisation
@@ -203,9 +216,10 @@ namespace Plywood
         public Guid GroupKey { get; set; }
         public IEnumerable<AppListItem> Apps { get; set; }
         public string Query { get; set; }
-        public int Offset { get; set; }
+        public string Marker { get; set; }
         public int PageSize { get; set; }
-        public int TotalCount { get; set; }
+        public string NextMarker { get; set; }
+        public bool IsTruncated { get; set; }
     }
 
     public class AppListItem

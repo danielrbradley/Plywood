@@ -10,7 +10,9 @@ namespace Plywood
 {
     public class Instances : ControllerBase
     {
+        [Obsolete]
         public const string STR_INSTANCE_INDEX_PATH = ".instances.index";
+        [Obsolete]
         public const string STR_INSTANCES_CONTAINER_PATH = "instances";
 
         public Instances() : base() { }

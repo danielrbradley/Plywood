@@ -27,3 +27,9 @@ Framework _- In no particular order
 > Re-style sawmill - custom colours and rounded corners.
 
 > Add latest versions to the front page.
+
+> Create recycled index ordered by date ascending to allow easy clean up of objects over a defined age.
+
+> Create version cleanup functions to reduce redundant storage and therefore costs.
+
+> Add app dependancies to allow ordered installations and encapsulate required components

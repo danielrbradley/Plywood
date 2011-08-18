@@ -13,8 +13,8 @@ namespace Plywood
 {
     public class Groups : ControllerBase
     {
-        public const string STR_GROUP_INDEX_PATH = ".groups.index";
-        public const string STR_GROUPS_CONTAINER_PATH = "groups";
+        [Obsolete]
+        public const string STR_GROUPS_CONTAINER_PATH = "g";
 
         public Groups() : base() { }
         public Groups(ControllerConfiguration context) : base(context) { }
@@ -33,7 +33,7 @@ namespace Plywood
                         using (var putResponse = client.PutObject(new PutObjectRequest()
                         {
                             BucketName = Context.BucketName,
-                            Key = string.Format("{0}/{1}/{2}", STR_GROUPS_CONTAINER_PATH, group.Key.ToString("N"), STR_INFO_FILE_NAME),
+                            Key = Paths.GetGroupDetailsKey(group.Key),
                             InputStream = stream,
                         })) { }
                     }
@@ -53,7 +53,7 @@ namespace Plywood
             var group = GetGroup(key);
             try
             {
-                Plywood.Internal.AwsHelpers.SoftDeleteFolders(Context, string.Format("{0}/{1}", STR_GROUPS_CONTAINER_PATH, key.ToString("N")));
+                Plywood.Internal.AwsHelpers.SoftDeleteFolders(Context, Paths.GetGroupDetailsKey(group.Key));
 
                 var indexEntries = new IndexEntries(Context);
                 indexEntries.DeleteIndexEntry(group.GetIndexEntry());
@@ -73,7 +73,7 @@ namespace Plywood
                     using (var res = client.GetObject(new GetObjectRequest()
                     {
                         BucketName = Context.BucketName,
-                        Key = string.Format("{0}/{1}/{2}", STR_GROUPS_CONTAINER_PATH, key.ToString("N"), STR_INFO_FILE_NAME),
+                        Key = Paths.GetGroupDetailsKey(key),
                     }))
                     {
                         using (var stream = res.ResponseStream)
@@ -105,7 +105,7 @@ namespace Plywood
                     using (var res = client.GetObjectMetadata(new GetObjectMetadataRequest()
                     {
                         BucketName = Context.BucketName,
-                        Key = string.Format("{0}/{1}/{2}", STR_GROUPS_CONTAINER_PATH, key.ToString("N"), STR_INFO_FILE_NAME),
+                        Key = Paths.GetGroupDetailsKey(key),
                     })) { return true; }
                 }
             }
@@ -148,6 +148,7 @@ namespace Plywood
                     Marker = marker,
                     PageSize = pageSize,
                     NextMarker = queryResults.NextMarker,
+                    IsTruncated = queryResults.IsTruncated,
                 };
 
                 return list;
@@ -174,7 +175,7 @@ namespace Plywood
                         using (var putResponse = client.PutObject(new PutObjectRequest()
                         {
                             BucketName = Context.BucketName,
-                            Key = string.Format("{0}/{1}/{2}", STR_GROUPS_CONTAINER_PATH, group.Key.ToString("N"), STR_INFO_FILE_NAME),
+                            Key = Paths.GetGroupDetailsKey(group.Key),
                             InputStream = stream,
                         })) { }
                     }

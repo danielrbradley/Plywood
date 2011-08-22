@@ -39,3 +39,5 @@ Framework _- In no particular order
 > Create version cleanup functions to reduce redundant storage and therefore costs.
 
 > Add app dependancies to allow ordered installations and encapsulate required components
+
+> Add indexing of custom tags.

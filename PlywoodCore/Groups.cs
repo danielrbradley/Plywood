@@ -43,7 +43,7 @@ namespace Plywood
                     }
 
                     var indexEntries = new IndexEntries(Context);
-                    indexEntries.PutIndexEntry(group.GetIndexEntry());
+                    indexEntries.PutEntity(group);
                 }
                 catch (AmazonS3Exception awsEx)
                 {
@@ -60,7 +60,7 @@ namespace Plywood
                 Plywood.Internal.AwsHelpers.SoftDeleteFolders(Context, Paths.GetGroupDetailsKey(group.Key));
 
                 var indexEntries = new IndexEntries(Context);
-                indexEntries.DeleteIndexEntry(group.GetIndexEntry());
+                indexEntries.DeleteEntity(group);
             }
             catch (AmazonS3Exception awsEx)
             {
@@ -135,24 +135,29 @@ namespace Plywood
 
             try
             {
-                var indexEntries = new IndexEntries(Context);
-                IEnumerable<string> tokens = null;
-                if (!string.IsNullOrWhiteSpace(query))
-                    tokens = new SimpleTokeniser().Tokenise(query);
-                var queryResults = indexEntries.QueryIndex(pageSize, marker, "gi", tokens);
+                IEnumerable<string> basePaths;
 
+                if (!string.IsNullOrWhiteSpace(query))
+                    basePaths = new SimpleTokeniser().Tokenise(query).Select(token => 
+                        string.Format("gi/t/{0}", Indexes.IndexEntries.GetTokenHash(token)));
+                else
+                    basePaths = new List<string>()
+                    {
+                        "gi/e",
+                    };
+
+                var indexEntries = new IndexEntries(Context);
+                var rawResults = indexEntries.PerformRawQuery(pageSize, marker, basePaths);
+
+                IEnumerable<GroupListItem> groups = rawResults.FileNames.Select(fileName => new GroupListItem(fileName));
                 var list = new GroupList()
                 {
-                    Groups = queryResults.Results.Select(r => new GroupListItem()
-                    {
-                        Key = r.EntryKey,
-                        Name = r.EntryText,
-                    }),
+                    Groups = groups,
                     Query = query,
                     Marker = marker,
                     PageSize = pageSize,
-                    NextMarker = queryResults.NextMarker,
-                    IsTruncated = queryResults.IsTruncated,
+                    NextMarker = groups.Last().Marker,
+                    IsTruncated = rawResults.IsTruncated,
                 };
 
                 return list;
@@ -185,7 +190,7 @@ namespace Plywood
                     }
 
                     var indexEntries = new IndexEntries(Context);
-                    indexEntries.UpdateIndexEntry(oldGroup.GetIndexEntry(), group.GetIndexEntry());
+                    indexEntries.UpdateEntity(oldGroup, group);
                 }
                 catch (AmazonS3Exception awsEx)
                 {
@@ -407,10 +412,13 @@ namespace Plywood
             var segments = Utils.Indexes.GetPathSegments(path);
             if (segments.Length != 3)
                 throw new ArgumentException("A group path index entry does not contain exactly 3 segments.", "path");
+            
+            Marker = segments[0];
             Key = Utils.Indexes.DecodeGuid(segments[1]);
             Name = Utils.Indexes.DecodeText(segments[2]);
         }
 
+        internal string Marker { get; set; }
         public Guid Key { get; set; }
         public string Name { get; set; }
     }

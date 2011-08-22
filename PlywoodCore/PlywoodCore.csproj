@@ -56,6 +56,7 @@
     <Compile Include="Indexes\IndexEntry.cs" />
     <Compile Include="Indexes\IndexQueryResult.cs" />
     <Compile Include="Indexes\ITokeniser.cs" />
+    <Compile Include="Indexes\RawQueryResult.cs" />
     <Compile Include="LogEntities.cs" />
     <Compile Include="InstanceEntities.cs" />
     <Compile Include="Logs.cs" />

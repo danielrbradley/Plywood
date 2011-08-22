@@ -15,6 +15,30 @@ namespace Plywood.Indexes
         public IndexEntries() : base() { }
         public IndexEntries(ControllerConfiguration context) : base(context) { }
 
+        public void DeleteEntity(IIndexableEntity entity)
+        {
+            var paths = entity.GetIndexEntries();
+            DeletePaths(paths);
+        }
+
+        public void PutEntity(IIndexableEntity entity)
+        {
+            var paths = entity.GetIndexEntries();
+            PutPaths(paths);
+        }
+
+        public void UpdateEntity(IIndexableEntity oldEntity, IIndexableEntity newEntity)
+        {
+            var oldPaths = oldEntity.GetIndexEntries();
+            var newPaths = newEntity.GetIndexEntries();
+
+            var deletes = oldPaths.Where(p => !newPaths.Contains(p));
+            var puts = newPaths.Where(p => !oldPaths.Contains(p));
+
+            PutPaths(puts);
+            DeletePaths(deletes);
+        }
+
         public void DeleteIndexEntry(IndexEntry indexEntry)
         {
             var paths = GetIndexEntryPaths(indexEntry);
@@ -37,6 +61,39 @@ namespace Plywood.Indexes
 
             PutPaths(puts);
             DeletePaths(deletes);
+        }
+
+        public RawQueryResult PerformRawQuery(int maximumRows, string marker, IEnumerable<string> basePaths)
+        {
+            var mapJob = basePaths.AsParallel().Select(q =>
+            {
+                using (var client = new AmazonS3Client(Context.AwsAccessKeyId, Context.AwsSecretAccessKey))
+                {
+                    ListObjectsRequest request = new ListObjectsRequest()
+                    {
+                        BucketName = Context.BucketName,
+                        MaxKeys = maximumRows,
+                        Prefix = q,
+                    };
+                    if (!string.IsNullOrEmpty(marker))
+                        request.Marker = string.Format("{0}/{1}", q, marker);
+
+                    using (var res = client.ListObjects(request))
+                    {
+                        return new
+                        {
+                            FileNames = res.S3Objects.Select(o => o.Key).ToList(),
+                            IsTruncated = res.IsTruncated,
+                        };
+                    }
+                }
+            }).ToList();
+
+            return new RawQueryResult()
+            {
+                FileNames = mapJob.SelectMany(j => j.FileNames).OrderBy(r => r).Distinct().Take(maximumRows).ToList(),
+                IsTruncated = mapJob.Any(j => j.IsTruncated),
+            };
         }
 
         public IndexQueryResult QueryIndex(int maximumRows, string marker, string basePath, IEnumerable<string> tokens)

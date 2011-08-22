@@ -250,14 +250,16 @@ namespace Plywood
 
         public IEnumerable<string> GetIndexEntries()
         {
-            var filename = string.Format("{0}-{1}", Utils.Indexes.EncodeText(Name), Utils.Indexes.EncodeGuid(Key) );
+            var filename = string.Format("{0}-{1}-{2}",
+                Hashing.CreateHash(Name), Utils.Indexes.EncodeGuid(Key), Utils.Indexes.EncodeText(Name));
+
             var tokens = (new SimpleTokeniser()).Tokenise(Name).ToList();
             var entries = new List<string>(tokens.Count() + 1);
 
             entries.Add(string.Format("gi/e/{1}", filename));
-            entries.AddRange(tokens.Select(token => 
+            entries.AddRange(tokens.Select(token =>
                 string.Format("gi/t/{0}/{1}", Indexes.IndexEntries.GetTokenHash(token), filename)));
-            
+
             return entries;
         }
 
@@ -403,10 +405,10 @@ namespace Plywood
         public GroupListItem(string path)
         {
             var segments = Utils.Indexes.GetPathSegments(path);
-            if (segments.Length != 2)
-                throw new ArgumentException("A group path index entry does not contain exactly 2 segments.", "path");
-            Name = Utils.Indexes.DecodeText(segments[0]);
+            if (segments.Length != 3)
+                throw new ArgumentException("A group path index entry does not contain exactly 3 segments.", "path");
             Key = Utils.Indexes.DecodeGuid(segments[1]);
+            Name = Utils.Indexes.DecodeText(segments[2]);
         }
 
         public Guid Key { get; set; }

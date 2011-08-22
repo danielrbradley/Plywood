@@ -50,6 +50,7 @@
     <Compile Include="AppDeployment.cs" />
     <Compile Include="AppEntities.cs" />
     <Compile Include="Configuration.cs" />
+    <Compile Include="IIndexableEntity.cs" />
     <Compile Include="Indexes\Hashing.cs" />
     <Compile Include="Indexes\IndexEntries.cs" />
     <Compile Include="Indexes\IndexEntry.cs" />
@@ -67,10 +68,10 @@
     <Compile Include="TargetApps.cs" />
     <Compile Include="Indexes\SimpleTokeniser.cs" />
     <Compile Include="Utils\Hooks.cs" />
+    <Compile Include="Utils\Indexes.cs" />
     <Compile Include="Utils\Paths.cs" />
     <Compile Include="Utils\Registry.cs" />
     <Compile Include="Utils\Serialisation.cs" />
-    <Compile Include="GroupEntities.cs" />
     <Compile Include="Apps.cs" />
     <Compile Include="Groups.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

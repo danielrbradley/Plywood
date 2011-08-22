@@ -198,6 +198,11 @@ namespace Plywood
         private static object schemasLock = new object();
 
         #endregion
+
+        internal Indexes.IndexEntry GetIndexEntry()
+        {
+            throw new NotImplementedException();
+        }
     }
 
     public class VersionList

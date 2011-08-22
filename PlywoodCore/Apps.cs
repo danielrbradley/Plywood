@@ -62,6 +62,9 @@ namespace Plywood
                         if (!groupsController.GroupExists(app.GroupKey))
                             throw new GroupNotFoundException(String.Format("Group with the key {0} could not be found.", app.GroupKey));
 
+                        var indexEntries = new IndexEntries(Context);
+                        // TODO: Check key, name and deployment directory are unique.
+
                         using (var putResponse = client.PutObject(new PutObjectRequest()
                         {
                             BucketName = Context.BucketName,
@@ -69,7 +72,6 @@ namespace Plywood
                             InputStream = stream,
                         })) { }
 
-                        var indexEntries = new IndexEntries(Context);
                         indexEntries.PutIndexEntry(app.GetIndexEntry());
                     }
                 }

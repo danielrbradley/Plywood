@@ -6,6 +6,7 @@ using Plywood.Utils;
 using Amazon.S3;
 using Amazon.S3.Model;
 using System.IO;
+using Plywood.Indexes;
 
 namespace Plywood
 {
@@ -34,16 +35,10 @@ namespace Plywood
                     var app = appsController.GetApp(version.AppKey);
                     version.GroupKey = app.GroupKey;
 
-                    var indexesController = new Internal.Indexes(Context);
-
                     using (var stream = version.Serialise())
                     {
-                        string indexPath = GetAppVersionsIndexPath(version.AppKey);
-                        var index = indexesController.LoadIndex(indexPath);
-                        if (index.Entries.Any(e => e.Key == version.Key))
-                        {
-                            throw new DeploymentException("Index already contains entry for given key!");
-                        }
+                        var indexEntries = new IndexEntries();
+                        // TODO: Check key and version number are unique.
 
                         using (var putResponse = client.PutObject(new PutObjectRequest()
                         {
@@ -52,9 +47,7 @@ namespace Plywood
                             InputStream = stream,
                         })) { }
 
-                        index.Entries.Add(new Internal.EntityIndexEntry() { Key = version.Key, Name = CreateVersionIndexName(version) });
-                        Internal.Indexes.NameSortIndex(index, true);
-                        indexesController.UpdateIndex(indexPath, index);
+                        indexEntries.PutIndexEntry(version.GetIndexEntry());
                     }
                 }
             }

@@ -1,6 +1,12 @@
 Current Tasks
 =============
 
+> Allow global indexes now we don't have conflict issues on the single file indexes.
+
+> Combine entity and implementation files for logical grouping.
+
+> Make each entity generate all of its own index entries rather than a template which gets expanded. This gives better flexibility on generating custom indexes.
+
 Framework _- In no particular order
 ---------'
 

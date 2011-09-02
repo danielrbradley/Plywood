@@ -64,6 +64,7 @@
     <Compile Include="Entities\VersionTests.cs" />
     <Compile Include="Entities\TargetTests.cs" />
     <Compile Include="Entities\GroupTests.cs" />
+    <Compile Include="EntityIndexing\Apps.cs" />
     <Compile Include="EntityIndexing\Groups.cs" />
     <Compile Include="FilesTest.cs" />
     <Compile Include="Indexes\GetIndexEntryFromPathTests.cs" />

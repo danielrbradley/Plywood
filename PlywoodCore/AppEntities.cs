@@ -12,7 +12,7 @@ using Plywood.Indexes;
 
 namespace Plywood
 {
-    public class App
+    public class App : IIndexableEntity
     {
 
         #region Constructors
@@ -62,6 +62,7 @@ namespace Plywood
             return App.Serialise(this);
         }
 
+        [Obsolete]
         public IndexEntry GetIndexEntry()
         {
             return new IndexEntry()
@@ -209,6 +210,27 @@ namespace Plywood
         private static object schemasLock = new object();
 
         #endregion
+
+        public IEnumerable<string> GetIndexEntries()
+        {
+            var filename = string.Format("{0}-{1}-{2}-{3}",
+                Hashing.CreateHash(Name), Utils.Indexes.EncodeGuid(Key), Utils.Indexes.EncodeText(Name), Utils.Indexes.EncodeText(MajorVersion));
+
+            var tokens = (new SimpleTokeniser()).Tokenise(Name).ToList();
+            var entries = new List<string>(tokens.Count() + 1);
+
+            // Group specific index
+            entries.Add(string.Format("g/{0}/ai/e/{1}", Utils.Indexes.EncodeGuid(GroupKey), filename));
+            entries.AddRange(tokens.Select(token =>
+                string.Format("g/{0}/ai/t/{1}/{2}", Utils.Indexes.EncodeGuid(GroupKey), Indexes.IndexEntries.GetTokenHash(token), filename)));
+
+            // Global index
+            entries.Add(string.Format("ai/e/{0}", filename));
+            entries.AddRange(tokens.Select(token =>
+                string.Format("ai/t/{0}/{1}", Indexes.IndexEntries.GetTokenHash(token), filename)));
+
+            return entries;
+        }
     }
 
     public class AppList
@@ -224,6 +246,22 @@ namespace Plywood
 
     public class AppListItem
     {
+        public AppListItem()
+        {
+        }
+
+        public AppListItem(string path)
+        {
+            var segments = Utils.Indexes.GetIndexFileNameSegments(path);
+            if (segments.Length != 3)
+                throw new ArgumentException("A group path index entry does not contain exactly 3 segments.", "path");
+            
+            Marker = segments[0];
+            Key = Utils.Indexes.DecodeGuid(segments[1]);
+            Name = Utils.Indexes.DecodeText(segments[2]);
+        }
+
+        internal string Marker { get; set; }
         public Guid Key { get; set; }
         public string Name { get; set; }
     }

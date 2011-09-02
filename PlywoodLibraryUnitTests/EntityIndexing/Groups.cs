@@ -10,7 +10,7 @@ namespace Plywood.Tests.UnitTesting.EntityIndexing
     public class Groups
     {
         [TestMethod]
-        public void GetGroupIndexPaths1()
+        public void GetGroupIndexPathsTestBasic()
         {
             var group = new Group()
             {

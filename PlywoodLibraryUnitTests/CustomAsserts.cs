@@ -15,10 +15,15 @@ namespace Plywood.Tests.UnitTesting
         /// <param name="actual"></param>
         public static void AreCollectionsEqual<TCollection, TItem>(TCollection expected, TCollection actual) where TCollection : IEnumerable<TItem>
         {
-            if (expected.Any(e => !actual.Any(a => (e == null && a != null) || (a == null && e != null) || (a != null && a.Equals(e)))))
+            if (expected.Any(e => !actual.Any(a => AreEqual(e, a))))
                 Assert.Fail("Collection is missing expected elements.");
-            if (actual.Any(a => !expected.Any(e => (e == null && a != null) || (a == null && e != null) || (a != null && a.Equals(e)))))
+            if (actual.Any(a => !expected.Any(e => AreEqual(e, a))))
                 Assert.Fail("Collection is has additional unexpected elements.");
+        }
+
+        private static bool AreEqual<TItem>(TItem e, TItem a)
+        {
+            return (e == null && a != null) || (a == null && e != null) || (a != null && a.Equals(e));
         }
     }
 }

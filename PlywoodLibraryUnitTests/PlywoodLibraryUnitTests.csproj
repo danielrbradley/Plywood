@@ -57,6 +57,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CustomAsserts.cs" />
+    <Compile Include="CustomAssertTests.cs" />
     <Compile Include="Entities\AppTests.cs" />
     <Compile Include="Entities\LogEntryTests.cs" />
     <Compile Include="Entities\InstanceTests.cs" />

@@ -170,7 +170,7 @@ namespace Plywood
                 var indexEntries = new IndexEntries(Context);
                 var rawResults = indexEntries.PerformRawQuery(pageSize, marker, basePaths);
 
-                var apps = rawResults.FileNames.Select(fileName => new AppListItem(fileName)).OrderBy(a => a.Marker);
+                var apps = rawResults.FileNames.Select(fileName => new AppListItem(fileName));
                 var list = new AppList()
                 {
                     Apps = apps,

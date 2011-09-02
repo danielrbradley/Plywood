@@ -138,7 +138,7 @@ namespace Plywood
                 IEnumerable<string> basePaths;
 
                 if (!string.IsNullOrWhiteSpace(query))
-                    basePaths = new SimpleTokeniser().Tokenise(query).Select(token => 
+                    basePaths = new SimpleTokeniser().Tokenise(query).Select(token =>
                         string.Format("gi/t/{0}", Indexes.IndexEntries.GetTokenHash(token)));
                 else
                     basePaths = new List<string>()
@@ -149,7 +149,7 @@ namespace Plywood
                 var indexEntries = new IndexEntries(Context);
                 var rawResults = indexEntries.PerformRawQuery(pageSize, marker, basePaths);
 
-                IEnumerable<GroupListItem> groups = rawResults.FileNames.Select(fileName => new GroupListItem(fileName)).OrderBy(a => a.Marker);
+                IEnumerable<GroupListItem> groups = rawResults.FileNames.Select(fileName => new GroupListItem(fileName));
                 var list = new GroupList()
                 {
                     Groups = groups,
@@ -412,7 +412,7 @@ namespace Plywood
             var segments = Utils.Indexes.GetIndexFileNameSegments(path);
             if (segments.Length != 3)
                 throw new ArgumentException("A group path index entry does not contain exactly 3 segments.", "path");
-            
+
             Marker = segments[0];
             Key = Utils.Indexes.DecodeGuid(segments[1]);
             Name = Utils.Indexes.DecodeText(segments[2]);

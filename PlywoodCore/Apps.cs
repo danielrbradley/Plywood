@@ -72,7 +72,7 @@ namespace Plywood
                             InputStream = stream,
                         })) { }
 
-                        indexEntries.PutIndexEntry(app.GetIndexEntry());
+                        indexEntries.PutEntity(app);
                     }
                 }
                 catch (AmazonS3Exception awsEx)
@@ -87,10 +87,12 @@ namespace Plywood
             var app = GetApp(key);
             try
             {
+                var indexEntries = new IndexEntries(Context);
+
+                indexEntries.DeleteEntity(app);
+
                 Plywood.Internal.AwsHelpers.SoftDeleteFolders(Context, Paths.GetAppDetailsKey(key));
 
-                var indexEntries = new IndexEntries(Context);
-                indexEntries.DeleteIndexEntry(app.GetIndexEntry());
             }
             catch (AmazonS3Exception awsEx)
             {
@@ -139,7 +141,7 @@ namespace Plywood
             return thisRevision;
         }
 
-        public AppList SearchGroupApps(Guid groupKey, string query = null, string marker = null, int pageSize = 50)
+        public AppList SearchGroupApps(Guid? groupKey = null, string query = null, string marker = null, int pageSize = 50)
         {
             if (pageSize < 1)
                 throw new ArgumentOutOfRangeException("pageSize", "Page size cannot be less than 1.");
@@ -148,23 +150,35 @@ namespace Plywood
 
             try
             {
-                var indexEntries = new IndexEntries(Context);
+                string[] startLocations;
+                if (groupKey.HasValue)
+                    startLocations = new string[2];
+                else
+                    startLocations = new string[1];
+                startLocations[0] = "ai";
+                if (groupKey.HasValue)
+                    startLocations[1] = string.Format("gi/{0}");
 
-                IEnumerable<string> tokens = null;
+                IEnumerable<string> basePaths;
+
                 if (!string.IsNullOrWhiteSpace(query))
-                    tokens = new SimpleTokeniser().Tokenise(query);
-                var queryResults = indexEntries.QueryIndex(pageSize, marker, Paths.GetAppIndexBaseKey(groupKey), tokens);
+                    basePaths = new SimpleTokeniser().Tokenise(query).SelectMany(token =>
+                        startLocations.Select(l => string.Format("{0}/t/{1}", l, Indexes.IndexEntries.GetTokenHash(token))));
+                else
+                    basePaths = startLocations.Select(l => string.Format("{0}/e", l));
 
-                var listItems = queryResults.Results.Select(r => new AppListItem() { Key = r.EntryKey, Name = r.EntryText }).ToList();
+                var indexEntries = new IndexEntries(Context);
+                var rawResults = indexEntries.PerformRawQuery(pageSize, marker, basePaths);
+
+                var apps = rawResults.FileNames.Select(fileName => new AppListItem(fileName)).OrderBy(a => a.Marker);
                 var list = new AppList()
                 {
-                    GroupKey = groupKey,
-                    Apps = listItems,
+                    Apps = apps,
                     Query = query,
                     Marker = marker,
                     PageSize = pageSize,
-                    NextMarker = queryResults.NextMarker,
-                    IsTruncated = queryResults.IsTruncated,
+                    NextMarker = apps.Last().Marker,
+                    IsTruncated = rawResults.IsTruncated,
                 };
 
                 return list;
@@ -206,7 +220,7 @@ namespace Plywood
                         })) { }
 
                         var indexEntries = new IndexEntries(Context);
-                        indexEntries.UpdateIndexEntry(existingApp.GetIndexEntry(), app.GetIndexEntry());
+                        indexEntries.UpdateEntity(existingApp, app);
                     }
                 }
                 catch (AmazonS3Exception awsEx)

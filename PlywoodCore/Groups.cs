@@ -149,7 +149,7 @@ namespace Plywood
                 var indexEntries = new IndexEntries(Context);
                 var rawResults = indexEntries.PerformRawQuery(pageSize, marker, basePaths);
 
-                IEnumerable<GroupListItem> groups = rawResults.FileNames.Select(fileName => new GroupListItem(fileName));
+                IEnumerable<GroupListItem> groups = rawResults.FileNames.Select(fileName => new GroupListItem(fileName)).OrderBy(a => a.Marker);
                 var list = new GroupList()
                 {
                     Groups = groups,

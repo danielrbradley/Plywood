@@ -1,6 +1,10 @@
 Current Tasks
 =============
 
+> Return null where possible instead of throwing exceptions when something's not found.
+
+> Rename the core collection in listing types to just be "Items" instead of having reference to the collection member type.
+
 > Allow global indexes now we don't have conflict issues on the single file indexes.
 
 > Combine entity and implementation files for logical grouping.

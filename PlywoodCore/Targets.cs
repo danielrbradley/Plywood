@@ -5,6 +5,7 @@ using System.Text;
 using Plywood.Utils;
 using Amazon.S3;
 using Amazon.S3.Model;
+using Plywood.Indexes;
 
 namespace Plywood
 {
@@ -35,25 +36,16 @@ namespace Plywood
                         if (!groupsController.GroupExists(target.GroupKey))
                             throw new GroupNotFoundException(String.Format("Group with the key \"{0}\" could not be found.", target.GroupKey));
 
-                        var indexesController = new Internal.Indexes(Context);
-
-                        string indexPath = GetGroupTargetsIndexPath(target.GroupKey);
-                        var appIndex = indexesController.LoadIndex(indexPath);
-                        if (appIndex.Entries.Any(e => e.Key == target.Key))
-                        {
-                            throw new DeploymentException("Index already contains entry for given key!");
-                        }
+                        var indexEntries = new IndexEntries(Context);
 
                         using (var putResponse = client.PutObject(new PutObjectRequest()
                         {
                             BucketName = Context.BucketName,
-                            Key = string.Format("{0}/{1}/{2}", STR_TARGETS_CONTAINER_PATH, target.Key.ToString("N"), STR_INFO_FILE_NAME),
+                            Key = Paths.GetTargetDetailsKey(target.Key),
                             InputStream = stream,
                         })) { }
 
-                        appIndex.Entries.Add(new Internal.EntityIndexEntry() { Key = target.Key, Name = target.Name });
-                        Internal.Indexes.NameSortIndex(appIndex);
-                        indexesController.UpdateIndex(indexPath, appIndex);
+                        indexEntries.PutEntity(target);
                     }
                 }
                 catch (AmazonS3Exception awsEx)
@@ -68,18 +60,11 @@ namespace Plywood
             var target = GetTarget(key);
             try
             {
-                Plywood.Internal.AwsHelpers.SoftDeleteFolders(Context, string.Format("{0}/{1}", STR_TARGETS_CONTAINER_PATH, key.ToString("N")));
+                var indexEntries = new IndexEntries(Context);
 
-                var indexesController = new Internal.Indexes(Context);
+                indexEntries.DeleteEntity(target);
 
-                string indexPath = GetGroupTargetsIndexPath(target.GroupKey);
-                var appIndex = indexesController.LoadIndex(indexPath);
-                if (appIndex.Entries.Any(e => e.Key == key))
-                {
-                    appIndex.Entries.Remove(appIndex.Entries.Single(e => e.Key == key));
-                    Internal.Indexes.NameSortIndex(appIndex);
-                    indexesController.UpdateIndex(indexPath, appIndex);
-                }
+                Plywood.Internal.AwsHelpers.SoftDeleteFolders(Context, Paths.GetTargetDetailsKey(key));
             }
             catch (AmazonS3Exception awsEx)
             {
@@ -119,10 +104,8 @@ namespace Plywood
             }
         }
 
-        public TargetList SearchGroupTargets(Guid groupKey, string query = null, int offset = 0, int pageSize = 50)
+        public TargetList SearchTargets(Guid? groupKey, string query = null, string marker = null, int pageSize = 50)
         {
-            if (offset < 0)
-                throw new ArgumentOutOfRangeException("offset", "Offset cannot be a negative number.");
             if (pageSize < 1)
                 throw new ArgumentOutOfRangeException("pageSize", "Page size cannot be less than 1.");
             if (pageSize > 100)
@@ -130,27 +113,35 @@ namespace Plywood
 
             try
             {
-                var indexesController = new Internal.Indexes(Context);
-                var index = indexesController.LoadIndex(GetGroupTargetsIndexPath(groupKey));
+                string[] startLocations;
+                if (groupKey.HasValue)
+                    startLocations = new string[2];
+                else
+                    startLocations = new string[1];
+                startLocations[0] = "ti";
+                if (groupKey.HasValue)
+                    startLocations[1] = string.Format("gi/{0}/ti");
 
-                var filteredIndex = index.Entries.AsQueryable();
+                IEnumerable<string> basePaths;
 
                 if (!string.IsNullOrWhiteSpace(query))
-                {
-                    var queryParts = query.ToLower().Split(new char[] { ' ', '\t', ',' }).Where(qp => !string.IsNullOrWhiteSpace(qp)).ToArray();
-                    filteredIndex = filteredIndex.Where(e => queryParts.Any(q => e.Name.ToLower().Contains(q)));
-                }
+                    basePaths = new SimpleTokeniser().Tokenise(query).SelectMany(token =>
+                        startLocations.Select(l => string.Format("{0}/t/{1}", l, Indexes.IndexEntries.GetTokenHash(token))));
+                else
+                    basePaths = startLocations.Select(l => string.Format("{0}/e", l));
 
-                var count = filteredIndex.Count();
-                var listItems = filteredIndex.Skip(offset).Take(pageSize).Select(e => new TargetListItem() { Key = e.Key, Name = e.Name }).ToList();
+                var indexEntries = new IndexEntries(Context);
+                var rawResults = indexEntries.PerformRawQuery(pageSize, marker, basePaths);
+
+                var targets = rawResults.FileNames.Select(fileName => new TargetListItem(fileName));
                 var list = new TargetList()
                 {
-                    GroupKey = groupKey,
-                    Targets = listItems,
+                    Targets = targets,
                     Query = query,
-                    Offset = offset,
+                    Marker = marker,
                     PageSize = pageSize,
-                    TotalCount = count,
+                    NextMarker = targets.Last().Marker,
+                    IsTruncated = rawResults.IsTruncated,
                 };
 
                 return list;
@@ -179,13 +170,12 @@ namespace Plywood
                         using (var putResponse = client.PutObject(new PutObjectRequest()
                         {
                             BucketName = Context.BucketName,
-                            Key = string.Format("{0}/{1}/{2}", STR_TARGETS_CONTAINER_PATH, target.Key.ToString("N"), STR_INFO_FILE_NAME),
+                            Key = Paths.GetTargetDetailsKey(target.Key),
                             InputStream = stream,
                         })) { }
 
-                        var indexesController = new Internal.Indexes(Context);
-                        string indexPath = GetGroupTargetsIndexPath(target.GroupKey);
-                        indexesController.PutIndexEntry(indexPath, new Internal.EntityIndexEntry() { Key = target.Key, Name = target.Name });
+                        var indexEntries = new IndexEntries(Context);
+                        indexEntries.UpdateEntity(existingTarget, target);
                     }
                 }
                 catch (AmazonS3Exception awsEx)
@@ -210,7 +200,7 @@ namespace Plywood
                     using (var res = client.GetObjectMetadata(new GetObjectMetadataRequest()
                     {
                         BucketName = Context.BucketName,
-                        Key = string.Format("{0}/{1}/{2}", STR_TARGETS_CONTAINER_PATH, key.ToString("N"), STR_INFO_FILE_NAME),
+                        Key = Paths.GetTargetDetailsKey(key),
                     })) { return true; }
                 }
             }

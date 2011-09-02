@@ -146,7 +146,7 @@ namespace Plywood
             return thisRevision;
         }
 
-        public AppList SearchGroupApps(Guid? groupKey = null, string query = null, string marker = null, int pageSize = 50)
+        public AppList SearchApps(Guid? groupKey = null, string query = null, string marker = null, int pageSize = 50)
         {
             if (pageSize < 1)
                 throw new ArgumentOutOfRangeException("pageSize", "Page size cannot be less than 1.");
@@ -162,7 +162,7 @@ namespace Plywood
                     startLocations = new string[1];
                 startLocations[0] = "ai";
                 if (groupKey.HasValue)
-                    startLocations[1] = string.Format("gi/{0}");
+                    startLocations[1] = string.Format("gi/{0}/ai");
 
                 IEnumerable<string> basePaths;
 

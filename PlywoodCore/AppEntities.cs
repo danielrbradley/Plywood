@@ -213,8 +213,8 @@ namespace Plywood
 
         public IEnumerable<string> GetIndexEntries()
         {
-            var filename = string.Format("{0}-{1}-{2}-{3}",
-                Hashing.CreateHash(Name), Utils.Indexes.EncodeGuid(Key), Utils.Indexes.EncodeText(Name), Utils.Indexes.EncodeText(MajorVersion));
+            var filename = string.Format("{0}-{1}-{2}-{3}-{4}",
+                Hashing.CreateHash(Name), Utils.Indexes.EncodeGuid(Key), Utils.Indexes.EncodeGuid(GroupKey), Utils.Indexes.EncodeText(Name), Utils.Indexes.EncodeText(MajorVersion));
 
             var tokens = (new SimpleTokeniser()).Tokenise(Name).ToList();
             var entries = new List<string>(tokens.Count() + 1);
@@ -253,16 +253,20 @@ namespace Plywood
         public AppListItem(string path)
         {
             var segments = Utils.Indexes.GetIndexFileNameSegments(path);
-            if (segments.Length != 3)
-                throw new ArgumentException("A group path index entry does not contain exactly 3 segments.", "path");
-            
+            if (segments.Length != 5)
+                throw new ArgumentException("An app path index entry must contain exactly 5 segments.", "path");
+
             Marker = segments[0];
             Key = Utils.Indexes.DecodeGuid(segments[1]);
-            Name = Utils.Indexes.DecodeText(segments[2]);
+            GroupKey = Utils.Indexes.DecodeGuid(segments[2]);
+            Name = Utils.Indexes.DecodeText(segments[3]);
+            MajorVersion = Utils.Indexes.DecodeText(segments[4]);
         }
 
         internal string Marker { get; set; }
         public Guid Key { get; set; }
+        public Guid GroupKey { get; set; }
         public string Name { get; set; }
+        public string MajorVersion { get; set; }
     }
 }

@@ -8,10 +8,11 @@ using System.Xml.Linq;
 using System.Xml.Schema;
 using System.Xml;
 using System.Reflection;
+using Plywood.Indexes;
 
 namespace Plywood
 {
-    public class Target
+    public class Target : IIndexableEntity
     {
         #region Constructors
 
@@ -178,6 +179,26 @@ namespace Plywood
 
         #endregion
 
+        public IEnumerable<string> GetIndexEntries()
+        {
+            var filename = string.Format("{0}-{1}-{2}-{3}",
+                Hashing.CreateHash(Name), Utils.Indexes.EncodeGuid(Key), Utils.Indexes.EncodeGuid(GroupKey), Utils.Indexes.EncodeText(Name));
+
+            var tokens = (new SimpleTokeniser()).Tokenise(Name).ToList();
+            var entries = new List<string>(tokens.Count() + 1);
+
+            // Group specific index
+            entries.Add(string.Format("g/{0}/ti/e/{1}", Utils.Indexes.EncodeGuid(GroupKey), filename));
+            entries.AddRange(tokens.Select(token =>
+                string.Format("g/{0}/ti/t/{1}/{2}", Utils.Indexes.EncodeGuid(GroupKey), Indexes.IndexEntries.GetTokenHash(token), filename)));
+
+            // Global index
+            entries.Add(string.Format("ti/e/{0}", filename));
+            entries.AddRange(tokens.Select(token =>
+                string.Format("ti/t/{0}/{1}", Indexes.IndexEntries.GetTokenHash(token), filename)));
+
+            return entries;
+        }
     }
 
     public class TargetList
@@ -192,7 +213,25 @@ namespace Plywood
 
     public class TargetListItem
     {
+        public TargetListItem()
+        {
+        }
+
+        public TargetListItem(string path)
+        {
+            var segments = Utils.Indexes.GetIndexFileNameSegments(path);
+            if (segments.Length != 4)
+                throw new ArgumentException("A target entity path index entry must contain exactly 4 segments.", "path");
+
+            Marker = segments[0];
+            Key = Utils.Indexes.DecodeGuid(segments[1]);
+            GroupKey = Utils.Indexes.DecodeGuid(segments[2]);
+            Name = Utils.Indexes.DecodeText(segments[3]);
+        }
+
+        internal string Marker { get; set; }
         public Guid Key { get; set; }
+        public Guid GroupKey { get; set; }
         public string Name { get; set; }
     }
 

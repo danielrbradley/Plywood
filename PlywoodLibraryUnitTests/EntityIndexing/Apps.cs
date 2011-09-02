@@ -58,6 +58,7 @@ namespace Plywood.Tests.UnitTesting.EntityIndexing
             var actual = new AppListItem(app.GetIndexEntries().First());
 
             Assert.AreEqual(expected.Key, actual.Key);
+            Assert.AreEqual(expected.GroupKey, actual.GroupKey);
             Assert.AreEqual(expected.Name, actual.Name);
             Assert.AreEqual(expected.MajorVersion, actual.MajorVersion);
         }

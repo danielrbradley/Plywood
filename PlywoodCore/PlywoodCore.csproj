@@ -48,7 +48,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AppDeployment.cs" />
-    <Compile Include="AppEntities.cs" />
     <Compile Include="Configuration.cs" />
     <Compile Include="IIndexableEntity.cs" />
     <Compile Include="Indexes\Hashing.cs" />

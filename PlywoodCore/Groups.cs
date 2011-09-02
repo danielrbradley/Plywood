@@ -261,7 +261,7 @@ namespace Plywood
             var tokens = (new SimpleTokeniser()).Tokenise(Name).ToList();
             var entries = new List<string>(tokens.Count() + 1);
 
-            entries.Add(string.Format("gi/e/{1}", filename));
+            entries.Add(string.Format("gi/e/{0}", filename));
             entries.AddRange(tokens.Select(token =>
                 string.Format("gi/t/{0}/{1}", Indexes.IndexEntries.GetTokenHash(token), filename)));
 

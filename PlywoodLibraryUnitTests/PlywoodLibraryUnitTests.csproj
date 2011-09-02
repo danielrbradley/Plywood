@@ -56,12 +56,14 @@
     </CodeAnalysisDependentAssemblyPaths>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CustomAsserts.cs" />
     <Compile Include="Entities\AppTests.cs" />
     <Compile Include="Entities\LogEntryTests.cs" />
     <Compile Include="Entities\InstanceTests.cs" />
     <Compile Include="Entities\VersionTests.cs" />
     <Compile Include="Entities\TargetTests.cs" />
     <Compile Include="Entities\GroupTests.cs" />
+    <Compile Include="EntityIndexing\Groups.cs" />
     <Compile Include="FilesTest.cs" />
     <Compile Include="Indexes\GetIndexEntryFromPathTests.cs" />
     <Compile Include="Indexes\SimpleTokeniserTests.cs" />

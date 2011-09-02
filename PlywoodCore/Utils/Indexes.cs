@@ -7,7 +7,12 @@ namespace Plywood.Utils
 {
     public static class Indexes
     {
-        public static string[] GetPathSegments(string entryPath)
+        /// <summary>
+        /// Get the segments of the filename for an index placeholder file where segments are separated by hyphens '-'.
+        /// </summary>
+        /// <param name="entryPath">Path to extract segments from</param>
+        /// <returns>Array of each string segments</returns>
+        public static string[] GetIndexFileNameSegments(string entryPath)
         {
             if (entryPath == null)
                 return new string[0];

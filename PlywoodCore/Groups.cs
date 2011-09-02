@@ -409,7 +409,7 @@ namespace Plywood
 
         public GroupListItem(string path)
         {
-            var segments = Utils.Indexes.GetPathSegments(path);
+            var segments = Utils.Indexes.GetIndexFileNameSegments(path);
             if (segments.Length != 3)
                 throw new ArgumentException("A group path index entry does not contain exactly 3 segments.", "path");
             

@@ -58,7 +58,6 @@
     <Compile Include="Indexes\ITokeniser.cs" />
     <Compile Include="Indexes\RawQueryResult.cs" />
     <Compile Include="LogEntities.cs" />
-    <Compile Include="InstanceEntities.cs" />
     <Compile Include="Logs.cs" />
     <Compile Include="Instances.cs" />
     <Compile Include="TargetAppVersions.cs" />

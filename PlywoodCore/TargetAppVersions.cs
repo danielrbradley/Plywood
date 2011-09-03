@@ -122,6 +122,7 @@ namespace Plywood
             }
         }
 
+        [Obsolete]
         public static string GetTargetAppVersionInfoPath(Guid targetKey, Guid appKey)
         {
             return string.Format("{0}/{1}/{2}.{3}", Apps.STR_APPS_CONTAINER_PATH, appKey.ToString("N"), targetKey.ToString("N"), STR_TARGET_APP_VERSION_INFO_EXTENSION);

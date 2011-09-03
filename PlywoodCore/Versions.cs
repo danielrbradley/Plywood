@@ -74,8 +74,6 @@ namespace Plywood
 
                 var indexEntries = new IndexEntries(Context);
 
-                string indexPath = GetAppVersionsIndexPath(version.AppKey);
-
                 indexEntries.DeleteEntity(version);
             }
             catch (AmazonS3Exception awsEx)

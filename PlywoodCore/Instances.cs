@@ -210,6 +210,7 @@ namespace Plywood
             }
         }
 
+        [Obsolete]
         private string GetTargetInstancesIndexPath(Guid targetKey)
         {
             return string.Format("{0}/{1}/{2}", Targets.STR_TARGETS_CONTAINER_PATH, targetKey.ToString("N"), STR_INSTANCE_INDEX_PATH);

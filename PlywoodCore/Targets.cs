@@ -86,7 +86,7 @@ namespace Plywood
                     using (var res = client.GetObject(new GetObjectRequest()
                     {
                         BucketName = Context.BucketName,
-                        Key = string.Format("{0}/{1}/{2}", STR_TARGETS_CONTAINER_PATH, key.ToString("N"), STR_INFO_FILE_NAME),
+                        Key = Paths.GetTargetDetailsKey(key),
                     }))
                     {
                         using (var stream = res.ResponseStream)

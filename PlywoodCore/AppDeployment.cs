@@ -137,7 +137,7 @@ namespace Plywood.PullService
 
             var app = appsController.GetApp(appKey);
             var latestVersion = versionsController.SearchAppVersions(appKey, pageSize: 1);
-            if (latestVersion.TotalCount < 1 && !latestVersion.Versions.Any()) throw new VersionNotFoundException("No versions available for installation.");
+            if (!latestVersion.Versions.Any()) throw new VersionNotFoundException("No versions available for installation.");
             Guid versionKey = latestVersion.Versions.First().Key;
 
             if (localAppVersions.ContainsKey(appKey))

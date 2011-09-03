@@ -5,6 +5,8 @@ Current Tasks
 
 > Rename the core collection in listing types to just be "Items" instead of having reference to the collection member type.
 
+> Move the path generation code into the respective entities.
+
 > Allow global indexes now we don't have conflict issues on the single file indexes.
 
 > Combine entity and implementation files for logical grouping.

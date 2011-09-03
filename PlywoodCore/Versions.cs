@@ -37,7 +37,7 @@ namespace Plywood
 
                     using (var stream = version.Serialise())
                     {
-                        var indexEntries = new IndexEntries();
+                        var indexEntries = new IndexEntries(Context);
                         // TODO: Check key and version number are unique.
 
                         using (var putResponse = client.PutObject(new PutObjectRequest()
@@ -47,7 +47,7 @@ namespace Plywood
                             InputStream = stream,
                         })) { }
 
-                        indexEntries.PutIndexEntry(version.GetIndexEntry());
+                        indexEntries.PutEntity(version);
                     }
                 }
             }
@@ -66,18 +66,13 @@ namespace Plywood
             var version = GetVersion(key);
             try
             {
-                Plywood.Internal.AwsHelpers.SoftDeleteFolders(Context, string.Format("{0}/{1}", STR_VERSIONS_CONTAINER_PATH, key.ToString("N")));
+                Plywood.Internal.AwsHelpers.SoftDeleteFolders(Context, Paths.GetVersionDetailsKey(version.Key));
 
-                var indexesController = new Internal.Indexes(Context);
+                var indexEntries = new IndexEntries(Context);
 
                 string indexPath = GetAppVersionsIndexPath(version.AppKey);
-                var appIndex = indexesController.LoadIndex(indexPath);
-                if (appIndex.Entries.Any(e => e.Key == key))
-                {
-                    appIndex.Entries.Remove(appIndex.Entries.Single(e => e.Key == key));
-                    Internal.Indexes.NameSortIndex(appIndex, true);
-                    indexesController.UpdateIndex(indexPath, appIndex);
-                }
+
+                indexEntries.DeleteEntity(version);
             }
             catch (AmazonS3Exception awsEx)
             {
@@ -98,7 +93,7 @@ namespace Plywood
                     using (var res = client.GetObject(new GetObjectRequest()
                     {
                         BucketName = Context.BucketName,
-                        Key = string.Format("{0}/{1}/{2}", STR_VERSIONS_CONTAINER_PATH, key.ToString("N"), STR_INFO_FILE_NAME),
+                        Key = Paths.GetVersionDetailsKey(key),
                     }))
                     {
                         using (var stream = res.ResponseStream)
@@ -144,7 +139,7 @@ namespace Plywood
                 {
                     bool more = true;
                     string lastResult = null;
-                    string prefix = string.Format("{0}/{1}/", STR_VERSIONS_CONTAINER_PATH, key.ToString("N"));
+                    string prefix = string.Format("v/{0}/c/", key.ToString("N"));
                     while (more)
                     {
                         using (var listResponse = client.ListObjects(new ListObjectsRequest()
@@ -201,7 +196,7 @@ namespace Plywood
                                 using (var putResponse = client.PutObject(new PutObjectRequest()
                                 {
                                     BucketName = Context.BucketName,
-                                    Key = string.Format("{0}/{1}/{2}", STR_VERSIONS_CONTAINER_PATH, key.ToString("N"), relativePath),
+                                    Key = string.Format("v/{0}/c/{1}", key.ToString("N"), relativePath),
                                     FilePath = f.FullName,
                                     GenerateMD5Digest = true,
                                 })) { }
@@ -215,10 +210,8 @@ namespace Plywood
             }
         }
 
-        public VersionList SearchAppVersions(Guid appKey, DateTime? fromDate = null, DateTime? toDate = null, string query = null, int offset = 0, int pageSize = 50)
+        public VersionList SearchAppVersions(Guid appKey, string query = null, string marker = null, int pageSize = 50)
         {
-            if (offset < 0)
-                throw new ArgumentOutOfRangeException("offset", "Offset cannot be a negative number.");
             if (pageSize < 1)
                 throw new ArgumentOutOfRangeException("pageSize", "Page size cannot be less than 1.");
             if (pageSize > 100)
@@ -226,43 +219,33 @@ namespace Plywood
 
             try
             {
-                var indexesController = new Internal.Indexes(Context);
-                var index = indexesController.LoadIndex(GetAppVersionsIndexPath(appKey));
-
-                var filteredIndex = index.Entries.AsQueryable();
-
-                if (fromDate != null)
-                {
-                    filteredIndex = filteredIndex.Where(e => DateTime.Parse(e.Name.Substring(0, e.Name.IndexOf(' '))) >= fromDate);
-                }
-                if (toDate != null)
-                {
-                    filteredIndex = filteredIndex.Where(e => DateTime.Parse(e.Name.Substring(0, e.Name.IndexOf(' '))) <= toDate);
-                }
+                IEnumerable<string> basePaths;
 
                 if (!string.IsNullOrWhiteSpace(query))
                 {
-                    var queryParts = query.ToLower().Split(new char[] { ' ', '\t', ',' }).Where(qp => !string.IsNullOrWhiteSpace(qp)).ToArray();
-                    filteredIndex = filteredIndex.Where(e => queryParts.Any(q => e.Name.ToLower().Contains(q)));
+                    var tokens = new SimpleTokeniser().Tokenise(query).ToList();
+                    var versionTokeniser = new VersionTokeniser();
+                    // Tokenise any tokens that look like versions
+                    tokens.AddRange(tokens.Where(t => Utils.Validation.IsMajorVersionValid(t)).SelectMany(t => versionTokeniser.Tokenise(t)));
+
+                    basePaths = tokens.Distinct().Select(token =>
+                        string.Format("a/{0}/vi/t/{1}", Utils.Indexes.EncodeGuid(appKey), Indexes.IndexEntries.GetTokenHash(token)));
                 }
+                else
+                    basePaths = new List<string>() { string.Format("a/{0}/vi/e", Utils.Indexes.EncodeGuid(appKey)) };
 
-                var count = filteredIndex.Count();
-                var listItems = filteredIndex.Skip(offset).Take(pageSize).Select(e =>
-                    new VersionListItem()
-                    {
-                        Key = e.Key,
-                        Timestamp = DateTime.Parse(e.Name.Substring(0, e.Name.IndexOf(' '))),
-                        VersionNumber = e.Name.Substring(e.Name.IndexOf(' ') + 1, e.Name.IndexOf(' ', e.Name.IndexOf(' ') + 1) - (e.Name.IndexOf(' ') + 1)),
-                        Comment = e.Name.Substring(e.Name.IndexOf(' ', e.Name.IndexOf(' ') + 1) + 1),
-                    }).ToList();
+                var indexEntries = new IndexEntries(Context);
+                var rawResults = indexEntries.PerformRawQuery(pageSize, marker, basePaths);
 
+                var apps = rawResults.FileNames.Select(fileName => new VersionListItem(fileName));
                 var list = new VersionList()
                 {
-                    AppKey = appKey,
-                    Versions = listItems,
-                    Offset = offset,
+                    Versions = apps,
+                    Query = query,
+                    Marker = marker,
                     PageSize = pageSize,
-                    TotalCount = count,
+                    NextMarker = apps.Last().Marker,
+                    IsTruncated = rawResults.IsTruncated,
                 };
 
                 return list;
@@ -300,17 +283,16 @@ namespace Plywood
                 {
                     using (var client = new AmazonS3Client(Context.AwsAccessKeyId, Context.AwsSecretAccessKey))
                     {
-                        var indexesController = new Internal.Indexes(Context);
+                        var indexEntries = new IndexEntries(Context);
 
                         using (var putResponse = client.PutObject(new PutObjectRequest()
                         {
                             BucketName = Context.BucketName,
-                            Key = string.Format("{0}/{1}/{2}", STR_VERSIONS_CONTAINER_PATH, version.Key.ToString("N"), STR_INFO_FILE_NAME),
+                            Key = Paths.GetVersionDetailsKey(version.Key),
                             InputStream = stream,
                         })) { }
 
-                        string indexPath = GetAppVersionsIndexPath(version.AppKey);
-                        indexesController.PutIndexEntry(indexPath, new Internal.EntityIndexEntry() { Key = version.Key, Name = CreateVersionIndexName(version) }, true);
+                        indexEntries.UpdateEntity(existingVersion, version);
                     }
                 }
                 catch (AmazonS3Exception awsEx)
@@ -333,7 +315,7 @@ namespace Plywood
                     using (var res = client.GetObjectMetadata(new GetObjectMetadataRequest()
                     {
                         BucketName = Context.BucketName,
-                        Key = string.Format("{0}/{1}/{2}", STR_VERSIONS_CONTAINER_PATH, key.ToString("N"), STR_INFO_FILE_NAME),
+                        Key = Paths.GetVersionDetailsKey(key),
                     })) { return true; }
                 }
             }
@@ -354,11 +336,13 @@ namespace Plywood
             }
         }
 
+        [Obsolete]
         public static string GetAppVersionsIndexPath(Guid appKey)
         {
             return string.Format("{0}/{1}/{2}", Apps.STR_APPS_CONTAINER_PATH, appKey.ToString("N"), STR_VERSION_INDEX_PATH);
         }
 
+        [Obsolete]
         public static string CreateVersionIndexName(Version version)
         {
             return String.Format("{0:s} {1} {2}", version.Timestamp, version.VersionNumber, version.Comment);

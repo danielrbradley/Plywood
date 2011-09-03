@@ -231,9 +231,11 @@ namespace Plywood
     {
         public Guid AppKey { get; set; }
         public IEnumerable<VersionListItem> Versions { get; set; }
-        public int Offset { get; set; }
+        public string Query { get; set; }
+        public string Marker { get; set; }
         public int PageSize { get; set; }
-        public int TotalCount { get; set; }
+        public string NextMarker { get; set; }
+        public bool IsTruncated { get; set; }
     }
 
     public class VersionListItem

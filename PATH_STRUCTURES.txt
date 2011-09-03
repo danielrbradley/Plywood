@@ -22,6 +22,9 @@ In an entity's directory there will be an details file containg the properties o
 
 NOTE: For details of the formats of these files, please see the XSD schemas and example xml files in the "Schemas" folder of the "PlywoodCore" project.
 
+Version files are stored in a folder named "c" for "content":
+  /v/7dc11e0cd5c511e0ae846ab04724019b/c/...
+
 Version Files
 -------------
 

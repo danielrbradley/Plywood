@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Plywood.Utils;
 
 namespace Plywood.Indexes
 {
@@ -18,6 +19,23 @@ namespace Plywood.Indexes
             else
                 hashNum = (ulong)date.Ticks;
             return hashNum.ToString("X");
+        }
+
+        public static string CreateVersionHash(string version, bool reversed = true)
+        {
+            if (version == null)
+                throw new ArgumentNullException("version", "The version must have a value.");
+            if (!Validation.IsMajorVersionValid(version))
+                throw new FormatException("Version string is not valid.");
+
+            if (reversed)
+            {
+                return string.Join("_", version.Split(new char[1] { '.' }).Select(numStr => (uint.MaxValue - uint.Parse(numStr)).ToString("X").PadLeft(8, '0')));
+            }
+            else
+            {
+                return string.Join("_", version.Split(new char[1] { '.' }).Select(numStr => uint.Parse(numStr).ToString("X").PadLeft(8, '0')));
+            }
         }
 
         public static string CreateHash(string content, bool reversed = false, bool ignoreCase = true, bool sortEmptyLast = true)

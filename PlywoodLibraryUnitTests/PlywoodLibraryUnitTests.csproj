@@ -73,6 +73,7 @@
     <Compile Include="Indexes\StringHashing.cs" />
     <Compile Include="Indexes\GetIndexEntryPathsTests.cs" />
     <Compile Include="Indexes\TokenHashTests.cs" />
+    <Compile Include="Indexes\VersionHashing.cs" />
     <Compile Include="KeyValuePairDeSerialiseTest.cs" />
     <Compile Include="HooksTest.cs" />
     <Compile Include="TimestampFromKeyTest.cs" />

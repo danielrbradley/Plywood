@@ -80,7 +80,6 @@
     <Compile Include="Targets.cs" />
     <Compile Include="Utils\Files.cs" />
     <Compile Include="Utils\Validation.cs" />
-    <Compile Include="VersionEntities.cs" />
     <Compile Include="Versions.cs" />
   </ItemGroup>
   <ItemGroup>

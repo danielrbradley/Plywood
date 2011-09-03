@@ -8,10 +8,11 @@ using System.Xml.Linq;
 using System.Xml.Schema;
 using System.Reflection;
 using System.Xml;
+using Plywood.Indexes;
 
 namespace Plywood
 {
-    public class Instance
+    public class Instance : IIndexableEntity
     {
         #region Constructors
 
@@ -185,6 +186,23 @@ namespace Plywood
 
         #endregion
 
+        public IEnumerable<string> GetIndexEntries()
+        {
+            var filename = string.Format("{0}-{1}-{2}",
+                Hashing.CreateHash(Name), Utils.Indexes.EncodeGuid(Key), Utils.Indexes.EncodeText(Name));
+
+            SimpleTokeniser tokeniser = new SimpleTokeniser();
+            var tokens = tokeniser.Tokenise(Name).ToList();
+
+            var entries = new List<string>(tokens.Count() + 1);
+
+            // Target specific index
+            entries.Add(string.Format("t/{0}/ii/e/{1}", Utils.Indexes.EncodeGuid(TargetKey), filename));
+            entries.AddRange(tokens.Select(token =>
+                string.Format("t/{0}/ii/t/{1}/{2}", Utils.Indexes.EncodeGuid(TargetKey), Indexes.IndexEntries.GetTokenHash(token), filename)));
+
+            return entries;
+        }
     }
 
     public class InstanceList
@@ -192,13 +210,30 @@ namespace Plywood
         public Guid TargetKey { get; set; }
         public IEnumerable<InstanceListItem> Instances { get; set; }
         public string Query { get; set; }
-        public int Offset { get; set; }
+        public string Marker { get; set; }
         public int PageSize { get; set; }
-        public int TotalCount { get; set; }
+        public string NextMarker { get; set; }
+        public bool IsTruncated { get; set; }
     }
 
     public class InstanceListItem
     {
+        public InstanceListItem()
+        {
+        }
+
+        public InstanceListItem(string path)
+        {
+            var segments = Utils.Indexes.GetIndexFileNameSegments(path);
+            if (segments.Length != 3)
+                throw new ArgumentException("An instance path index entry must contain exactly 3 segments.", "path");
+
+            Marker = segments[0];
+            Key = Utils.Indexes.DecodeGuid(segments[1]);
+            Name = Utils.Indexes.DecodeText(segments[2]);
+        }
+
+        internal string Marker { get; set; }
         public Guid Key { get; set; }
         public string Name { get; set; }
     }

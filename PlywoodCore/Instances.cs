@@ -5,6 +5,7 @@ using System.Text;
 using Plywood.Utils;
 using Amazon.S3;
 using Amazon.S3.Model;
+using Plywood.Indexes;
 
 namespace Plywood
 {
@@ -35,25 +36,16 @@ namespace Plywood
                         if (!targetsController.TargetExists(instance.TargetKey))
                             throw new TargetNotFoundException(String.Format("Target with the key \"{0}\" could not be found.", instance.TargetKey));
 
-                        var indexesController = new Internal.Indexes(Context);
-
-                        string indexPath = GetTargetInstancesIndexPath(instance.TargetKey);
-                        var instanceIndex = indexesController.LoadIndex(indexPath);
-                        if (instanceIndex.Entries.Any(e => e.Key == instance.Key))
-                        {
-                            throw new DeploymentException("Target instances index already contains entry for new instance key!");
-                        }
+                        var indexEntries = new IndexEntries(Context);
 
                         using (var putResponse = client.PutObject(new PutObjectRequest()
                         {
                             BucketName = Context.BucketName,
-                            Key = string.Format("{0}/{1}/{2}", STR_INSTANCES_CONTAINER_PATH, instance.Key.ToString("N"), STR_INFO_FILE_NAME),
+                            Key = Paths.GetInstanceDetailsKey(instance.Key),
                             InputStream = stream,
                         })) { }
 
-                        instanceIndex.Entries.Add(new Internal.EntityIndexEntry() { Key = instance.Key, Name = instance.Name });
-                        Internal.Indexes.NameSortIndex(instanceIndex);
-                        indexesController.UpdateIndex(indexPath, instanceIndex);
+                        indexEntries.PutEntity(instance);
                     }
                 }
                 catch (AmazonS3Exception awsEx)
@@ -70,16 +62,8 @@ namespace Plywood
             {
                 Plywood.Internal.AwsHelpers.SoftDeleteFolders(Context, string.Format("{0}/{1}", STR_INSTANCES_CONTAINER_PATH, instanceKey.ToString("N")));
 
-                var indexesController = new Internal.Indexes(Context);
-
-                string indexPath = GetTargetInstancesIndexPath(instance.TargetKey);
-                var appIndex = indexesController.LoadIndex(indexPath);
-                if (appIndex.Entries.Any(e => e.Key == instanceKey))
-                {
-                    appIndex.Entries.Remove(appIndex.Entries.Single(e => e.Key == instanceKey));
-                    Internal.Indexes.NameSortIndex(appIndex);
-                    indexesController.UpdateIndex(indexPath, appIndex);
-                }
+                var indexEntries = new IndexEntries(Context);
+                indexEntries.DeleteEntity(instance);
             }
             catch (AmazonS3Exception awsEx)
             {
@@ -96,7 +80,7 @@ namespace Plywood
                     using (var res = client.GetObjectMetadata(new GetObjectMetadataRequest()
                     {
                         BucketName = Context.BucketName,
-                        Key = string.Format("{0}/{1}/{2}", STR_INSTANCES_CONTAINER_PATH, instanceKey.ToString("N"), STR_INFO_FILE_NAME),
+                        Key = Paths.GetInstanceDetailsKey(instanceKey),
                     })) { return true; }
                 }
             }
@@ -122,7 +106,7 @@ namespace Plywood
                     using (var res = client.GetObject(new GetObjectRequest()
                     {
                         BucketName = Context.BucketName,
-                        Key = string.Format("{0}/{1}/{2}", STR_INSTANCES_CONTAINER_PATH, instanceKey.ToString("N"), STR_INFO_FILE_NAME),
+                        Key = Paths.GetInstanceDetailsKey(instanceKey),
                     }))
                     {
                         using (var stream = res.ResponseStream)
@@ -145,10 +129,8 @@ namespace Plywood
             }
         }
 
-        public InstanceList SearchInstances(Guid targetKey, string query = null, int offset = 0, int pageSize = 50)
+        public InstanceList SearchInstances(Guid targetKey, string query = null, string marker = null, int pageSize = 50)
         {
-            if (offset < 0)
-                throw new ArgumentOutOfRangeException("offset", "Offset cannot be a negative number.");
             if (pageSize < 1)
                 throw new ArgumentOutOfRangeException("pageSize", "Page size cannot be less than 1.");
             if (pageSize > 100)
@@ -156,27 +138,30 @@ namespace Plywood
 
             try
             {
-                var indexesController = new Internal.Indexes(Context);
-                var index = indexesController.LoadIndex(GetTargetInstancesIndexPath(targetKey));
-
-                var filteredIndex = index.Entries.AsQueryable();
+                IEnumerable<string> basePaths;
 
                 if (!string.IsNullOrWhiteSpace(query))
                 {
-                    var queryParts = query.ToLower().Split(new char[] { ' ', '\t', ',' }).Where(qp => !string.IsNullOrWhiteSpace(qp)).ToArray();
-                    filteredIndex = filteredIndex.Where(e => queryParts.Any(q => e.Name.ToLower().Contains(q)));
-                }
+                    var tokens = new SimpleTokeniser().Tokenise(query).ToList();
 
-                var count = filteredIndex.Count();
-                var listItems = filteredIndex.Skip(offset).Take(pageSize).Select(e => new InstanceListItem() { Key = e.Key, Name = e.Name }).ToList();
+                    basePaths = tokens.Distinct().Select(token =>
+                        string.Format("t/{0}/ii/t/{1}", Utils.Indexes.EncodeGuid(targetKey), Indexes.IndexEntries.GetTokenHash(token)));
+                }
+                else
+                    basePaths = new List<string>() { string.Format("t/{0}/ii/e", Utils.Indexes.EncodeGuid(targetKey)) };
+
+                var indexEntries = new IndexEntries(Context);
+                var rawResults = indexEntries.PerformRawQuery(pageSize, marker, basePaths);
+
+                var instances = rawResults.FileNames.Select(fileName => new InstanceListItem(fileName));
                 var list = new InstanceList()
                 {
-                    TargetKey = targetKey,
-                    Instances = listItems,
+                    Instances = instances,
                     Query = query,
-                    Offset = offset,
+                    Marker = marker,
                     PageSize = pageSize,
-                    TotalCount = count,
+                    NextMarker = instances.Last().Marker,
+                    IsTruncated = rawResults.IsTruncated,
                 };
 
                 return list;
@@ -205,13 +190,12 @@ namespace Plywood
                         using (var putResponse = client.PutObject(new PutObjectRequest()
                         {
                             BucketName = Context.BucketName,
-                            Key = string.Format("{0}/{1}/{2}", STR_INSTANCES_CONTAINER_PATH, updatedInstance.Key.ToString("N"), STR_INFO_FILE_NAME),
+                            Key = Paths.GetInstanceDetailsKey(updatedInstance.Key),
                             InputStream = stream,
                         })) { }
 
-                        var indexesController = new Internal.Indexes(Context);
-                        string indexPath = GetTargetInstancesIndexPath(updatedInstance.TargetKey);
-                        indexesController.PutIndexEntry(indexPath, new Internal.EntityIndexEntry() { Key = updatedInstance.Key, Name = updatedInstance.Name });
+                        var indexEntries = new IndexEntries(Context);
+                        indexEntries.UpdateEntity(existingInstance, updatedInstance);
                     }
                 }
                 catch (AmazonS3Exception awsEx)

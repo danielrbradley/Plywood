@@ -8,10 +8,11 @@ using System.Xml.Linq;
 using System.Xml.Schema;
 using System.Reflection;
 using System.Xml;
+using Plywood.Indexes;
 
 namespace Plywood
 {
-    public class Version
+    public class Version : IIndexableEntity
     {
         #region Constructors
 
@@ -50,6 +51,7 @@ namespace Plywood
         public Guid Key { get; set; }
         public Guid AppKey { get; set; }
         public Guid GroupKey { get; set; }
+        [Obsolete]
         public string Name { get { return string.Format("{0} {1}", this.VersionNumber, this.Comment); } }
         public string VersionNumber { get; set; }
         public string Comment { get; set; }
@@ -199,9 +201,29 @@ namespace Plywood
 
         #endregion
 
+        [Obsolete]
         internal Indexes.IndexEntry GetIndexEntry()
         {
             throw new NotImplementedException();
+        }
+
+        public IEnumerable<string> GetIndexEntries()
+        {
+            var filename = string.Format("{0}-{1}-{2}-{3}-{4}",
+                Hashing.CreateVersionHash(VersionNumber), Utils.Indexes.EncodeGuid(Key), Utils.Indexes.EncodeText(Comment), Utils.Indexes.EncodeText(VersionNumber), Utils.Indexes.EncodeText(Timestamp.ToString("s")));
+
+            SimpleTokeniser tokeniser = new SimpleTokeniser();
+            var tokens = tokeniser.Tokenise(Comment).ToList();
+            tokens.AddRange((new VersionTokeniser()).Tokenise(VersionNumber));
+
+            var entries = new List<string>(tokens.Count() + 1);
+
+            // App specific index
+            entries.Add(string.Format("a/{0}/vi/e/{1}", Utils.Indexes.EncodeGuid(AppKey), filename));
+            entries.AddRange(tokens.Select(token =>
+                string.Format("a/{0}/vi/t/{1}/{2}", Utils.Indexes.EncodeGuid(AppKey), Indexes.IndexEntries.GetTokenHash(token), filename)));
+
+            return entries;
         }
     }
 
@@ -216,8 +238,27 @@ namespace Plywood
 
     public class VersionListItem
     {
+        public VersionListItem()
+        {
+        }
+
+        public VersionListItem(string path)
+        {
+            var segments = Utils.Indexes.GetIndexFileNameSegments(path);
+            if (segments.Length != 5)
+                throw new ArgumentException("A version path index entry must contain exactly 5 segments.", "path");
+
+            Marker = segments[0];
+            Key = Utils.Indexes.DecodeGuid(segments[1]);
+            Comment = Utils.Indexes.DecodeText(segments[2]);
+            VersionNumber = Utils.Indexes.DecodeText(segments[3]);
+            Timestamp = DateTime.Parse(Utils.Indexes.DecodeText(segments[4]));
+        }
+
+        internal string Marker { get; set; }
         public Guid Key { get; set; }
         public DateTime Timestamp { get; set; }
+        [Obsolete]
         public string Name { get { return string.Format("{0} {1}", this.VersionNumber, this.Comment); } }
         public string VersionNumber { get; set; }
         public string Comment { get; set; }

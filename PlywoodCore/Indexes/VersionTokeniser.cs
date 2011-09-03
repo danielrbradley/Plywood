@@ -9,7 +9,7 @@ namespace Plywood.Indexes
     {
         public IEnumerable<string> Tokenise(string input)
         {
-            return Enumerable.Range(1, input.Length).Select(n => input.Take(n).Select(c => c.ToString()).Aggregate((a, b) => a + b)).Where(t => !t.EndsWith("."));
+            return Enumerable.Range(1, input.Length).Select(n => input.Take(n).Select(c => c.ToString()).Aggregate((a, b) => a + b)).Where(t => !t.EndsWith(".")).ToList();
         }
     }
 }

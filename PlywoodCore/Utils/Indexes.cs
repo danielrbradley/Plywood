@@ -29,7 +29,7 @@ namespace Plywood.Utils
 
         public static string EncodeText(string text)
         {
-            return System.Web.HttpUtility.UrlPathEncode(text).Replace(".", "%2E");
+            return System.Web.HttpUtility.UrlPathEncode(text).Replace(".", "%2E").Replace("-", "%2D").Replace(":", "%3A");
         }
 
         public static string DecodeText(string encodedText)

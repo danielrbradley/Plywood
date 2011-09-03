@@ -50,6 +50,7 @@
     <Compile Include="AppDeployment.cs" />
     <Compile Include="Configuration.cs" />
     <Compile Include="IIndexableEntity.cs" />
+    <Compile Include="Indexes\VersionTokeniser.cs" />
     <Compile Include="Indexes\Hashing.cs" />
     <Compile Include="Indexes\IndexEntries.cs" />
     <Compile Include="Indexes\IndexEntry.cs" />

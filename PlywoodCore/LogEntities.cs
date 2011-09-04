@@ -8,10 +8,11 @@ using System.Xml.Linq;
 using System.Xml.Schema;
 using System.Reflection;
 using System.Xml;
+using Plywood.Indexes;
 
 namespace Plywood
 {
-    public class LogEntry
+    public class LogEntry : IIndexableEntity
     {
         #region Constructors
 
@@ -173,6 +174,18 @@ namespace Plywood
 
         #endregion
 
+        public IEnumerable<string> GetIndexEntries()
+        {
+            var filename = string.Format("{0}-{1}",
+                Hashing.CreateHash(Timestamp), (char)Status);
+
+            var entries = new List<string>(1);
+
+            // Instance specific index (only everything index)
+            entries.Add(string.Format("i/{0}/li/e/{1}", Utils.Indexes.EncodeGuid(InstanceKey), filename));
+
+            return entries;
+        }
     }
 
     public class LogEntryPage
@@ -186,6 +199,22 @@ namespace Plywood
 
     public class LogEntryListItem
     {
+        public LogEntryListItem()
+        {
+        }
+
+        public LogEntryListItem(string path)
+        {
+            var segments = Utils.Indexes.GetIndexFileNameSegments(path);
+            if (segments.Length != 2)
+                throw new ArgumentException("A log entry path index entry must contain exactly 2 segments.", "path");
+
+            Marker = segments[0];
+            Timestamp = Indexes.Hashing.UnHashDate(segments[0]);
+            Status = (LogStatus)segments[1][0];
+        }
+
+        internal string Marker { get; set; }
         public DateTime Timestamp { get; set; }
         public LogStatus Status { get; set; }
     }

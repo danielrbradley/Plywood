@@ -24,6 +24,9 @@ namespace Plywood.Tests.UnitTesting.EntityIndexing
                 "t/9a28d7bed5b211e095ba0c204924019b/ii/e/testinstance-7dc11e0cd5c511e0ae846ab04724019b-Test%20Instance",
                 "t/9a28d7bed5b211e095ba0c204924019b/ii/t/098f6bcd4621d373cade4e832627b4f6/testinstance-7dc11e0cd5c511e0ae846ab04724019b-Test%20Instance",
                 "t/9a28d7bed5b211e095ba0c204924019b/ii/t/7123a699d77db6479a1d8ece2c4f1c16/testinstance-7dc11e0cd5c511e0ae846ab04724019b-Test%20Instance",
+                "ii/e/testinstance-7dc11e0cd5c511e0ae846ab04724019b-Test%20Instance",
+                "ii/t/098f6bcd4621d373cade4e832627b4f6/testinstance-7dc11e0cd5c511e0ae846ab04724019b-Test%20Instance",
+                "ii/t/7123a699d77db6479a1d8ece2c4f1c16/testinstance-7dc11e0cd5c511e0ae846ab04724019b-Test%20Instance",
             };
             var actual = instance.GetIndexEntries();
 

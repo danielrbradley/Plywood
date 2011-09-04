@@ -408,6 +408,11 @@ namespace Plywood
             entries.AddRange(tokens.Select(token =>
                 string.Format("t/{0}/ii/t/{1}/{2}", Utils.Indexes.EncodeGuid(TargetKey), Indexes.IndexEntries.GetTokenHash(token), filename)));
 
+            // Global index
+            entries.Add(string.Format("ii/e/{0}", filename));
+            entries.AddRange(tokens.Select(token =>
+                string.Format("ii/t/{0}/{1}", Indexes.IndexEntries.GetTokenHash(token), filename)));
+
             return entries;
         }
     }

@@ -1,0 +1,24 @@
+Can't sleep ...
+and got thinking about the fundamental concepts behind plywood (names of the components etc).
+
+First off - plywood currently has 'Targets' but perhaps this would make more sense as a 'Role' as it describes a type of machine which does a specific purpose. 'Instance' could then either remain unchanged or just simply be called 'Server'.
+
+Secondly, plywood currently has 'Apps' which are the specific versionable, deployable units. However, in practice these have turned out to sometimes be things to deploy which aren't actually applicaitons of any kind - perhaps a the TzData files or some fonts. Therefore a slightly more general name as 'Package' might suite better (and 'Versions' still sits well with that).
+
+The next thing I started thinking about was groups, these were created because we knew that the system had to work for multiple teams. We then had some stuff in common so created the 'shared' or 'default' group. These groups are pretty clunky and are a little primative. The new brainwave is to simply have namespaces assigned to packages and roles, giving a heirachial, multi-layered organisational system. 
+
+
+How do namespace transate to implementation, I hear you ask
+
+Much like how the refactored indexes are sometimes at both the global and group specific levels we simply duplicate the index entries for each level of their namespace where the hash of the heirachy of the level of the namespace is used as a grouping mechanism i.e. an app created in the namespace:
+  Company.Department.Product.Component
+Would be indexed under the following namespaces:
+  ""
+  "Company"
+  "Company.Department"
+  "Company.Department.Product"
+  "Company.Department.Product.Component"
+Each of these would be hashed and the base index path would be "n" for namespace, followed by the namespace hash, followed by the regular index collections and paths such as:
+  /n/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx/..
+
+Fin.

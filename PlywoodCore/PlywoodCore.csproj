@@ -47,6 +47,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AmazonS3StorageProvider.cs" />
     <Compile Include="AppDeployment.cs" />
     <Compile Include="Configuration.cs" />
     <Compile Include="FileListing.cs" />

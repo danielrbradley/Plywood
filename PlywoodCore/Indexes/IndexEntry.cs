@@ -41,6 +41,11 @@ namespace Plywood.Indexes
             return this.EntryKey.Equals(indexEntry.EntryKey);
         }
 
+        public override int GetHashCode()
+        {
+            return this.EntryKey.GetHashCode();
+        }
+
         public override string ToString()
         {
             return IndexEntries.GetIndexEntryFilename(this);

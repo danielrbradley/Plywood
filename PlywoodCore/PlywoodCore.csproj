@@ -49,6 +49,7 @@
   <ItemGroup>
     <Compile Include="AppDeployment.cs" />
     <Compile Include="Configuration.cs" />
+    <Compile Include="FileListing.cs" />
     <Compile Include="IIndexableEntity.cs" />
     <Compile Include="Indexes\VersionTokeniser.cs" />
     <Compile Include="Indexes\Hashing.cs" />
@@ -57,6 +58,7 @@
     <Compile Include="Indexes\IndexQueryResult.cs" />
     <Compile Include="Indexes\ITokeniser.cs" />
     <Compile Include="Indexes\RawQueryResult.cs" />
+    <Compile Include="IStorageProvider.cs" />
     <Compile Include="LogEntities.cs" />
     <Compile Include="Logs.cs" />
     <Compile Include="Instances.cs" />

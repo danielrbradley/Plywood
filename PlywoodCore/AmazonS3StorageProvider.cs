@@ -9,7 +9,7 @@ using System.IO;
 
 namespace Plywood
 {
-    public class AmazonS3StorageProvider : IPlywoodStorageProvider, IDisposable
+    public class AmazonS3StorageProvider : IStorageProvider, IDisposable
     {
         public AmazonS3StorageProvider(string awsAccessKeyId, string awsSecretAccessKey, string bucketName, AmazonS3Config config = null)
         {

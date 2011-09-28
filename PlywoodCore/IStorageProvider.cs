@@ -6,7 +6,7 @@ using System.IO;
 
 namespace Plywood
 {
-    public interface IPlywoodStorageProvider
+    public interface IStorageProvider
     {
         /// <summary>
         /// Delete a single file.

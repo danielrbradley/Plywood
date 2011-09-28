@@ -50,9 +50,8 @@
     <Compile Include="AmazonS3StorageProvider.cs" />
     <Compile Include="AppDeployment.cs" />
     <Compile Include="Configuration.cs" />
-    <Compile Include="FileSystemStorageProvider.cs" />
-    <Compile Include="IStoragePath.cs" />
-    <Compile Include="StorageFolderPath.cs" />
+    <Compile Include="IPath.cs" />
+    <Compile Include="FolderPath.cs" />
     <Compile Include="FileListing.cs" />
     <Compile Include="IIndexableEntity.cs" />
     <Compile Include="Indexes\VersionTokeniser.cs" />
@@ -66,7 +65,7 @@
     <Compile Include="LogEntities.cs" />
     <Compile Include="Logs.cs" />
     <Compile Include="Instances.cs" />
-    <Compile Include="StorageFilePath.cs" />
+    <Compile Include="FilePath.cs" />
     <Compile Include="TargetAppVersions.cs" />
     <Compile Include="Internal\AwsHelpers.cs" />
     <Compile Include="ControllerBase.cs" />

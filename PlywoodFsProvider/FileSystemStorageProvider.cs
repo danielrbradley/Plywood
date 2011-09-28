@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.IO;
 
-namespace Plywood
+namespace Plywood.FsProvider
 {
-    public class FileSystemStorageProvider : IPlywoodStorageProvider
+    public class FileSystemStorageProvider : IStorageProvider
     {
         public FileSystemStorageProvider(string rootPath)
         {
@@ -88,7 +88,7 @@ namespace Plywood
 
         public FileListing ListFiles(FolderPath folderPath, string marker, int pageSize)
         {
-            var files = Directory.EnumerateFiles(GetFsPath(folderPath)).SkipWhile(f => string.Compare(f, marker) <= 0).Take(pageSize + 1).ToList();
+            var files = Directory.EnumerateFiles(GetFsPath(folderPath)).SkipWhile(f => string.Compare(Path.GetFileName(f), marker) <= 0).Take(pageSize + 1).Select(f => Path.GetFileName(f)).ToList();
             var page = files.Take(pageSize).ToList();
             var isTruncated = files.Skip(pageSize).Any();
             var nextMarker = page.Any() ? page.Last() : marker;
@@ -110,7 +110,7 @@ namespace Plywood
                 throw new FormatException("The specified path is not valid.");
             }
 
-            return Path.Combine(rootPath, path.Value.Replace("/", @"\"));
+            return Path.Combine(rootPath, path.Value.Replace("/", @"\").TrimStart(new char[1] { '\\' }));
         }
     }
 }

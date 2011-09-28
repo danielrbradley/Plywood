@@ -17,40 +17,40 @@ namespace Plywood
 
         public void DeleteFile(string path)
         {
-            DeleteFile(new StorageFilePath(path));
+            DeleteFile(new FilePath(path));
         }
 
-        public void DeleteFile(StorageFilePath path)
+        public void DeleteFile(FilePath path)
         {
             File.Delete(GetFsPath(path));
         }
 
         public bool FileExists(string path)
         {
-            return this.FileExists(new StorageFilePath(path));
+            return this.FileExists(new FilePath(path));
         }
 
-        public bool FileExists(StorageFilePath path)
+        public bool FileExists(FilePath path)
         {
             return File.Exists(GetFsPath(path));
         }
 
         public System.IO.Stream GetFile(string path)
         {
-            return this.GetFile(new StorageFilePath(path));
+            return this.GetFile(new FilePath(path));
         }
 
-        public System.IO.Stream GetFile(StorageFilePath path)
+        public System.IO.Stream GetFile(FilePath path)
         {
             return File.OpenRead(GetFsPath(path));
         }
 
         public void PutFile(string path, System.IO.Stream content = null)
         {
-            this.PutFile(new StorageFilePath(path), content);
+            this.PutFile(new FilePath(path), content);
         }
 
-        public void PutFile(StorageFilePath path, System.IO.Stream content = null)
+        public void PutFile(FilePath path, System.IO.Stream content = null)
         {
             using (var stream = File.Create(GetFsPath(path)))
             {
@@ -63,35 +63,47 @@ namespace Plywood
 
         public void MoveFile(string oldPath, string newPath)
         {
-            throw new NotImplementedException();
+            MoveFile(new FilePath(oldPath), new FilePath(newPath));
         }
 
-        public void MoveFile(StorageFilePath oldPath, StorageFilePath newPath)
+        public void MoveFile(FilePath oldPath, FilePath newPath)
         {
-            throw new NotImplementedException();
+            File.Move(GetFsPath(oldPath), GetFsPath(newPath));
         }
 
         public void MoveFolder(string oldFolderPath, string newFolderPath)
         {
-            throw new NotImplementedException();
+            MoveFolder(new FolderPath(oldFolderPath), new FolderPath(newFolderPath));
         }
 
-        public void MoveFolder(StorageFilePath oldFolderPath, StorageFilePath newFolderPath)
+        public void MoveFolder(FolderPath oldFolderPath, FolderPath newFolderPath)
         {
-            throw new NotImplementedException();
+            Directory.Move(GetFsPath(oldFolderPath), GetFsPath(newFolderPath));
         }
 
         public FileListing ListFiles(string folderPath, string marker, int pageSize)
         {
-            throw new NotImplementedException();
+            return ListFiles(new FolderPath(folderPath), marker, pageSize);
         }
 
-        public FileListing ListFiles(StorageFilePath folderPath, string marker, int pageSize)
+        public FileListing ListFiles(FolderPath folderPath, string marker, int pageSize)
         {
-            throw new NotImplementedException();
+            var files = Directory.EnumerateFiles(GetFsPath(folderPath)).SkipWhile(f => string.Compare(f, marker) <= 0).Take(pageSize + 1).ToList();
+            var page = files.Take(pageSize).ToList();
+            var isTruncated = files.Skip(pageSize).Any();
+            var nextMarker = page.Any() ? page.Last() : marker;
+            return new FileListing()
+            {
+                FolderPath = folderPath.Value,
+                Items = page.ToList(),
+                Marker = marker,
+                PageSize = pageSize,
+                IsTruncated = isTruncated,
+                NextMarker = nextMarker
+            };
         }
 
-        private string GetFsPath(StorageFilePath path)
+        private string GetFsPath(IPath path)
         {
             if (!path.IsValid)
             {

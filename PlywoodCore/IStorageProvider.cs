@@ -20,7 +20,7 @@ namespace Plywood
         /// </summary>
         /// <param name="path">Absolute unix-style path.</param>
         /// <exception cref="FileNotFoundException">Thrown if the no file exists on the specified path.</exception>
-        void DeleteFile(StorageFilePath path);
+        void DeleteFile(FilePath path);
 
         /// <summary>
         /// Check if a file exists.
@@ -34,7 +34,7 @@ namespace Plywood
         /// </summary>
         /// <param name="path">Absolute unix-style path to check.</param>
         /// <returns>Boolean indicating if the file exists.</returns>
-        bool FileExists(StorageFilePath path);
+        bool FileExists(FilePath path);
 
         /// <summary>
         /// Load the content of an existing file.
@@ -50,7 +50,7 @@ namespace Plywood
         /// <param name="path">Absolute unix-style path to the file to load.</param>
         /// <returns>Stream containing the content of the file.</returns>
         /// <exception cref="FileNotFoundException">Thrown if the no file exists on the specified path.</exception>
-        Stream GetFile(StorageFilePath path);
+        Stream GetFile(FilePath path);
 
         /// <summary>
         /// Create a new file with the selected content.
@@ -64,7 +64,7 @@ namespace Plywood
         /// </summary>
         /// <param name="path">Absolute unix-style path of the file to create.</param>
         /// <param name="content">Optional content of the file.</param>
-        void PutFile(StorageFilePath path, Stream content = null);
+        void PutFile(FilePath path, Stream content = null);
 
         /// <summary>
         /// Move (or rename) a file from one path to another.
@@ -80,7 +80,7 @@ namespace Plywood
         /// <param name="oldPath">The current, absolute unix-style path of the file.</param>
         /// <param name="newPath">The new, absolute unix-style path of the file.</param>
         /// <exception cref="FileNotFoundException">Thrown if the no file exists on the old path.</exception>
-        void MoveFile(StorageFilePath oldPath, StorageFilePath newPath);
+        void MoveFile(FilePath oldPath, FilePath newPath);
 
         /// <summary>
         /// Move a folder and its content from one path to another.
@@ -96,7 +96,7 @@ namespace Plywood
         /// <param name="oldFolderPath">The current, absolute unix-style path of the folder.</param>
         /// <param name="newFolderPath">The new, absolute unix-style path of the folder.</param>
         /// <exception cref="DirectoryNotFoundException">Thrown if no folder exists at the specified old path.</exception>
-        void MoveFolder(StorageFilePath oldFolderPath, StorageFilePath newFolderPath);
+        void MoveFolder(FolderPath oldFolderPath, FolderPath newFolderPath);
 
         /// <summary>
         /// Get a page of filenames from a folder.
@@ -114,6 +114,6 @@ namespace Plywood
         /// <param name="marker">String by which all filenames must be lexographically after.</param>
         /// <param name="pageSize">Maximum number of filenames to return.</param>
         /// <returns>File listing collection containing the filenames ordered by name ascending.</returns>
-        FileListing ListFiles(StorageFilePath folderPath, string marker, int pageSize);
+        FileListing ListFiles(FolderPath folderPath, string marker, int pageSize);
     }
 }

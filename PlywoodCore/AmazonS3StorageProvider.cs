@@ -43,10 +43,10 @@ namespace Plywood
 
         public void DeleteFile(string path)
         {
-            this.DeleteFile(new StorageFilePath(path));
+            this.DeleteFile(new FilePath(path));
         }
 
-        public void DeleteFile(StorageFilePath path)
+        public void DeleteFile(FilePath path)
         {
             if (!path.IsValid)
             {
@@ -75,7 +75,7 @@ namespace Plywood
             throw new NotImplementedException();
         }
 
-        public bool FileExists(StorageFilePath path)
+        public bool FileExists(FilePath path)
         {
             throw new NotImplementedException();
         }
@@ -85,7 +85,7 @@ namespace Plywood
             throw new NotImplementedException();
         }
 
-        public Stream GetFile(StorageFilePath path)
+        public Stream GetFile(FilePath path)
         {
             throw new NotImplementedException();
         }
@@ -95,7 +95,7 @@ namespace Plywood
             throw new NotImplementedException();
         }
 
-        public void PutFile(StorageFilePath path, Stream content = null)
+        public void PutFile(FilePath path, Stream content = null)
         {
             throw new NotImplementedException();
         }
@@ -105,7 +105,7 @@ namespace Plywood
             throw new NotImplementedException();
         }
 
-        public void MoveFile(StorageFilePath oldPath, StorageFilePath newPath)
+        public void MoveFile(FilePath oldPath, FilePath newPath)
         {
             throw new NotImplementedException();
         }
@@ -115,7 +115,7 @@ namespace Plywood
             throw new NotImplementedException();
         }
 
-        public void MoveFolder(StorageFilePath oldFolderPath, StorageFilePath newFolderPath)
+        public void MoveFolder(FolderPath oldFolderPath, FolderPath newFolderPath)
         {
             throw new NotImplementedException();
         }
@@ -125,7 +125,7 @@ namespace Plywood
             throw new NotImplementedException();
         }
 
-        public FileListing ListFiles(StorageFilePath folderPath, string marker, int pageSize)
+        public FileListing ListFiles(FolderPath folderPath, string marker, int pageSize)
         {
             throw new NotImplementedException();
         }

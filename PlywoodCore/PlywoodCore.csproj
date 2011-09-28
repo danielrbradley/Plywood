@@ -51,6 +51,7 @@
     <Compile Include="AppDeployment.cs" />
     <Compile Include="Configuration.cs" />
     <Compile Include="FileSystemStorageProvider.cs" />
+    <Compile Include="IStoragePath.cs" />
     <Compile Include="StorageFolderPath.cs" />
     <Compile Include="FileListing.cs" />
     <Compile Include="IIndexableEntity.cs" />

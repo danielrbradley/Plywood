@@ -6,13 +6,13 @@ using System.Text.RegularExpressions;
 
 namespace Plywood
 {
-    public class StorageFilePath
+    public class FilePath : IPath
     {
-        public StorageFilePath()
+        public FilePath()
         {
         }
 
-        public StorageFilePath(string value)
+        public FilePath(string value)
         {
             this.Value = value;
         }

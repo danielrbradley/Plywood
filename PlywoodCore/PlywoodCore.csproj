@@ -46,7 +46,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AppDeployment.cs" />
     <Compile Include="Configuration.cs" />
     <Compile Include="IPath.cs" />
     <Compile Include="FolderPath.cs" />
@@ -68,7 +67,6 @@
     <Compile Include="Internal\AwsHelpers.cs" />
     <Compile Include="ControllerBase.cs" />
     <Compile Include="Exceptions.cs" />
-    <Compile Include="Internal\Indexes.cs" />
     <Compile Include="TargetApps.cs" />
     <Compile Include="Indexes\SimpleTokeniser.cs" />
     <Compile Include="Utils\Hooks.cs" />

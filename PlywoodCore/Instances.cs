@@ -21,8 +21,7 @@ namespace Plywood
         [Obsolete]
         public const string STR_INSTANCES_CONTAINER_PATH = "instances";
 
-        public Instances() : base() { }
-        public Instances(ControllerConfiguration context) : base(context) { }
+        public Instances(IStorageProvider provider) : base(provider) { }
 
         public void CreateInstance(Instance instance)
         {

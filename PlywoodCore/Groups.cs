@@ -20,8 +20,7 @@ namespace Plywood
         [Obsolete]
         public const string STR_GROUPS_CONTAINER_PATH = "g";
 
-        public Groups() : base() { }
-        public Groups(ControllerConfiguration context) : base(context) { }
+        public Groups(IStorageProvider provider) : base(provider) { }
 
         public void CreateGroup(Group group)
         {
@@ -32,22 +31,14 @@ namespace Plywood
             {
                 try
                 {
-                    using (var client = new AmazonS3Client(Context.AwsAccessKeyId, Context.AwsSecretAccessKey))
-                    {
-                        using (var putResponse = client.PutObject(new PutObjectRequest()
-                        {
-                            BucketName = Context.BucketName,
-                            Key = Paths.GetGroupDetailsKey(group.Key),
-                            InputStream = stream,
-                        })) { }
-                    }
+                    var indexEntries = new IndexEntries(StorageProvider);
 
-                    var indexEntries = new IndexEntries(Context);
+                    StorageProvider.PutFile(Paths.GetGroupDetailsKey(group.Key), stream);
                     indexEntries.PutEntity(group);
                 }
-                catch (AmazonS3Exception awsEx)
+                catch (Exception ex)
                 {
-                    throw new DeploymentException("Failed creating group.", awsEx);
+                    throw new DeploymentException("Failed creating group.", ex);
                 }
             }
         }
@@ -57,14 +48,15 @@ namespace Plywood
             var group = GetGroup(key);
             try
             {
-                Plywood.Internal.AwsHelpers.SoftDeleteFolders(Context, Paths.GetGroupDetailsKey(group.Key));
+                // TODO: Refactor the solf-delete functionality.
+                StorageProvider.MoveFile(Paths.GetGroupDetailsKey(key), string.Concat(".recycled/", Paths.GetGroupDetailsKey(key)));
 
-                var indexEntries = new IndexEntries(Context);
+                var indexEntries = new IndexEntries(StorageProvider);
                 indexEntries.DeleteEntity(group);
             }
-            catch (AmazonS3Exception awsEx)
+            catch (Exception ex)
             {
-                throw new DeploymentException("Failed deleting group.", awsEx);
+                throw new DeploymentException("Failed deleting group.", ex);
             }
         }
 
@@ -72,31 +64,14 @@ namespace Plywood
         {
             try
             {
-                using (var client = new AmazonS3Client(Context.AwsAccessKeyId, Context.AwsSecretAccessKey))
+                using (var stream = StorageProvider.GetFile(Paths.GetGroupDetailsKey(key)))
                 {
-                    using (var res = client.GetObject(new GetObjectRequest()
-                    {
-                        BucketName = Context.BucketName,
-                        Key = Paths.GetGroupDetailsKey(key),
-                    }))
-                    {
-                        using (var stream = res.ResponseStream)
-                        {
-                            return new Group(stream);
-                        }
-                    }
+                    return new Group(stream);
                 }
             }
-            catch (AmazonS3Exception awsEx)
+            catch (Exception ex)
             {
-                if (awsEx.StatusCode == System.Net.HttpStatusCode.NotFound)
-                {
-                    throw new GroupNotFoundException(string.Format("Could not find the group with key: {0}", key), awsEx);
-                }
-                else
-                {
-                    throw new DeploymentException(string.Format("Failed getting group with key \"{0}\"", key), awsEx);
-                }
+                throw new DeploymentException(string.Format("Failed getting group with key \"{0}\"", key), ex);
             }
         }
 
@@ -104,25 +79,11 @@ namespace Plywood
         {
             try
             {
-                using (var client = new AmazonS3Client(Context.AwsAccessKeyId, Context.AwsSecretAccessKey))
-                {
-                    using (var res = client.GetObjectMetadata(new GetObjectMetadataRequest()
-                    {
-                        BucketName = Context.BucketName,
-                        Key = Paths.GetGroupDetailsKey(key),
-                    })) { return true; }
-                }
+                return StorageProvider.FileExists(Paths.GetGroupDetailsKey(key));
             }
-            catch (AmazonS3Exception awsEx)
+            catch (Exception ex)
             {
-                if (awsEx.StatusCode == System.Net.HttpStatusCode.NotFound)
-                {
-                    return false;
-                }
-                else
-                {
-                    throw new DeploymentException(string.Format("Failed getting group with key \"{0}\"", key), awsEx);
-                }
+                throw new DeploymentException(string.Format("Failed getting group with key \"{0}\"", key), ex);
             }
         }
 
@@ -146,7 +107,7 @@ namespace Plywood
                         "gi/e",
                     };
 
-                var indexEntries = new IndexEntries(Context);
+                var indexEntries = new IndexEntries(StorageProvider);
                 var rawResults = indexEntries.PerformRawQuery(pageSize, marker, basePaths);
 
                 IEnumerable<GroupListItem> groups = rawResults.FileNames.Select(fileName => new GroupListItem(fileName));
@@ -179,17 +140,9 @@ namespace Plywood
             {
                 try
                 {
-                    using (var client = new AmazonS3Client(Context.AwsAccessKeyId, Context.AwsSecretAccessKey))
-                    {
-                        using (var putResponse = client.PutObject(new PutObjectRequest()
-                        {
-                            BucketName = Context.BucketName,
-                            Key = Paths.GetGroupDetailsKey(group.Key),
-                            InputStream = stream,
-                        })) { }
-                    }
+                    StorageProvider.PutFile(Paths.GetGroupDetailsKey(group.Key), stream);
 
-                    var indexEntries = new IndexEntries(Context);
+                    var indexEntries = new IndexEntries(StorageProvider);
                     indexEntries.UpdateEntity(oldGroup, group);
                 }
                 catch (AmazonS3Exception awsEx)

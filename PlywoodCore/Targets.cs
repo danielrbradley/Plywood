@@ -21,8 +21,7 @@ namespace Plywood
         [Obsolete]
         public const string STR_TARGETS_CONTAINER_PATH = "targets";
 
-        public Targets() : base() { }
-        public Targets(ControllerConfiguration context) : base(context) { }
+        public Targets(IStorageProvider provider) : base(provider) { }
 
         public void CreateTarget(Target target)
         {

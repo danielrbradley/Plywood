@@ -8,20 +8,18 @@ namespace Plywood
 {
     public abstract class ControllerBase
     {
-        public const string STR_INFO_FILE_NAME = ".info";
-
-        private ControllerConfiguration _Context;
-        public ControllerConfiguration Context { get { return _Context; } }
-
-        public ControllerBase()
+        private IStorageProvider storageProvider;
+        public IStorageProvider StorageProvider
         {
-            // Load context from configuration.
-            _Context = Configuration.AppSettings.LoadControllerConfiguration();
+            get
+            {
+                return storageProvider;
+            }
         }
 
-        public ControllerBase(ControllerConfiguration context)
+        public ControllerBase(IStorageProvider storageProvider)
         {
-            _Context = context;
+            this.storageProvider = storageProvider;
         }
     }
 }

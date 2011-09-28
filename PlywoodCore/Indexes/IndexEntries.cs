@@ -12,8 +12,7 @@ namespace Plywood.Indexes
 {
     public class IndexEntries : ControllerBase
     {
-        public IndexEntries() : base() { }
-        public IndexEntries(ControllerConfiguration context) : base(context) { }
+        public IndexEntries(IStorageProvider provider) : base(provider) { }
 
         public void DeleteEntity(IIndexableEntity entity)
         {

@@ -21,8 +21,7 @@ namespace Plywood
         [Obsolete]
         public const string STR_VERSIONS_CONTAINER_PATH = "versions";
 
-        public Versions() : base() { }
-        public Versions(ControllerConfiguration context) : base(context) { }
+        public Versions(IStorageProvider provider) : base(provider) { }
 
         public void CreateVersion(Version version)
         {

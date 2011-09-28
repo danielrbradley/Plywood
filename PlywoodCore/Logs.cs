@@ -13,8 +13,7 @@ namespace Plywood
     {
         public const string STR_LOGS_CONTAINER_PATH = "logs";
 
-        public Logs() : base() { }
-        public Logs(ControllerConfiguration context) : base(context) { }
+        public Logs(IStorageProvider provider) : base(provider) { }
 
         public void AddLogEntry(LogEntry logEntry)
         {

@@ -10,8 +10,7 @@ namespace Plywood.Internal
 {
     public class Indexes : ControllerBase
     {
-        public Indexes() : base() { }
-        public Indexes(ControllerConfiguration context) : base(context) { }
+        public Indexes(IStorageProvider provider) : base(provider) { }
 
         public void DeleteIndexEntry(string path, Guid key, bool throwNotFoundExceptions = false)
         {

@@ -12,8 +12,7 @@ namespace Plywood
     {
         public const string STR_TARGET_APP_VERSION_INFO_EXTENSION = "target-version";
 
-        public TargetAppVersions() : base() { }
-        public TargetAppVersions(ControllerConfiguration context) : base(context) { }
+        public TargetAppVersions(IStorageProvider provider) : base(provider) { }
 
         public VersionCheckResult TargetAppVersionChanged(Guid targetKey, Guid appKey, Guid localVersionKey)
         {

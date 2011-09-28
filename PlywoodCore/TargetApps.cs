@@ -11,8 +11,7 @@ namespace Plywood
     {
         public const string STR_TARGET_APPS_INDEX_PATH = ".apps.index";
 
-        public TargetApps() : base() { }
-        public TargetApps(ControllerConfiguration context) : base(context) { }
+        public TargetApps(IStorageProvider provider) : base(provider) { }
 
         public void AddApp(Guid targetKey, Guid appKey)
         {

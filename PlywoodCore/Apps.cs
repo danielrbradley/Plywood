@@ -21,8 +21,7 @@ namespace Plywood
         [Obsolete]
         public const string STR_APPS_CONTAINER_PATH = "a";
 
-        public Apps() : base() { }
-        public Apps(ControllerConfiguration context) : base(context) { }
+        public Apps(IStorageProvider provider) : base(provider) { }
 
         internal bool AppExists(Guid key)
         {

@@ -27,25 +27,11 @@ namespace Plywood
         {
             try
             {
-                using (var client = new AmazonS3Client(Context.AwsAccessKeyId, Context.AwsSecretAccessKey))
-                {
-                    using (var res = client.GetObjectMetadata(new GetObjectMetadataRequest()
-                    {
-                        BucketName = Context.BucketName,
-                        Key = Paths.GetAppDetailsKey(key),
-                    })) { return true; }
-                }
+                return StorageProvider.FileExists(Paths.GetAppDetailsKey(key));
             }
-            catch (AmazonS3Exception awsEx)
+            catch (Exception ex)
             {
-                if (awsEx.StatusCode == System.Net.HttpStatusCode.NotFound)
-                {
-                    return false;
-                }
-                else
-                {
-                    throw new DeploymentException(string.Format("Failed getting app with key \"{0}\"", key), awsEx);
-                }
+                throw new DeploymentException(string.Format("Failed getting app with key \"{0}\"", key), ex);
             }
         }
 
@@ -60,28 +46,16 @@ namespace Plywood
             {
                 try
                 {
-                    using (var client = new AmazonS3Client(Context.AwsAccessKeyId, Context.AwsSecretAccessKey))
-                    {
-                        var groupsController = new Groups(Context);
-                        if (!groupsController.GroupExists(app.GroupKey))
-                            throw new GroupNotFoundException(String.Format("Group with the key {0} could not be found.", app.GroupKey));
+                    var indexEntries = new IndexEntries(StorageProvider);
+                    // TODO: Check key, name and deployment directory are unique.
 
-                        var indexEntries = new IndexEntries(Context);
-                        // TODO: Check key, name and deployment directory are unique.
+                    StorageProvider.PutFile(Paths.GetAppDetailsKey(app.Key), stream);
 
-                        using (var putResponse = client.PutObject(new PutObjectRequest()
-                        {
-                            BucketName = Context.BucketName,
-                            Key = Paths.GetAppDetailsKey(app.Key),
-                            InputStream = stream,
-                        })) { }
-
-                        indexEntries.PutEntity(app);
-                    }
+                    indexEntries.PutEntity(app);
                 }
-                catch (AmazonS3Exception awsEx)
+                catch (Exception ex)
                 {
-                    throw new DeploymentException("Failed creating app.", awsEx);
+                    throw new DeploymentException("Failed creating app.", ex);
                 }
             }
         }
@@ -91,16 +65,16 @@ namespace Plywood
             var app = GetApp(key);
             try
             {
-                var indexEntries = new IndexEntries(Context);
+                var indexEntries = new IndexEntries(StorageProvider);
 
                 indexEntries.DeleteEntity(app);
 
-                Plywood.Internal.AwsHelpers.SoftDeleteFolders(Context, Paths.GetAppDetailsKey(key));
-
+                // TODO: Refactor the solf-delete functionality.
+                StorageProvider.MoveFile(Paths.GetAppDetailsKey(key), string.Concat(".recycled/", Paths.GetAppDetailsKey(key)));
             }
-            catch (AmazonS3Exception awsEx)
+            catch (Exception ex)
             {
-                throw new DeploymentException("Failed deleting app.", awsEx);
+                throw new DeploymentException("Failed deleting app.", ex);
             }
         }
 
@@ -108,31 +82,14 @@ namespace Plywood
         {
             try
             {
-                using (var client = new AmazonS3Client(Context.AwsAccessKeyId, Context.AwsSecretAccessKey))
+                using (var stream = StorageProvider.GetFile(Paths.GetAppDetailsKey(key)))
                 {
-                    using (var res = client.GetObject(new GetObjectRequest()
-                    {
-                        BucketName = Context.BucketName,
-                        Key = Paths.GetAppDetailsKey(key),
-                    }))
-                    {
-                        using (var stream = res.ResponseStream)
-                        {
-                            return new App(stream);
-                        }
-                    }
+                    return new App(stream);
                 }
             }
-            catch (AmazonS3Exception awsEx)
+            catch (Exception ex)
             {
-                if (awsEx.StatusCode == System.Net.HttpStatusCode.NotFound)
-                {
-                    throw new AppNotFoundException(string.Format("Could not find the app with key: {0}", key), awsEx);
-                }
-                else
-                {
-                    throw new DeploymentException(string.Format("Failed getting app with key \"{0}\"", key), awsEx);
-                }
+                throw new DeploymentException(string.Format("Failed getting app with key \"{0}\"", key), ex);
             }
         }
 
@@ -171,7 +128,7 @@ namespace Plywood
                 else
                     basePaths = startLocations.Select(l => string.Format("{0}/e", l));
 
-                var indexEntries = new IndexEntries(Context);
+                var indexEntries = new IndexEntries(StorageProvider);
                 var rawResults = indexEntries.PerformRawQuery(pageSize, marker, basePaths);
 
                 var apps = rawResults.FileNames.Select(fileName => new AppListItem(fileName));
@@ -187,9 +144,9 @@ namespace Plywood
 
                 return list;
             }
-            catch (AmazonS3Exception awsEx)
+            catch (Exception ex)
             {
-                throw new DeploymentException("Failed searcing apps.", awsEx);
+                throw new DeploymentException("Failed searcing apps.", ex);
             }
         }
 
@@ -206,30 +163,22 @@ namespace Plywood
             {
                 try
                 {
-                    using (var client = new AmazonS3Client(Context.AwsAccessKeyId, Context.AwsSecretAccessKey))
+                    // This will not currently get called.
+                    if (existingApp.GroupKey != app.GroupKey)
                     {
-                        // This will not currently get called.
-                        if (existingApp.GroupKey != app.GroupKey)
-                        {
-                            var groupsController = new Groups(Context);
-                            if (!groupsController.GroupExists(app.GroupKey))
-                                throw new GroupNotFoundException(string.Format("Group with key \"{0}\" to move app into cannot be found.", app.GroupKey));
-                        }
-
-                        using (var putResponse = client.PutObject(new PutObjectRequest()
-                        {
-                            BucketName = Context.BucketName,
-                            Key = Paths.GetAppDetailsKey(app.Key),
-                            InputStream = stream,
-                        })) { }
-
-                        var indexEntries = new IndexEntries(Context);
-                        indexEntries.UpdateEntity(existingApp, app);
+                        var groupsController = new Groups(StorageProvider);
+                        if (!groupsController.GroupExists(app.GroupKey))
+                            throw new GroupNotFoundException(string.Format("Group with key \"{0}\" to move app into cannot be found.", app.GroupKey));
                     }
+
+                    StorageProvider.PutFile(Paths.GetAppDetailsKey(app.Key), stream);
+
+                    var indexEntries = new IndexEntries(StorageProvider);
+                    indexEntries.UpdateEntity(existingApp, app);
                 }
-                catch (AmazonS3Exception awsEx)
+                catch (Exception ex)
                 {
-                    throw new DeploymentException("Failed updating app.", awsEx);
+                    throw new DeploymentException("Failed updating app.", ex);
                 }
             }
         }

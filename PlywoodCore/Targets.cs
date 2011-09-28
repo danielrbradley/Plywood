@@ -34,27 +34,18 @@ namespace Plywood
             {
                 try
                 {
-                    using (var client = new AmazonS3Client(Context.AwsAccessKeyId, Context.AwsSecretAccessKey))
-                    {
-                        var groupsController = new Groups(Context);
-                        if (!groupsController.GroupExists(target.GroupKey))
-                            throw new GroupNotFoundException(String.Format("Group with the key \"{0}\" could not be found.", target.GroupKey));
+                    var groupsController = new Groups(StorageProvider);
+                    if (!groupsController.GroupExists(target.GroupKey))
+                        throw new GroupNotFoundException(String.Format("Group with the key \"{0}\" could not be found.", target.GroupKey));
 
-                        var indexEntries = new IndexEntries(Context);
+                    StorageProvider.PutFile(Paths.GetTargetDetailsKey(target.Key), stream);
 
-                        using (var putResponse = client.PutObject(new PutObjectRequest()
-                        {
-                            BucketName = Context.BucketName,
-                            Key = Paths.GetTargetDetailsKey(target.Key),
-                            InputStream = stream,
-                        })) { }
-
-                        indexEntries.PutEntity(target);
-                    }
+                    var indexEntries = new IndexEntries(StorageProvider);
+                    indexEntries.PutEntity(target);
                 }
-                catch (AmazonS3Exception awsEx)
+                catch (Exception ex)
                 {
-                    throw new DeploymentException("Failed creating target.", awsEx);
+                    throw new DeploymentException("Failed creating target.", ex);
                 }
             }
         }
@@ -64,15 +55,15 @@ namespace Plywood
             var target = GetTarget(key);
             try
             {
-                var indexEntries = new IndexEntries(Context);
+                // TODO: Refactor the solf-delete functionality.
+                StorageProvider.MoveFile(Paths.GetTargetDetailsKey(key), string.Concat(".recycled/", Paths.GetTargetDetailsKey(key)));
 
+                var indexEntries = new IndexEntries(StorageProvider);
                 indexEntries.DeleteEntity(target);
-
-                Plywood.Internal.AwsHelpers.SoftDeleteFolders(Context, Paths.GetTargetDetailsKey(key));
             }
-            catch (AmazonS3Exception awsEx)
+            catch (Exception ex)
             {
-                throw new DeploymentException("Failed deleting target.", awsEx);
+                throw new DeploymentException("Failed deleting target.", ex);
             }
         }
 
@@ -80,31 +71,14 @@ namespace Plywood
         {
             try
             {
-                using (var client = new AmazonS3Client(Context.AwsAccessKeyId, Context.AwsSecretAccessKey))
+                using (var stream = StorageProvider.GetFile(Paths.GetTargetDetailsKey(key)))
                 {
-                    using (var res = client.GetObject(new GetObjectRequest()
-                    {
-                        BucketName = Context.BucketName,
-                        Key = Paths.GetTargetDetailsKey(key),
-                    }))
-                    {
-                        using (var stream = res.ResponseStream)
-                        {
-                            return new Target(stream);
-                        }
-                    }
+                    return new Target(stream);
                 }
             }
-            catch (AmazonS3Exception awsEx)
+            catch (Exception ex)
             {
-                if (awsEx.StatusCode == System.Net.HttpStatusCode.NotFound)
-                {
-                    throw new TargetNotFoundException(string.Format("Could not find the target with key: {0}", key), awsEx);
-                }
-                else
-                {
-                    throw new DeploymentException(string.Format("Failed getting target with key \"{0}\"", key), awsEx);
-                }
+                throw new DeploymentException(string.Format("Failed getting target with key \"{0}\"", key), ex);
             }
         }
 
@@ -134,7 +108,7 @@ namespace Plywood
                 else
                     basePaths = startLocations.Select(l => string.Format("{0}/e", l));
 
-                var indexEntries = new IndexEntries(Context);
+                var indexEntries = new IndexEntries(StorageProvider);
                 var rawResults = indexEntries.PerformRawQuery(pageSize, marker, basePaths);
 
                 var targets = rawResults.FileNames.Select(fileName => new TargetListItem(fileName));
@@ -150,9 +124,9 @@ namespace Plywood
 
                 return list;
             }
-            catch (AmazonS3Exception awsEx)
+            catch (Exception ex)
             {
-                throw new DeploymentException("Failed searcing targets.", awsEx);
+                throw new DeploymentException("Failed searcing targets.", ex);
             }
         }
 
@@ -169,22 +143,15 @@ namespace Plywood
             {
                 try
                 {
-                    using (var client = new AmazonS3Client(Context.AwsAccessKeyId, Context.AwsSecretAccessKey))
-                    {
-                        using (var putResponse = client.PutObject(new PutObjectRequest()
-                        {
-                            BucketName = Context.BucketName,
-                            Key = Paths.GetTargetDetailsKey(target.Key),
-                            InputStream = stream,
-                        })) { }
 
-                        var indexEntries = new IndexEntries(Context);
-                        indexEntries.UpdateEntity(existingTarget, target);
-                    }
+                    StorageProvider.PutFile(Paths.GetTargetDetailsKey(target.Key), stream);
+
+                    var indexEntries = new IndexEntries(StorageProvider);
+                    indexEntries.UpdateEntity(existingTarget, target);
                 }
-                catch (AmazonS3Exception awsEx)
+                catch (Exception ex)
                 {
-                    throw new DeploymentException("Failed updating target.", awsEx);
+                    throw new DeploymentException("Failed updating target.", ex);
                 }
             }
         }
@@ -199,25 +166,11 @@ namespace Plywood
         {
             try
             {
-                using (var client = new AmazonS3Client(Context.AwsAccessKeyId, Context.AwsSecretAccessKey))
-                {
-                    using (var res = client.GetObjectMetadata(new GetObjectMetadataRequest()
-                    {
-                        BucketName = Context.BucketName,
-                        Key = Paths.GetTargetDetailsKey(key),
-                    })) { return true; }
-                }
+                return StorageProvider.FileExists(Paths.GetTargetDetailsKey(key));
             }
-            catch (AmazonS3Exception awsEx)
+            catch (Exception ex)
             {
-                if (awsEx.StatusCode == System.Net.HttpStatusCode.NotFound)
-                {
-                    return false;
-                }
-                else
-                {
-                    throw new DeploymentException(string.Format("Failed getting target with key \"{0}\"", key), awsEx);
-                }
+                throw new DeploymentException(string.Format("Failed getting target with key \"{0}\"", key), ex);
             }
         }
     }

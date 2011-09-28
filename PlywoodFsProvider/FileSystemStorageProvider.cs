@@ -110,7 +110,7 @@ namespace Plywood.FsProvider
                 throw new FormatException("The specified path is not valid.");
             }
 
-            return Path.Combine(rootPath, path.Value.Replace("/", @"\").TrimStart(new char[1] { '\\' }));
+            return Path.Combine(rootPath, path.Value.Replace("/", @"\"));
         }
     }
 }

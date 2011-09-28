@@ -30,6 +30,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlywoodFsProvider", "Plywoo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlywoodFsProviderTests", "PlywoodFsProviderTests\PlywoodFsProviderTests.csproj", "{A34704FA-92C8-4CEA-845C-7D9047AB8F62}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlywoodS3Provider", "PlywoodS3Provider\PlywoodS3Provider.csproj", "{AC9FA9F1-3F36-4C90-8AC0-3584B0E80E6A}"
+EndProject
 Global
 	GlobalSection(TestCaseManagementSettings) = postSolution
 		CategoryFile = Plywood.vsmdi
@@ -133,6 +135,16 @@ Global
 		{A34704FA-92C8-4CEA-845C-7D9047AB8F62}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{A34704FA-92C8-4CEA-845C-7D9047AB8F62}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{A34704FA-92C8-4CEA-845C-7D9047AB8F62}.Release|x86.ActiveCfg = Release|Any CPU
+		{AC9FA9F1-3F36-4C90-8AC0-3584B0E80E6A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AC9FA9F1-3F36-4C90-8AC0-3584B0E80E6A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AC9FA9F1-3F36-4C90-8AC0-3584B0E80E6A}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{AC9FA9F1-3F36-4C90-8AC0-3584B0E80E6A}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{AC9FA9F1-3F36-4C90-8AC0-3584B0E80E6A}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{AC9FA9F1-3F36-4C90-8AC0-3584B0E80E6A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AC9FA9F1-3F36-4C90-8AC0-3584B0E80E6A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AC9FA9F1-3F36-4C90-8AC0-3584B0E80E6A}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{AC9FA9F1-3F36-4C90-8AC0-3584B0E80E6A}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{AC9FA9F1-3F36-4C90-8AC0-3584B0E80E6A}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

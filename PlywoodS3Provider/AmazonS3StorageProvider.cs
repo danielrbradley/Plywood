@@ -19,6 +19,7 @@ namespace Plywood
             {
                 this.awsSecretAccessKey.AppendChar(c);
             }
+
             this.awsSecretAccessKey.MakeReadOnly();
             this.bucketName = bucketName;
             this.config = config;

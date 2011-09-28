@@ -65,27 +65,27 @@ namespace Plywood.FsProvider.Tests
         [TestMethod]
         public void RootFileExistsTrueTest()
         {
-            Assert.IsTrue(StorageProvider.FileExists("/rootfile.txt"));
+            Assert.IsTrue(StorageProvider.FileExists("rootfile.txt"));
         }
 
         [TestMethod]
         public void FileExistsTrueTest()
         {
-            Assert.IsTrue(StorageProvider.FileExists("/info-directory/contentfile1.txt"));
+            Assert.IsTrue(StorageProvider.FileExists("info-directory/contentfile1.txt"));
         }
 
         [TestMethod]
         public void FileExistsFalseTest()
         {
-            Assert.IsFalse(StorageProvider.FileExists("/info-directory/notacontentfile1.txt"));
+            Assert.IsFalse(StorageProvider.FileExists("info-directory/notacontentfile1.txt"));
         }
 
         [TestMethod]
         public void DeleteFileTest()
         {
-            Assert.IsTrue(StorageProvider.FileExists("/info-directory/deleteme1.txt"));
-            StorageProvider.DeleteFile("/info-directory/deleteme1.txt");
-            Assert.IsFalse(StorageProvider.FileExists("/info-directory/deleteme1.txt"));
+            Assert.IsTrue(StorageProvider.FileExists("info-directory/deleteme1.txt"));
+            StorageProvider.DeleteFile("info-directory/deleteme1.txt");
+            Assert.IsFalse(StorageProvider.FileExists("info-directory/deleteme1.txt"));
         }
 
         [TestMethod]
@@ -93,7 +93,7 @@ namespace Plywood.FsProvider.Tests
         {
             var expected = "Test content 1";
             string actual;
-            using (var stream = StorageProvider.GetFile("/info-directory/contentfile1.txt"))
+            using (var stream = StorageProvider.GetFile("info-directory/contentfile1.txt"))
             {
                 var textReader = new StreamReader(stream);
                 actual = textReader.ReadToEnd();
@@ -104,11 +104,11 @@ namespace Plywood.FsProvider.Tests
         [TestMethod]
         public void MoveFileTest()
         {
-            Assert.IsTrue(StorageProvider.FileExists("/info-directory/filetomove.txt"));
-            Assert.IsFalse(StorageProvider.FileExists("/info-directory/movedfile.txt"));
-            StorageProvider.MoveFile("/info-directory/filetomove.txt", "/info-directory/movedfile.txt");
-            Assert.IsTrue(StorageProvider.FileExists("/info-directory/movedfile.txt"));
-            Assert.IsFalse(StorageProvider.FileExists("/info-directory/filetomove.txt"));
+            Assert.IsTrue(StorageProvider.FileExists("info-directory/filetomove.txt"));
+            Assert.IsFalse(StorageProvider.FileExists("info-directory/movedfile.txt"));
+            StorageProvider.MoveFile("info-directory/filetomove.txt", "info-directory/movedfile.txt");
+            Assert.IsTrue(StorageProvider.FileExists("info-directory/movedfile.txt"));
+            Assert.IsFalse(StorageProvider.FileExists("info-directory/filetomove.txt"));
         }
 
         [TestMethod]
@@ -116,7 +116,7 @@ namespace Plywood.FsProvider.Tests
         {
             var expected = new FileListing()
             {
-                FolderPath = "/listing-directory",
+                FolderPath = "listing-directory",
                 IsTruncated = true,
                 Items = new List<string>()
                 {
@@ -127,7 +127,7 @@ namespace Plywood.FsProvider.Tests
                 NextMarker = "2secondfile.txt",
                 PageSize = 2,
             };
-            var actual = StorageProvider.ListFiles("/listing-directory", null, 2);
+            var actual = StorageProvider.ListFiles("listing-directory", null, 2);
             AssertListingsEqual(expected, actual);
         }
 
@@ -136,7 +136,7 @@ namespace Plywood.FsProvider.Tests
         {
             var expected = new FileListing()
             {
-                FolderPath = "/listing-directory",
+                FolderPath = "listing-directory",
                 IsTruncated = true,
                 Items = new List<string>()
                 {
@@ -145,7 +145,7 @@ namespace Plywood.FsProvider.Tests
                 NextMarker = null,
                 PageSize = 0,
             };
-            var actual = StorageProvider.ListFiles("/listing-directory", null, 0);
+            var actual = StorageProvider.ListFiles("listing-directory", null, 0);
             AssertListingsEqual(expected, actual);
         }
 
@@ -154,7 +154,7 @@ namespace Plywood.FsProvider.Tests
         {
             var expected = new FileListing()
             {
-                FolderPath = "/listing-directory",
+                FolderPath = "listing-directory",
                 IsTruncated = true,
                 Items = new List<string>()
                 {
@@ -164,7 +164,7 @@ namespace Plywood.FsProvider.Tests
                 NextMarker = "2secondfile.txt",
                 PageSize = 1,
             };
-            var actual = StorageProvider.ListFiles("/listing-directory", "1firstfile.txt", 1);
+            var actual = StorageProvider.ListFiles("listing-directory", "1firstfile.txt", 1);
             AssertListingsEqual(expected, actual);
         }
 
@@ -173,7 +173,7 @@ namespace Plywood.FsProvider.Tests
         {
             var expected = new FileListing()
             {
-                FolderPath = "/listing-directory",
+                FolderPath = "listing-directory",
                 IsTruncated = false,
                 Items = new List<string>()
                 {
@@ -185,7 +185,7 @@ namespace Plywood.FsProvider.Tests
                 NextMarker = "3thirdfile.txt",
                 PageSize = 3,
             };
-            var actual = StorageProvider.ListFiles("/listing-directory", null, 3);
+            var actual = StorageProvider.ListFiles("listing-directory", null, 3);
             AssertListingsEqual(expected, actual);
         }
 
@@ -194,7 +194,7 @@ namespace Plywood.FsProvider.Tests
         {
             var expected = new FileListing()
             {
-                FolderPath = "/listing-directory",
+                FolderPath = "listing-directory",
                 IsTruncated = false,
                 Items = new List<string>()
                 {
@@ -206,7 +206,7 @@ namespace Plywood.FsProvider.Tests
                 NextMarker = "3thirdfile.txt",
                 PageSize = 10,
             };
-            var actual = StorageProvider.ListFiles("/listing-directory", null, 10);
+            var actual = StorageProvider.ListFiles("listing-directory", null, 10);
             AssertListingsEqual(expected, actual);
         }
 

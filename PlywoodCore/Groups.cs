@@ -48,11 +48,11 @@ namespace Plywood
             var group = GetGroup(key);
             try
             {
-                // TODO: Refactor the solf-delete functionality.
-                StorageProvider.MoveFile(Paths.GetGroupDetailsKey(key), string.Concat(".recycled/", Paths.GetGroupDetailsKey(key)));
-
                 var indexEntries = new IndexEntries(StorageProvider);
                 indexEntries.DeleteEntity(group);
+
+                // TODO: Refactor the solf-delete functionality.
+                StorageProvider.MoveFile(Paths.GetGroupDetailsKey(key), string.Concat(".recycled/", Paths.GetGroupDetailsKey(key)));
             }
             catch (Exception ex)
             {

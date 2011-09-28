@@ -55,11 +55,11 @@ namespace Plywood
             var target = GetTarget(key);
             try
             {
-                // TODO: Refactor the solf-delete functionality.
-                StorageProvider.MoveFile(Paths.GetTargetDetailsKey(key), string.Concat(".recycled/", Paths.GetTargetDetailsKey(key)));
-
                 var indexEntries = new IndexEntries(StorageProvider);
                 indexEntries.DeleteEntity(target);
+
+                // TODO: Refactor the solf-delete functionality.
+                StorageProvider.MoveFile(Paths.GetTargetDetailsKey(key), string.Concat(".recycled/", Paths.GetTargetDetailsKey(key)));
             }
             catch (Exception ex)
             {

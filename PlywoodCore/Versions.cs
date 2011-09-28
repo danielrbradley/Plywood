@@ -32,31 +32,19 @@ namespace Plywood
 
             try
             {
-                using (var client = new AmazonS3Client(Context.AwsAccessKeyId, Context.AwsSecretAccessKey))
+                var appsController = new Apps(StorageProvider);
+                var app = appsController.GetApp(version.AppKey);
+                version.GroupKey = app.GroupKey;
+
+                using (var stream = version.Serialise())
                 {
-                    var appsController = new Apps(Context);
-                    var app = appsController.GetApp(version.AppKey);
-                    version.GroupKey = app.GroupKey;
+                    var indexEntries = new IndexEntries(StorageProvider);
+                    // TODO: Check key and version number are unique.
 
-                    using (var stream = version.Serialise())
-                    {
-                        var indexEntries = new IndexEntries(Context);
-                        // TODO: Check key and version number are unique.
+                    StorageProvider.PutFile(Paths.GetVersionDetailsKey(version.Key), stream);
 
-                        using (var putResponse = client.PutObject(new PutObjectRequest()
-                        {
-                            BucketName = Context.BucketName,
-                            Key = Paths.GetVersionDetailsKey(version.Key),
-                            InputStream = stream,
-                        })) { }
-
-                        indexEntries.PutEntity(version);
-                    }
+                    indexEntries.PutEntity(version);
                 }
-            }
-            catch (AmazonS3Exception awsEx)
-            {
-                throw new DeploymentException("Failed creating version.", awsEx);
             }
             catch (Exception ex)
             {
@@ -69,15 +57,11 @@ namespace Plywood
             var version = GetVersion(key);
             try
             {
-                Plywood.Internal.AwsHelpers.SoftDeleteFolders(Context, Paths.GetVersionDetailsKey(version.Key));
-
-                var indexEntries = new IndexEntries(Context);
-
+                var indexEntries = new IndexEntries(StorageProvider);
                 indexEntries.DeleteEntity(version);
-            }
-            catch (AmazonS3Exception awsEx)
-            {
-                throw new DeploymentException(string.Format("Failed deleting version with key \"{0}\"", key), awsEx);
+
+                // TODO: Refactor the solf-delete functionality.
+                StorageProvider.MoveFile(Paths.GetVersionDetailsKey(key), string.Concat(".recycled/", Paths.GetVersionDetailsKey(key)));
             }
             catch (Exception ex)
             {
@@ -89,30 +73,9 @@ namespace Plywood
         {
             try
             {
-                using (var client = new AmazonS3Client(Context.AwsAccessKeyId, Context.AwsSecretAccessKey))
+                using (var stream = StorageProvider.GetFile(Paths.GetVersionDetailsKey(key)))
                 {
-                    using (var res = client.GetObject(new GetObjectRequest()
-                    {
-                        BucketName = Context.BucketName,
-                        Key = Paths.GetVersionDetailsKey(key),
-                    }))
-                    {
-                        using (var stream = res.ResponseStream)
-                        {
-                            return new Version(stream);
-                        }
-                    }
-                }
-            }
-            catch (AmazonS3Exception awsEx)
-            {
-                if (awsEx.StatusCode == System.Net.HttpStatusCode.NotFound)
-                {
-                    throw new VersionNotFoundException(string.Format("Could not find the version with key: {0}", key), awsEx);
-                }
-                else
-                {
-                    throw new DeploymentException(string.Format("Failed getting version with key \"{0}\"", key), awsEx);
+                    return new Version(stream);
                 }
             }
             catch (Exception ex)
@@ -136,40 +99,24 @@ namespace Plywood
             try
             {
                 var ignorePaths = new string[1] { ".info" };
-                using (var client = new AmazonS3Client(Context.AwsAccessKeyId, Context.AwsSecretAccessKey))
+                bool more = true;
+                string lastResult = null;
+                string prefix = string.Format("v/{0}/c/", key.ToString("N"));
+                while (more)
                 {
-                    bool more = true;
-                    string lastResult = null;
-                    string prefix = string.Format("v/{0}/c/", key.ToString("N"));
-                    while (more)
-                    {
-                        using (var listResponse = client.ListObjects(new ListObjectsRequest()
+                    var listResponse = StorageProvider.ListFiles(prefix, lastResult, 100);
+                    listResponse.Items.Where(obj => !ignorePaths.Any(ignore => obj == String.Format("{0}{1}", prefix, ignore)))
+                        .AsParallel().ForAll(s3obj =>
                         {
-                            BucketName = Context.BucketName,
-                            Prefix = prefix,
-                            Delimiter = lastResult,
-                        }))
-                        {
-                            listResponse.S3Objects.Where(obj => !ignorePaths.Any(ignore => obj.Key == String.Format("{0}{1}", prefix, ignore)))
-                                .AsParallel().ForAll(s3obj =>
-                                {
-                                    using (var getResponse = client.GetObject(new GetObjectRequest()
-                                    {
-                                        BucketName = Context.BucketName,
-                                        Key = s3obj.Key,
-                                    }))
-                                    {
-                                        getResponse.WriteResponseStreamToFile(Utils.Files.GetLocalAbsolutePath(s3obj.Key, prefix, directory.FullName));
-                                    }
-                                });
-                            if (listResponse.IsTruncated)
+                            using (var stream = StorageProvider.GetFile(s3obj))
                             {
-                                more = true;
+                                using (var fileStream = File.Create(Utils.Files.GetLocalAbsolutePath(s3obj, prefix, directory.FullName)))
+                                {
+                                    stream.CopyTo(fileStream);
+                                }
                             }
-                            more = listResponse.IsTruncated;
-                            lastResult = listResponse.S3Objects.Last().Key;
-                        }
-                    }
+                        });
+                    lastResult = listResponse.NextMarker;
                 }
             }
             catch (Exception ex)
@@ -185,25 +132,19 @@ namespace Plywood
 
             try
             {
-                using (var client = new AmazonS3Client(Context.AwsAccessKeyId, Context.AwsSecretAccessKey))
-                {
-                    var files = directory.EnumerateFiles("*", SearchOption.AllDirectories);
-                    files.AsParallel().ForAll(f =>
+                var files = directory.EnumerateFiles("*", SearchOption.AllDirectories);
+                files.AsParallel().ForAll(f =>
+                    {
+                        string relativePath = Utils.Files.GetRelativePath(f.FullName, directory.FullName);
+                        // Skip dot (hidden) files.
+                        if (!relativePath.StartsWith("."))
                         {
-                            string relativePath = Utils.Files.GetRelativePath(f.FullName, directory.FullName);
-                            // Skip dot (hidden) files.
-                            if (!relativePath.StartsWith("."))
+                            using (var stream = File.OpenRead(f.FullName))
                             {
-                                using (var putResponse = client.PutObject(new PutObjectRequest()
-                                {
-                                    BucketName = Context.BucketName,
-                                    Key = string.Format("v/{0}/c/{1}", key.ToString("N"), relativePath),
-                                    FilePath = f.FullName,
-                                    GenerateMD5Digest = true,
-                                })) { }
+                                StorageProvider.PutFile(string.Format("v/{0}/c/{1}", key.ToString("N"), relativePath), stream);
                             }
-                        });
-                }
+                        }
+                    });
             }
             catch (Exception ex)
             {
@@ -235,7 +176,7 @@ namespace Plywood
                 else
                     basePaths = new List<string>() { string.Format("a/{0}/vi/e", Utils.Indexes.EncodeGuid(appKey)) };
 
-                var indexEntries = new IndexEntries(Context);
+                var indexEntries = new IndexEntries(StorageProvider);
                 var rawResults = indexEntries.PerformRawQuery(pageSize, marker, basePaths);
 
                 var apps = rawResults.FileNames.Select(fileName => new VersionListItem(fileName));
@@ -282,23 +223,10 @@ namespace Plywood
             {
                 try
                 {
-                    using (var client = new AmazonS3Client(Context.AwsAccessKeyId, Context.AwsSecretAccessKey))
-                    {
-                        var indexEntries = new IndexEntries(Context);
+                    StorageProvider.PutFile(Paths.GetVersionDetailsKey(version.Key), stream);
 
-                        using (var putResponse = client.PutObject(new PutObjectRequest()
-                        {
-                            BucketName = Context.BucketName,
-                            Key = Paths.GetVersionDetailsKey(version.Key),
-                            InputStream = stream,
-                        })) { }
-
-                        indexEntries.UpdateEntity(existingVersion, version);
-                    }
-                }
-                catch (AmazonS3Exception awsEx)
-                {
-                    throw new DeploymentException("Failed deleting version.", awsEx);
+                    var indexEntries = new IndexEntries(StorageProvider);
+                    indexEntries.UpdateEntity(existingVersion, version);
                 }
                 catch (Exception ex)
                 {
@@ -311,25 +239,7 @@ namespace Plywood
         {
             try
             {
-                using (var client = new AmazonS3Client(Context.AwsAccessKeyId, Context.AwsSecretAccessKey))
-                {
-                    using (var res = client.GetObjectMetadata(new GetObjectMetadataRequest()
-                    {
-                        BucketName = Context.BucketName,
-                        Key = Paths.GetVersionDetailsKey(key),
-                    })) { return true; }
-                }
-            }
-            catch (AmazonS3Exception awsEx)
-            {
-                if (awsEx.StatusCode == System.Net.HttpStatusCode.NotFound)
-                {
-                    return false;
-                }
-                else
-                {
-                    throw new DeploymentException(string.Format("Failed checking if version with key \"{0}\" exists.", key), awsEx);
-                }
+                return StorageProvider.FileExists(Paths.GetVersionDetailsKey(key));
             }
             catch (Exception ex)
             {
@@ -348,7 +258,6 @@ namespace Plywood
         {
             return String.Format("{0:s} {1} {2}", version.Timestamp, version.VersionNumber, version.Comment);
         }
-
     }
 
     #region Entities

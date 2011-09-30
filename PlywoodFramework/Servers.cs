@@ -12,52 +12,52 @@ using System.IO;
 
 namespace Plywood
 {
-    public class Instances : ControllerBase
+    public class Servers : ControllerBase
     {
-        public Instances(IStorageProvider provider) : base(provider) { }
+        public Servers(IStorageProvider provider) : base(provider) { }
 
-        public void Create(Instance instance)
+        public void Create(Server server)
         {
-            if (instance == null)
-                throw new ArgumentNullException("instance", "Instance cannot be null.");
-            if (instance.RoleKey == Guid.Empty)
-                throw new ArgumentException("Target key cannot be empty.", "instance.TargetKey");
+            if (server == null)
+                throw new ArgumentNullException("server", "Server cannot be null.");
+            if (server.RoleKey == Guid.Empty)
+                throw new ArgumentException("Role key cannot be empty.", "server.RoleKey");
 
-            using (var stream = instance.Serialise())
+            using (var stream = server.Serialise())
             {
                 try
                 {
-                    var targetsController = new Roles(StorageProvider);
-                    if (!targetsController.Exists(instance.RoleKey))
-                        throw new TargetNotFoundException(String.Format("Target with the key \"{0}\" could not be found.", instance.RoleKey));
+                    var roles = new Roles(StorageProvider);
+                    if (!roles.Exists(server.RoleKey))
+                        throw new RoleNotFoundException(String.Format("Role with the key \"{0}\" could not be found.", server.RoleKey));
 
                     var indexEntries = new IndexEntries(StorageProvider);
 
-                    StorageProvider.PutFile(Paths.GetInstanceDetailsKey(instance.Key), stream);
+                    StorageProvider.PutFile(Paths.GetServerDetailsKey(server.Key), stream);
 
-                    indexEntries.PutEntity(instance);
+                    indexEntries.PutEntity(server);
                 }
                 catch (Exception ex)
                 {
-                    throw new DeploymentException("Failed creating instance.", ex);
+                    throw new DeploymentException("Failed creating server.", ex);
                 }
             }
         }
 
         public void Delete(Guid key)
         {
-            var instance = Get(key);
+            var server = Get(key);
             try
             {
                 var indexEntries = new IndexEntries(StorageProvider);
-                indexEntries.DeleteEntity(instance);
+                indexEntries.DeleteEntity(server);
 
                 // TODO: Refactor the solf-delete functionality.
-                StorageProvider.MoveFile(Paths.GetInstanceDetailsKey(key), string.Concat("deleted/", Paths.GetInstanceDetailsKey(key)));
+                StorageProvider.MoveFile(Paths.GetServerDetailsKey(key), string.Concat("deleted/", Paths.GetServerDetailsKey(key)));
             }
             catch (Exception ex)
             {
-                throw new DeploymentException("Failed deleting instance.", ex);
+                throw new DeploymentException("Failed deleting server.", ex);
             }
         }
 
@@ -65,30 +65,30 @@ namespace Plywood
         {
             try
             {
-                return StorageProvider.FileExists(Paths.GetInstanceDetailsKey(key));
+                return StorageProvider.FileExists(Paths.GetServerDetailsKey(key));
             }
             catch (Exception ex)
             {
-                throw new DeploymentException(string.Format("Failed getting instance with key \"{0}\"", key), ex);
+                throw new DeploymentException(string.Format("Failed getting server with key \"{0}\"", key), ex);
             }
         }
 
-        public Instance Get(Guid key)
+        public Server Get(Guid key)
         {
             try
             {
-                using (var stream = StorageProvider.GetFile(Paths.GetInstanceDetailsKey(key)))
+                using (var stream = StorageProvider.GetFile(Paths.GetServerDetailsKey(key)))
                 {
-                    return new Instance(stream);
+                    return new Server(stream);
                 }
             }
             catch (Exception ex)
             {
-                throw new DeploymentException(string.Format("Failed getting instance with key \"{0}\"", key), ex);
+                throw new DeploymentException(string.Format("Failed getting server with key \"{0}\"", key), ex);
             }
         }
 
-        public InstanceList Search(Guid roleKey, string query = null, string marker = null, int pageSize = 50)
+        public ServerList Search(Guid roleKey, string query = null, string marker = null, int pageSize = 50)
         {
             if (pageSize < 0)
                 throw new ArgumentOutOfRangeException("pageSize", "Page size cannot be less than 0.");
@@ -104,22 +104,22 @@ namespace Plywood
                     var tokens = new SimpleTokeniser().Tokenise(query).ToList();
 
                     basePaths = tokens.Distinct().Select(token =>
-                        string.Format("t/{0}/ii/t/{1}", Utils.Indexes.EncodeGuid(roleKey), Indexes.IndexEntries.GetTokenHash(token)));
+                        string.Format("r/{0}/si/t/{1}", Utils.Indexes.EncodeGuid(roleKey), Indexes.IndexEntries.GetTokenHash(token)));
                 }
                 else
-                    basePaths = new List<string>() { string.Format("t/{0}/ii/e", Utils.Indexes.EncodeGuid(roleKey)) };
+                    basePaths = new List<string>() { string.Format("r/{0}/si/e", Utils.Indexes.EncodeGuid(roleKey)) };
 
                 var indexEntries = new IndexEntries(StorageProvider);
                 var rawResults = indexEntries.PerformRawQuery(pageSize, marker, basePaths);
 
-                var instances = rawResults.FileNames.Select(fileName => new InstanceListItem(fileName));
-                var list = new InstanceList()
+                var servers = rawResults.FileNames.Select(fileName => new ServerListItem(fileName));
+                var list = new ServerList()
                 {
-                    Instances = instances,
+                    Items = servers,
                     Query = query,
                     Marker = marker,
                     PageSize = pageSize,
-                    NextMarker = instances.Any() ? instances.Last().Marker : marker,
+                    NextMarker = servers.Any() ? servers.Last().Marker : marker,
                     IsTruncated = rawResults.IsTruncated,
                 };
 
@@ -131,23 +131,23 @@ namespace Plywood
             }
         }
 
-        public void Update(Instance updatedInstance)
+        public void Update(Server updatedServer)
         {
-            if (updatedInstance == null)
+            if (updatedServer == null)
                 throw new ArgumentNullException("updatedInstance", "Instance cannot be null.");
 
-            var existingInstance = Get(updatedInstance.Key);
-            // Don't allow moving between targets.
-            updatedInstance.RoleKey = existingInstance.RoleKey;
+            var existingServer = Get(updatedServer.Key);
+            // Don't allow moving between roles.
+            updatedServer.RoleKey = existingServer.RoleKey;
 
-            using (var stream = updatedInstance.Serialise())
+            using (var stream = updatedServer.Serialise())
             {
                 try
                 {
-                    StorageProvider.PutFile(Paths.GetInstanceDetailsKey(updatedInstance.Key), stream);
+                    StorageProvider.PutFile(Paths.GetServerDetailsKey(updatedServer.Key), stream);
 
                     var indexEntries = new IndexEntries(StorageProvider);
-                    indexEntries.UpdateEntity(existingInstance, updatedInstance);
+                    indexEntries.UpdateEntity(existingServer, updatedServer);
                 }
                 catch (Exception ex)
                 {
@@ -159,30 +159,30 @@ namespace Plywood
 
     #region Entiies
 
-    public class Instance : IIndexableEntity
+    public class Server : IIndexableEntity
     {
         #region Constructors
 
-        public Instance()
+        public Server()
         {
             Key = Guid.NewGuid();
-            Name = "New Instance " + DateTime.UtcNow.ToString("r");
+            Name = "New Server " + DateTime.UtcNow.ToString("r");
             Tags = new Dictionary<string, string>();
         }
 
-        public Instance(string source)
-            : this(Instance.Parse(source)) { }
+        public Server(string source)
+            : this(Server.Parse(source)) { }
 
-        public Instance(Stream source)
-            : this(Instance.Parse(source)) { }
+        public Server(Stream source)
+            : this(Server.Parse(source)) { }
 
-        public Instance(TextReader source)
-            : this(Instance.Parse(source)) { }
+        public Server(TextReader source)
+            : this(Server.Parse(source)) { }
 
-        public Instance(XmlTextReader source)
-            : this(Instance.Parse(source)) { }
+        public Server(XmlTextReader source)
+            : this(Server.Parse(source)) { }
 
-        private Instance(Instance other)
+        private Server(Server other)
         {
             this.Key = other.Key;
             this.GroupKey = other.GroupKey;
@@ -201,31 +201,31 @@ namespace Plywood
 
         public Stream Serialise()
         {
-            return Instance.Serialise(this);
+            return Server.Serialise(this);
         }
 
         #region Static Serialisation Methods
 
-        public static Stream Serialise(Instance instance)
+        public static Stream Serialise(Server server)
         {
-            if (instance == null)
-                throw new ArgumentNullException("version", "Version cannot be null.");
-            if (!Validation.IsNameValid(instance.Name))
+            if (server == null)
+                throw new ArgumentNullException("server", "Server cannot be null.");
+            if (!Validation.IsNameValid(server.Name))
                 throw new ArgumentException("Name must be valid (not blank & only a single line).");
 
             var doc = new XDocument(
                 new XDeclaration("1.0", "UTF-8", "yes"),
-                new XElement("instance",
-                    new XAttribute("key", instance.Key),
-                    new XElement("groupKey", instance.GroupKey),
-                    new XElement("targetKey", instance.RoleKey),
-                    new XElement("name", instance.Name),
+                new XElement("server",
+                    new XAttribute("key", server.Key),
+                    new XElement("groupKey", server.GroupKey),
+                    new XElement("roleKey", server.RoleKey),
+                    new XElement("name", server.Name),
                     new XElement("tags")));
 
-            if (instance.Tags != null && instance.Tags.Count > 0)
+            if (server.Tags != null && server.Tags.Count > 0)
             {
                 doc.Root.Element("tags").Add(
-                    instance.Tags.Select(t =>
+                    server.Tags.Select(t =>
                         new XElement("tag",
                             new XAttribute("key", t.Key),
                             t.Value
@@ -235,22 +235,22 @@ namespace Plywood
             return Serialisation.Serialise(doc);
         }
 
-        public static Instance Parse(string source)
+        public static Server Parse(string source)
         {
             return Parse(new StringReader(source));
         }
 
-        public static Instance Parse(Stream source)
+        public static Server Parse(Stream source)
         {
             return Parse(new XmlTextReader(source));
         }
 
-        public static Instance Parse(TextReader source)
+        public static Server Parse(TextReader source)
         {
             return Parse(new XmlTextReader(source));
         }
 
-        public static Instance Parse(XmlReader source)
+        public static Server Parse(XmlReader source)
         {
             XDocument doc;
             try
@@ -259,22 +259,22 @@ namespace Plywood
             }
             catch (Exception ex)
             {
-                throw new DeserialisationException("Failed deserialising instance.", ex);
+                throw new DeserialisationException("Failed deserialising server.", ex);
             }
 
             if (!ValidateInstanceXml(doc))
-                throw new DeserialisationException("Serialised instance xml is not valid.");
+                throw new DeserialisationException("Serialised server xml is not valid.");
 
             Guid key, groupKey, targetKey;
 
             if (!Guid.TryParse(doc.Root.Attribute("key").Value, out key))
-                throw new DeserialisationException("Serialised instance key is not a valid guid.");
+                throw new DeserialisationException("Serialised server key is not a valid guid.");
             if (!Guid.TryParse(doc.Root.Element("groupKey").Value, out groupKey))
-                throw new DeserialisationException("Serialised instance group key is not a valid guid.");
-            if (!Guid.TryParse(doc.Root.Element("targetKey").Value, out targetKey))
-                throw new DeserialisationException("Serialised instance target key is not a valid guid.");
+                throw new DeserialisationException("Serialised server group key is not a valid guid.");
+            if (!Guid.TryParse(doc.Root.Element("roleKey").Value, out targetKey))
+                throw new DeserialisationException("Serialised server role key is not a valid guid.");
 
-            var instance = new Instance()
+            var server = new Server()
             {
                 Key = key,
                 GroupKey = groupKey,
@@ -285,14 +285,14 @@ namespace Plywood
             var tagsElement = doc.Root.Element("tags");
             if (tagsElement != null && tagsElement.HasElements)
             {
-                instance.Tags = tagsElement.Elements("tag").ToDictionary(t => t.Attribute("key").Value, t => t.Value);
+                server.Tags = tagsElement.Elements("tag").ToDictionary(t => t.Attribute("key").Value, t => t.Value);
             }
             else
             {
-                instance.Tags = new Dictionary<string, string>();
+                server.Tags = new Dictionary<string, string>();
             }
 
-            return instance;
+            return server;
         }
 
         public static bool ValidateInstanceXml(XDocument targetDoc)
@@ -316,7 +316,7 @@ namespace Plywood
                         if (schemas == null)
                         {
                             var newSchemas = new XmlSchemaSet();
-                            using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Plywood.Schemas.Instance.xsd"))
+                            using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Plywood.Schemas.Server.xsd"))
                             {
                                 newSchemas.Add("", XmlReader.Create(stream));
                             }
@@ -343,24 +343,24 @@ namespace Plywood
 
             var entries = new List<string>(tokens.Count() + 1);
 
-            // Target specific index
-            entries.Add(string.Format("t/{0}/ii/e/{1}", Utils.Indexes.EncodeGuid(RoleKey), filename));
+            // Role specific index
+            entries.Add(string.Format("r/{0}/si/e/{1}", Utils.Indexes.EncodeGuid(RoleKey), filename));
             entries.AddRange(tokens.Select(token =>
-                string.Format("t/{0}/ii/t/{1}/{2}", Utils.Indexes.EncodeGuid(RoleKey), Indexes.IndexEntries.GetTokenHash(token), filename)));
+                string.Format("r/{0}/si/t/{1}/{2}", Utils.Indexes.EncodeGuid(RoleKey), Indexes.IndexEntries.GetTokenHash(token), filename)));
 
             // Global index
-            entries.Add(string.Format("ii/e/{0}", filename));
+            entries.Add(string.Format("si/e/{0}", filename));
             entries.AddRange(tokens.Select(token =>
-                string.Format("ii/t/{0}/{1}", Indexes.IndexEntries.GetTokenHash(token), filename)));
+                string.Format("si/t/{0}/{1}", Indexes.IndexEntries.GetTokenHash(token), filename)));
 
             return entries;
         }
     }
 
-    public class InstanceList
+    public class ServerList
     {
-        public Guid TargetKey { get; set; }
-        public IEnumerable<InstanceListItem> Instances { get; set; }
+        public Guid RoleKey { get; set; }
+        public IEnumerable<ServerListItem> Items { get; set; }
         public string Query { get; set; }
         public string Marker { get; set; }
         public int PageSize { get; set; }
@@ -368,17 +368,17 @@ namespace Plywood
         public bool IsTruncated { get; set; }
     }
 
-    public class InstanceListItem
+    public class ServerListItem
     {
-        public InstanceListItem()
+        public ServerListItem()
         {
         }
 
-        public InstanceListItem(string path)
+        public ServerListItem(string path)
         {
             var segments = Utils.Indexes.GetIndexFileNameSegments(path);
             if (segments.Length != 3)
-                throw new ArgumentException("An instance path index entry must contain exactly 3 segments.", "path");
+                throw new ArgumentException("An server path index entry must contain exactly 3 segments.", "path");
 
             Marker = segments[0];
             Key = Utils.Indexes.DecodeGuid(segments[1]);

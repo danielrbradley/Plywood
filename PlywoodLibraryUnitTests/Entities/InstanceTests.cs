@@ -62,7 +62,7 @@ namespace Plywood.Tests.UnitTesting.Entities
         [TestMethod]
         public void InstanceSerialiseDeserialise()
         {
-            var originalInstance = new Instance()
+            var originalInstance = new Server()
             {
                 Key = Guid.NewGuid(),
                 GroupKey = Guid.NewGuid(),
@@ -75,10 +75,10 @@ namespace Plywood.Tests.UnitTesting.Entities
                 }
             };
 
-            Instance secondInstance;
+            Server secondInstance;
             using (var stream = originalInstance.Serialise())
             {
-                secondInstance = new Instance(stream);
+                secondInstance = new Server(stream);
             }
 
             Assert.AreEqual(originalInstance.Key, secondInstance.Key);
@@ -97,7 +97,7 @@ namespace Plywood.Tests.UnitTesting.Entities
         [TestMethod]
         public void InstanceSerialiseDeserialiseNullTags()
         {
-            var originalInstance = new Instance()
+            var originalInstance = new Server()
             {
                 Key = Guid.NewGuid(),
                 GroupKey = Guid.NewGuid(),
@@ -105,10 +105,10 @@ namespace Plywood.Tests.UnitTesting.Entities
                 Name = "Test Instance",
             };
 
-            Instance secondInstance;
+            Server secondInstance;
             using (var stream = originalInstance.Serialise())
             {
-                secondInstance = new Instance(stream);
+                secondInstance = new Server(stream);
             }
 
             Assert.AreEqual(originalInstance.Key, secondInstance.Key);

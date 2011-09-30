@@ -23,7 +23,7 @@ namespace Plywood
 
             using (var stream = logEntry.Serialise())
             {
-                var instancesController = new Instances(StorageProvider);
+                var instancesController = new Servers(StorageProvider);
                 if (!instancesController.Exists(logEntry.InstanceKey))
                     throw new InstanceNotFoundException(String.Format("Instance with the key \"{0}\" could not be found.", logEntry.InstanceKey));
 

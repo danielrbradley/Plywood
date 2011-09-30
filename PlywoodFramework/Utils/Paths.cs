@@ -42,9 +42,9 @@ namespace Plywood.Utils
             return string.Format("g/{0}/ti", groupKey.ToString("N"));
         }
 
-        public static string GetInstanceDetailsKey(Guid key)
+        public static string GetServerDetailsKey(Guid key)
         {
-            return string.Format("i/{0}/d", key.ToString("N"));
+            return string.Format("s/{0}/d", key.ToString("N"));
         }
 
         public static string GetInstanceIndexBaseKey(Guid targetKey)

@@ -45,12 +45,12 @@ namespace Plywood
         public VersionNotFoundException(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
     }
 
-    public class TargetNotFoundException : DeploymentException
+    public class RoleNotFoundException : DeploymentException
     {
-        public TargetNotFoundException() : base() { }
-        public TargetNotFoundException(string message) : base(message) { }
-        public TargetNotFoundException(string message, Exception ex) : base(message, ex) { }
-        public TargetNotFoundException(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
+        public RoleNotFoundException() : base() { }
+        public RoleNotFoundException(string message) : base(message) { }
+        public RoleNotFoundException(string message, Exception ex) : base(message, ex) { }
+        public RoleNotFoundException(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
     }
 
     public class InstanceNotFoundException : DeploymentException

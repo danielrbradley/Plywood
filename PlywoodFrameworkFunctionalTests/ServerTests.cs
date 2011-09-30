@@ -8,7 +8,7 @@ using System.IO;
 namespace Plywood.FrameworkFunctionalTests
 {
     [TestClass]
-    public class InstanceTests
+    public class ServerTests
     {
         [TestInitialize]
         public void Init()
@@ -38,10 +38,10 @@ namespace Plywood.FrameworkFunctionalTests
         private Role Role { get; set; }
 
         [TestMethod]
-        public void RoleControllerTests()
+        public void ServerControllerTests()
         {
-            var instances = new Instances(StorageProvider);
-            var instance = new Instance()
+            var instances = new Servers(StorageProvider);
+            var instance = new Server()
             {
                 GroupKey = Group.Key,
                 RoleKey = Role.Key,
@@ -53,7 +53,7 @@ namespace Plywood.FrameworkFunctionalTests
 
             // Search no result
             var res1 = instances.Search(Role.Key);
-            Assert.AreEqual(0, res1.Instances.Count());
+            Assert.AreEqual(0, res1.Items.Count());
             Assert.IsFalse(res1.IsTruncated);
 
             // Create
@@ -61,20 +61,20 @@ namespace Plywood.FrameworkFunctionalTests
 
             // Truncated search
             var createSearch1 = instances.Search(Role.Key, pageSize: 0);
-            Assert.AreEqual(0, createSearch1.Instances.Count());
+            Assert.AreEqual(0, createSearch1.Items.Count());
             Assert.IsTrue(createSearch1.IsTruncated);
 
             // Keyword, group search
             var keywordGroupResult = instances.Search(Role.Key, "Test");
-            Assert.AreEqual(1, keywordGroupResult.Instances.Count());
+            Assert.AreEqual(1, keywordGroupResult.Items.Count());
             Assert.IsFalse(keywordGroupResult.IsTruncated);
 
             // Null group search
             var nullGroupResult = instances.Search(Guid.NewGuid(), "Test");
-            Assert.AreEqual(0, nullGroupResult.Instances.Count());
+            Assert.AreEqual(0, nullGroupResult.Items.Count());
 
             // No results search
-            Assert.AreEqual(0, instances.Search(Role.Key, query: "Updated").Instances.Count());
+            Assert.AreEqual(0, instances.Search(Role.Key, query: "Updated").Items.Count());
 
             // Get
             var createdTarget = instances.Get(instance.Key);
@@ -87,15 +87,15 @@ namespace Plywood.FrameworkFunctionalTests
             instances.Update(createdTarget);
 
             Assert.AreEqual(createdTarget.Name, instances.Get(instance.Key).Name);
-            Assert.AreEqual(1, instances.Search(Role.Key, query: "Updated").Instances.Count());
-            Assert.AreEqual(0, instances.Search(Role.Key, query: "Test").Instances.Count());
+            Assert.AreEqual(1, instances.Search(Role.Key, query: "Updated").Items.Count());
+            Assert.AreEqual(0, instances.Search(Role.Key, query: "Test").Items.Count());
 
             // Delete
             instances.Delete(instance.Key);
-            Assert.AreEqual(0, instances.Search(Role.Key).Instances.Count());
-            Assert.AreEqual(0, instances.Search(Role.Key).Instances.Count());
-            Assert.AreEqual(0, instances.Search(Role.Key, query: "Updated").Instances.Count());
-            Assert.AreEqual(0, instances.Search(Role.Key, "Updated").Instances.Count());
+            Assert.AreEqual(0, instances.Search(Role.Key).Items.Count());
+            Assert.AreEqual(0, instances.Search(Role.Key).Items.Count());
+            Assert.AreEqual(0, instances.Search(Role.Key, query: "Updated").Items.Count());
+            Assert.AreEqual(0, instances.Search(Role.Key, "Updated").Items.Count());
             Assert.IsFalse(instances.Exists(instance.Key));
         }
     }

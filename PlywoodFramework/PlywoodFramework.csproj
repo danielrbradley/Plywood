@@ -57,7 +57,7 @@
     <Compile Include="IStorageProvider.cs" />
     <Compile Include="LogEntities.cs" />
     <Compile Include="Logs.cs" />
-    <Compile Include="Instances.cs" />
+    <Compile Include="Servers.cs" />
     <Compile Include="FilePath.cs" />
     <Compile Include="TargetApp.cs" />
     <Compile Include="TargetAppVersions.cs" />
@@ -84,7 +84,7 @@
     <Content Include="Schemas\LogEntry.xml">
       <SubType>Designer</SubType>
     </Content>
-    <Content Include="Schemas\Instance.xml">
+    <Content Include="Schemas\Server.xml">
       <SubType>Designer</SubType>
     </Content>
     <Content Include="Schemas\Version.xml" />
@@ -112,7 +112,7 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Schemas\Instance.xsd">
+    <EmbeddedResource Include="Schemas\Server.xsd">
       <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>

@@ -67,7 +67,7 @@
     <Compile Include="Entities\GroupTests.cs" />
     <Compile Include="EntityIndexing\Apps.cs" />
     <Compile Include="EntityIndexing\Logs.cs" />
-    <Compile Include="EntityIndexing\Instances.cs" />
+    <Compile Include="EntityIndexing\Servers.cs" />
     <Compile Include="EntityIndexing\TargetApps.cs" />
     <Compile Include="EntityIndexing\Versions.cs" />
     <Compile Include="EntityIndexing\Roles.cs" />

@@ -23,7 +23,7 @@ namespace Plywood
         {
             get
             {
-                return this.Value != null && Regex.IsMatch(this.Value, @"^([0-9a-zA-Z_\-]+/)*[0-9a-zA-Z_\-]+$");
+                return this.Value != null && Regex.IsMatch(this.Value, @"^([0-9a-zA-Z_\-%]+/)*[0-9a-zA-Z_\-%]+$");
             }
         }
 

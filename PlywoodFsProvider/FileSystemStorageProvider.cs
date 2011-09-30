@@ -75,6 +75,12 @@ namespace Plywood.FsProvider
 
         public void PutFile(FilePath path, System.IO.Stream content = null)
         {
+            string fsFolderPath = GetFsPath(path.FolderPath);
+            if (!Directory.Exists(fsFolderPath))
+            {
+                Directory.CreateDirectory(fsFolderPath);
+            }
+
             using (var stream = File.Create(GetFsPath(path)))
             {
                 if (content != null)
@@ -91,6 +97,12 @@ namespace Plywood.FsProvider
 
         public void MoveFile(FilePath oldPath, FilePath newPath)
         {
+            string newDirectory = GetFsPath(newPath.FolderPath);
+            if (!Directory.Exists(newDirectory))
+            {
+                Directory.CreateDirectory(newDirectory);
+            }
+
             File.Move(GetFsPath(oldPath), GetFsPath(newPath));
         }
 
@@ -111,7 +123,17 @@ namespace Plywood.FsProvider
 
         public FileListing ListFiles(FolderPath folderPath, string marker, int pageSize)
         {
-            var files = Directory.EnumerateFiles(GetFsPath(folderPath)).SkipWhile(f => string.Compare(Path.GetFileName(f), marker) <= 0).Take(pageSize + 1).Select(f => Path.GetFileName(f)).ToList();
+            var directory = new DirectoryInfo(GetFsPath(folderPath));
+            List<string> files;
+            if (directory.Exists)
+            {
+                files = directory.EnumerateFiles().SkipWhile(f => string.Compare(Path.GetFileName(f.Name), marker) <= 0).Take(pageSize + 1).Select(f => Path.GetFileName(f.Name)).ToList();
+            }
+            else
+            {
+                files = new List<string>();
+            }
+
             var page = files.Take(pageSize).ToList();
             var isTruncated = files.Skip(pageSize).Any();
             var nextMarker = page.Any() ? page.Last() : marker;

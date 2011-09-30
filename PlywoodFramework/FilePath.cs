@@ -22,6 +22,14 @@ namespace Plywood
         /// </summary>
         public string Value { get; set; }
 
+        public FolderPath FolderPath
+        {
+            get
+            {
+                return new FolderPath(this.Value.Substring(0, this.Value.LastIndexOf('/')));
+            }
+        }
+
         /// <summary>
         /// Indicates if the current value of the file path is valid.
         /// </summary>
@@ -29,7 +37,7 @@ namespace Plywood
         {
             get
             {
-                return this.Value != null && Regex.IsMatch(this.Value, @"^([0-9a-zA-Z_\-]+/)*[0-9a-zA-Z_\-\.]+$");
+                return this.Value != null && Regex.IsMatch(this.Value, @"^([0-9a-zA-Z_\-%]+/)*[0-9a-zA-Z_\-\.%]+$");
             }
         }
 

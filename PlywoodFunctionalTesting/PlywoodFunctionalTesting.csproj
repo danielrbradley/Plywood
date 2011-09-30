@@ -61,7 +61,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\PlywoodCore\PlywoodCore.csproj">
+    <ProjectReference Include="..\PlywoodFramework\PlywoodFramework.csproj">
       <Project>{5B7C23D6-CD1D-4BAA-A8A5-F99F43A1C014}</Project>
       <Name>PlywoodCore</Name>
     </ProjectReference>

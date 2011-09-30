@@ -22,6 +22,7 @@ namespace Plywood.Tests.UnitTesting.EntityIndexing
             var expected = new List<string>()
             {
                 "i/8d4abbb4af9f432fbce5e6da5a402469/li/e/F731C69057E9C87F-b",
+                "i/8d4abbb4af9f432fbce5e6da5a402469/li/t/7b83d3f08fa392b79e3f553b585971cd/F731C69057E9C87F-b",
             };
             var actual = log.GetIndexEntries();
 

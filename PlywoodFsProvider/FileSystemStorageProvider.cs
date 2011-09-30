@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
+using System.Security.Cryptography;
 
 namespace Plywood.FsProvider
 {
@@ -43,6 +44,28 @@ namespace Plywood.FsProvider
         public System.IO.Stream GetFile(FilePath path)
         {
             return File.OpenRead(GetFsPath(path));
+        }
+
+        public string GetFileHash(string path)
+        {
+            return this.GetFileHash(new FilePath(path));
+        }
+
+        public string GetFileHash(FilePath path)
+        {
+            string fsPath = GetFsPath(path);
+            if (!File.Exists(fsPath))
+            {
+                return null;
+            }
+
+            using (var crypto = new MD5CryptoServiceProvider())
+            {
+                using (var stream = File.OpenRead(fsPath))
+                {
+                    return BitConverter.ToString(crypto.ComputeHash(stream)).Replace("-", string.Empty).ToLower();
+                }
+            }
         }
 
         public void PutFile(string path, System.IO.Stream content = null)

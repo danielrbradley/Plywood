@@ -91,6 +91,16 @@ namespace Plywood
             throw new NotImplementedException();
         }
 
+        public string GetFileHash(string path)
+        {
+            return this.GetFileHash(new FilePath(path));
+        }
+
+        public string GetFileHash(FilePath path)
+        {
+            throw new NotImplementedException();
+        }
+
         public void PutFile(string path, Stream content = null)
         {
             throw new NotImplementedException();

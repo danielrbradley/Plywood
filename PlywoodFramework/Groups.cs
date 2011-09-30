@@ -47,7 +47,7 @@ namespace Plywood
                 indexEntries.DeleteEntity(group);
 
                 // TODO: Refactor the solf-delete functionality.
-                StorageProvider.MoveFile(Paths.GetGroupDetailsKey(key), string.Concat("recycled/", Paths.GetGroupDetailsKey(key)));
+                StorageProvider.MoveFile(Paths.GetGroupDetailsKey(key), string.Concat("deleted/", Paths.GetGroupDetailsKey(key)));
             }
             catch (Exception ex)
             {

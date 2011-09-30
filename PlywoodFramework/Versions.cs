@@ -54,7 +54,7 @@ namespace Plywood
                 indexEntries.DeleteEntity(version);
 
                 // TODO: Refactor the solf-delete functionality.
-                StorageProvider.MoveFile(Paths.GetVersionDetailsKey(key), string.Concat(".recycled/", Paths.GetVersionDetailsKey(key)));
+                StorageProvider.MoveFile(Paths.GetVersionDetailsKey(key), string.Concat("deleted/", Paths.GetVersionDetailsKey(key)));
             }
             catch (Exception ex)
             {
@@ -147,8 +147,8 @@ namespace Plywood
 
         public VersionList SearchAppVersions(Guid appKey, string query = null, string marker = null, int pageSize = 50)
         {
-            if (pageSize < 1)
-                throw new ArgumentOutOfRangeException("pageSize", "Page size cannot be less than 1.");
+            if (pageSize < 0)
+                throw new ArgumentOutOfRangeException("pageSize", "Page size cannot be less than 0.");
             if (pageSize > 100)
                 throw new ArgumentOutOfRangeException("pageSize", "Page size cannot be greater than 100.");
 

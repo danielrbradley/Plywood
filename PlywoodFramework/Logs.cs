@@ -42,8 +42,8 @@ namespace Plywood
 
         public LogEntryPage SearchLogs(Guid instanceKey, string query = null, string marker = null, int pageSize = 50)
         {
-            if (pageSize < 1)
-                throw new ArgumentOutOfRangeException("pageSize", "Page size cannot be less than 1.");
+            if (pageSize < 0)
+                throw new ArgumentOutOfRangeException("pageSize", "Page size cannot be less than 0.");
             if (pageSize > 100)
                 throw new ArgumentOutOfRangeException("pageSize", "Page size cannot be greater than 100.");
 

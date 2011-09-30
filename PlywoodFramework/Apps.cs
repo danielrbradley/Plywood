@@ -63,7 +63,7 @@ namespace Plywood
                 indexEntries.DeleteEntity(app);
 
                 // TODO: Refactor the solf-delete functionality.
-                StorageProvider.MoveFile(Paths.GetAppDetailsKey(key), string.Concat(".recycled/", Paths.GetAppDetailsKey(key)));
+                StorageProvider.MoveFile(Paths.GetAppDetailsKey(key), string.Concat("deleted/", Paths.GetAppDetailsKey(key)));
             }
             catch (Exception ex)
             {
@@ -97,8 +97,8 @@ namespace Plywood
 
         public AppList SearchApps(Guid? groupKey = null, string query = null, string marker = null, int pageSize = 50)
         {
-            if (pageSize < 1)
-                throw new ArgumentOutOfRangeException("pageSize", "Page size cannot be less than 1.");
+            if (pageSize < 0)
+                throw new ArgumentOutOfRangeException("pageSize", "Page size cannot be less than 0.");
             if (pageSize > 100)
                 throw new ArgumentOutOfRangeException("pageSize", "Page size cannot be greater than 100.");
 

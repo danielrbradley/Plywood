@@ -126,7 +126,7 @@ namespace Plywood
                     Query = query,
                     Marker = marker,
                     PageSize = pageSize,
-                    NextMarker = instances.Last().Marker,
+                    NextMarker = instances.Any() ? instances.Last().Marker : marker,
                     IsTruncated = rawResults.IsTruncated,
                 };
 

@@ -186,7 +186,7 @@ namespace Plywood
                     Query = query,
                     Marker = marker,
                     PageSize = pageSize,
-                    NextMarker = apps.Last().Marker,
+                    NextMarker = apps.Any() ? apps.Last().Marker : marker,
                     IsTruncated = rawResults.IsTruncated,
                 };
 

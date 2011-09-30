@@ -98,7 +98,7 @@ namespace Plywood
                     startLocations = new string[1];
                 startLocations[0] = "ti";
                 if (groupKey.HasValue)
-                    startLocations[1] = string.Format("gi/{0}/ti");
+                    startLocations[1] = string.Format("gi/{0}/ti", Utils.Indexes.EncodeGuid(groupKey.Value));
 
                 IEnumerable<string> basePaths;
 
@@ -118,7 +118,7 @@ namespace Plywood
                     Query = query,
                     Marker = marker,
                     PageSize = pageSize,
-                    NextMarker = targets.Last().Marker,
+                    NextMarker = targets.Any() ? targets.Last().Marker : marker,
                     IsTruncated = rawResults.IsTruncated,
                 };
 

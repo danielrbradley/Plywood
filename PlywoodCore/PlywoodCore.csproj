@@ -63,6 +63,7 @@
     <Compile Include="Logs.cs" />
     <Compile Include="Instances.cs" />
     <Compile Include="FilePath.cs" />
+    <Compile Include="TargetApp.cs" />
     <Compile Include="TargetAppVersions.cs" />
     <Compile Include="Internal\AwsHelpers.cs" />
     <Compile Include="ControllerBase.cs" />

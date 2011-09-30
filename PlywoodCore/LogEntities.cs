@@ -18,6 +18,7 @@ namespace Plywood
 
         public LogEntry()
         {
+            Key = Guid.NewGuid();
             Timestamp = DateTime.UtcNow;
             Status = LogStatus.Ok;
         }
@@ -46,6 +47,7 @@ namespace Plywood
 
         #endregion
 
+        public Guid Key { get; set; }
         public DateTime Timestamp { get; set; }
         public LogStatus Status { get; set; }
         public Guid GroupKey { get; set; }
@@ -68,8 +70,9 @@ namespace Plywood
             var doc = new XDocument(
                 new XDeclaration("1.0", "UTF-8", "yes"),
                 new XElement("logEntry",
-                    new XAttribute("timestamp", logEntry.Timestamp),
-                    new XAttribute("status", logEntry.Status),
+                    new XAttribute("key", logEntry.Key),
+                    new XElement("timestamp", logEntry.Timestamp),
+                    new XElement("status", logEntry.Status),
                     new XElement("groupKey", logEntry.GroupKey),
                     new XElement("targetKey", logEntry.TargetKey),
                     new XElement("instanceKey", logEntry.InstanceKey),
@@ -110,11 +113,13 @@ namespace Plywood
 
             DateTime timestamp;
             LogStatus status;
-            Guid groupKey, targetKey, instanceKey;
+            Guid key, groupKey, targetKey, instanceKey;
 
-            if (!DateTime.TryParse(doc.Root.Attribute("timestamp").Value, out timestamp))
+            if (!Guid.TryParse(doc.Root.Attribute("key").Value, out key))
+                throw new DeserialisationException("Serialised log entry key is not a valid guid.");
+            if (!DateTime.TryParse(doc.Root.Element("timestamp").Value, out timestamp))
                 throw new DeserialisationException("Serialised log entry timestamp is not a valid datetime.");
-            if (!Enum.TryParse(doc.Root.Attribute("status").Value, out status))
+            if (!Enum.TryParse(doc.Root.Element("status").Value, out status))
                 throw new DeserialisationException("Serialised log entry status is not a valid log status.");
             if (!Guid.TryParse(doc.Root.Element("groupKey").Value, out groupKey))
                 throw new DeserialisationException("Serialised log entry group key is not a valid guid.");
@@ -125,6 +130,7 @@ namespace Plywood
 
             var logEntry = new LogEntry()
             {
+                Key = key,
                 Timestamp = timestamp.ToUniversalTime(),
                 Status = status,
                 GroupKey = groupKey,
@@ -180,9 +186,17 @@ namespace Plywood
                 Hashing.CreateHash(Timestamp), (char)Status);
 
             var entries = new List<string>(1);
+            var tokens = (new SimpleTokeniser()).Tokenise(Status.ToString()).ToList();
 
-            // Instance specific index (only everything index)
+            // Instance specific index
             entries.Add(string.Format("i/{0}/li/e/{1}", Utils.Indexes.EncodeGuid(InstanceKey), filename));
+            entries.AddRange(
+                tokens.Select(
+                    token =>
+                        string.Format("i/{0}/li/t/{1}/{2}",
+                         Utils.Indexes.EncodeGuid(InstanceKey),
+                         Indexes.IndexEntries.GetTokenHash(token),
+                         filename)));
 
             return entries;
         }
@@ -192,9 +206,10 @@ namespace Plywood
     {
         public Guid InstanceKey { get; set; }
         public IEnumerable<LogEntryListItem> LogEntries { get; set; }
-        public string StartMarker { get; set; }
+        public string Marker { get; set; }
         public string NextMarker { get; set; }
         public int PageSize { get; set; }
+        public bool IsTruncated { get; set; }
     }
 
     public class LogEntryListItem

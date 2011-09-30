@@ -6,6 +6,7 @@ using Plywood.Utils;
 using Amazon.S3;
 using Amazon.S3.Model;
 using System.Text.RegularExpressions;
+using Plywood.Indexes;
 
 namespace Plywood
 {
@@ -24,32 +25,24 @@ namespace Plywood
 
             using (var stream = logEntry.Serialise())
             {
-                var instancesController = new Instances(Context);
+                var instancesController = new Instances(StorageProvider);
                 if (!instancesController.InstanceExists(logEntry.InstanceKey))
                     throw new InstanceNotFoundException(String.Format("Instance with the key \"{0}\" could not be found.", logEntry.InstanceKey));
 
                 try
                 {
-                    using (var client = new AmazonS3Client(Context.AwsAccessKeyId, Context.AwsSecretAccessKey))
-                    {
-                        var entryPath = GetInstanceLogEntryPath(logEntry.InstanceKey, logEntry.Timestamp, logEntry.Status);
-
-                        using (var putResponse = client.PutObject(new PutObjectRequest()
-                        {
-                            BucketName = Context.BucketName,
-                            Key = entryPath,
-                            InputStream = stream,
-                        })) { }
-                    }
+                    StorageProvider.PutFile(Paths.GetLogDetailsPath(logEntry.Key), stream);
+                    var indexes = new Indexes.IndexEntries(StorageProvider);
+                    indexes.PutEntity(logEntry);
                 }
-                catch (AmazonS3Exception awsEx)
+                catch (Exception ex)
                 {
-                    throw new DeploymentException("Failed creating log entry.", awsEx);
+                    throw new DeploymentException("Failed creating log entry.", ex);
                 }
             }
         }
 
-        public LogEntryPage GetLogEntryPage(Guid instanceKey, string marker = null, int pageSize = 50)
+        public LogEntryPage SearchLogs(Guid instanceKey, string query = null, string marker = null, int pageSize = 50)
         {
             if (pageSize < 1)
                 throw new ArgumentOutOfRangeException("pageSize", "Page size cannot be less than 1.");
@@ -58,72 +51,56 @@ namespace Plywood
 
             try
             {
-                using (var client = new AmazonS3Client(Context.AwsAccessKeyId, Context.AwsSecretAccessKey))
-                {
-                    using (var res = client.ListObjects(new ListObjectsRequest()
-                    {
-                        BucketName = Context.BucketName,
-                        Prefix = string.Format("{0}/{1}/", STR_LOGS_CONTAINER_PATH, instanceKey.ToString("N")),
-                        MaxKeys = pageSize,
-                        Marker = marker,
-                    }))
-                    {
-                        return new LogEntryPage()
-                        {
-                            InstanceKey = instanceKey,
-                            StartMarker = marker,
-                            PageSize = pageSize,
-                            NextMarker = res.NextMarker,
-                            LogEntries = res.S3Objects.Select(o =>
-                            {
-                                DateTime timestamp;
-                                LogStatus status;
-                                bool timestampSucceeded = TryGetTimestampFromKey(o.Key, out timestamp);
-                                bool statusSucceeded = TryGetStateFromKey(o.Key, out status);
-                                return new { Timestmp = timestamp, Status = status, ParseSucceeded = timestampSucceeded && statusSucceeded };
-                            })
-                            .Where(o => o.ParseSucceeded)
-                            .Select(o => new LogEntryListItem() { Timestamp = o.Timestmp, Status = o.Status })
-                            .ToList()
-                        };
-                    }
-                }
-            }
-            catch (AmazonS3Exception awsEx)
-            {
-                throw new DeploymentException("Failed listing logs.", awsEx);
-            }
-        }
+                var startLocation = string.Format("t/{0}/ai", instanceKey.ToString("N"));
 
-        public LogEntry GetLogEntry(Guid instanceKey, DateTime timestamp, LogStatus status)
-        {
-            try
-            {
-                using (var client = new AmazonS3Client(Context.AwsAccessKeyId, Context.AwsSecretAccessKey))
+                var basePaths = new List<string>();
+                if (string.IsNullOrWhiteSpace(query))
                 {
-                    using (var res = client.GetObject(new GetObjectRequest()
-                    {
-                        BucketName = Context.BucketName,
-                        Key = GetInstanceLogEntryPath(instanceKey, timestamp, status),
-                    }))
-                    {
-                        using (var stream = res.ResponseStream)
-                        {
-                            return new LogEntry(stream);
-                        }
-                    }
-                }
-            }
-            catch (AmazonS3Exception awsEx)
-            {
-                if (awsEx.StatusCode == System.Net.HttpStatusCode.NotFound)
-                {
-                    throw new LogEntryNotFoundException(string.Format("Could not find the log entry at timestamp {0} for instance with key: {1}", timestamp, instanceKey), awsEx);
+                    basePaths.Add(string.Format("{0}/e", startLocation));
                 }
                 else
                 {
-                    throw new DeploymentException(string.Format("Failed getting the log entry at timestamp {0} for instance with key: {1}", timestamp, instanceKey), awsEx);
+                    basePaths.AddRange(
+                        new SimpleTokeniser().Tokenise(query).Select(
+                            token =>
+                                string.Format("{0}/t/{1}", startLocation, Indexes.IndexEntries.GetTokenHash(token))));
                 }
+
+                var indexEntries = new IndexEntries(StorageProvider);
+                var rawResults = indexEntries.PerformRawQuery(pageSize, marker, basePaths);
+
+                var entries = rawResults.FileNames.Select(fileName => new LogEntryListItem(fileName));
+
+                var logPage = new LogEntryPage()
+                {
+                    InstanceKey = instanceKey,
+                    Marker = marker,
+                    LogEntries = entries,
+                    PageSize = pageSize,
+                    NextMarker = entries.Any() ? entries.Last().Marker : marker,
+                    IsTruncated = rawResults.IsTruncated,
+                };
+
+                return logPage;
+            }
+            catch (Exception ex)
+            {
+                throw new DeploymentException("Failed listing logs.", ex);
+            }
+        }
+
+        public LogEntry GetLogEntry(Guid key)
+        {
+            try
+            {
+                using (var stream = StorageProvider.GetFile(Paths.GetLogDetailsPath(key)))
+                {
+                    return new LogEntry(stream);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new DeploymentException(string.Format("Failed getting the log entry \"{0}\"", key), ex);
             }
         }
 
@@ -203,11 +180,6 @@ namespace Plywood
                 status = LogStatus.Ok;
                 return false;
             }
-        }
-
-        public static string GetInstanceLogEntryPath(Guid instanceKey, DateTime entryTimestamp, LogStatus status)
-        {
-            return string.Format("{0}/{1}/{2}-{3}", STR_LOGS_CONTAINER_PATH, instanceKey.ToString("N"), Serialisation.SerialiseDateReversed(entryTimestamp), (char)status);
         }
     }
 }

@@ -57,5 +57,9 @@ namespace Plywood.Utils
             return string.Format("t/{0}/av/{1}", targetKey.ToString("N"), appKey.ToString("N"));
         }
 
+        public static string GetLogDetailsPath(Guid logKey)
+        {
+            return string.Format("l/{0}/d", logKey.ToString("N"));
+        }
     }
 }

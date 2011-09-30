@@ -34,102 +34,64 @@ namespace Plywood
             {
                 try
                 {
-                    using (var client = new AmazonS3Client(Context.AwsAccessKeyId, Context.AwsSecretAccessKey))
-                    {
-                        var targetsController = new Targets(Context);
-                        if (!targetsController.TargetExists(instance.TargetKey))
-                            throw new TargetNotFoundException(String.Format("Target with the key \"{0}\" could not be found.", instance.TargetKey));
+                    var targetsController = new Targets(StorageProvider);
+                    if (!targetsController.TargetExists(instance.TargetKey))
+                        throw new TargetNotFoundException(String.Format("Target with the key \"{0}\" could not be found.", instance.TargetKey));
 
-                        var indexEntries = new IndexEntries(Context);
+                    var indexEntries = new IndexEntries(StorageProvider);
 
-                        using (var putResponse = client.PutObject(new PutObjectRequest()
-                        {
-                            BucketName = Context.BucketName,
-                            Key = Paths.GetInstanceDetailsKey(instance.Key),
-                            InputStream = stream,
-                        })) { }
+                    StorageProvider.PutFile(Paths.GetInstanceDetailsKey(instance.Key), stream);
 
-                        indexEntries.PutEntity(instance);
-                    }
+                    indexEntries.PutEntity(instance);
                 }
-                catch (AmazonS3Exception awsEx)
+                catch (Exception ex)
                 {
-                    throw new DeploymentException("Failed creating instance.", awsEx);
+                    throw new DeploymentException("Failed creating instance.", ex);
                 }
             }
         }
 
-        public void DeleteInstance(Guid instanceKey)
+        public void DeleteInstance(Guid key)
         {
-            var instance = GetInstance(instanceKey);
+            var instance = GetInstance(key);
             try
             {
-                Plywood.Internal.AwsHelpers.SoftDeleteFolders(Context, string.Format("{0}/{1}", STR_INSTANCES_CONTAINER_PATH, instanceKey.ToString("N")));
-
-                var indexEntries = new IndexEntries(Context);
+                var indexEntries = new IndexEntries(StorageProvider);
                 indexEntries.DeleteEntity(instance);
+
+                // TODO: Refactor the solf-delete functionality.
+                StorageProvider.MoveFile(Paths.GetGroupDetailsKey(key), string.Concat(".recycled/", Paths.GetGroupDetailsKey(key)));
             }
-            catch (AmazonS3Exception awsEx)
+            catch (Exception ex)
             {
-                throw new DeploymentException("Failed deleting instance.", awsEx);
+                throw new DeploymentException("Failed deleting instance.", ex);
             }
         }
 
-        public bool InstanceExists(Guid instanceKey)
+        public bool InstanceExists(Guid key)
         {
             try
             {
-                using (var client = new AmazonS3Client(Context.AwsAccessKeyId, Context.AwsSecretAccessKey))
-                {
-                    using (var res = client.GetObjectMetadata(new GetObjectMetadataRequest()
-                    {
-                        BucketName = Context.BucketName,
-                        Key = Paths.GetInstanceDetailsKey(instanceKey),
-                    })) { return true; }
-                }
+                return StorageProvider.FileExists(Paths.GetInstanceDetailsKey(key));
             }
-            catch (AmazonS3Exception awsEx)
+            catch (Exception ex)
             {
-                if (awsEx.StatusCode == System.Net.HttpStatusCode.NotFound)
-                {
-                    return false;
-                }
-                else
-                {
-                    throw new DeploymentException(string.Format("Failed getting instance with key \"{0}\"", instanceKey), awsEx);
-                }
+                throw new DeploymentException(string.Format("Failed getting instance with key \"{0}\"", key), ex);
             }
         }
 
-        public Instance GetInstance(Guid instanceKey)
+        public Instance GetInstance(Guid key)
         {
             try
             {
-                using (var client = new AmazonS3Client(Context.AwsAccessKeyId, Context.AwsSecretAccessKey))
+                using (var stream = StorageProvider.GetFile(Paths.GetInstanceDetailsKey(key)))
                 {
-                    using (var res = client.GetObject(new GetObjectRequest()
-                    {
-                        BucketName = Context.BucketName,
-                        Key = Paths.GetInstanceDetailsKey(instanceKey),
-                    }))
-                    {
-                        using (var stream = res.ResponseStream)
-                        {
-                            return new Instance(stream);
-                        }
-                    }
+                    return new Instance(stream);
                 }
             }
-            catch (AmazonS3Exception awsEx)
+            catch (Exception ex)
             {
-                if (awsEx.StatusCode == System.Net.HttpStatusCode.NotFound)
-                {
-                    throw new InstanceNotFoundException(string.Format("Could not find the instance with key: {0}", instanceKey), awsEx);
-                }
-                else
-                {
-                    throw new DeploymentException(string.Format("Failed getting instance with key \"{0}\"", instanceKey), awsEx);
-                }
+                throw new DeploymentException(string.Format("Failed getting instance with key \"{0}\"", key), ex);
             }
         }
 
@@ -154,7 +116,7 @@ namespace Plywood
                 else
                     basePaths = new List<string>() { string.Format("t/{0}/ii/e", Utils.Indexes.EncodeGuid(targetKey)) };
 
-                var indexEntries = new IndexEntries(Context);
+                var indexEntries = new IndexEntries(StorageProvider);
                 var rawResults = indexEntries.PerformRawQuery(pageSize, marker, basePaths);
 
                 var instances = rawResults.FileNames.Select(fileName => new InstanceListItem(fileName));
@@ -170,9 +132,9 @@ namespace Plywood
 
                 return list;
             }
-            catch (AmazonS3Exception awsEx)
+            catch (Exception ex)
             {
-                throw new DeploymentException("Failed searcing instances.", awsEx);
+                throw new DeploymentException("Failed searcing instances.", ex);
             }
         }
 
@@ -189,22 +151,14 @@ namespace Plywood
             {
                 try
                 {
-                    using (var client = new AmazonS3Client(Context.AwsAccessKeyId, Context.AwsSecretAccessKey))
-                    {
-                        using (var putResponse = client.PutObject(new PutObjectRequest()
-                        {
-                            BucketName = Context.BucketName,
-                            Key = Paths.GetInstanceDetailsKey(updatedInstance.Key),
-                            InputStream = stream,
-                        })) { }
+                        StorageProvider.PutFile(Paths.GetInstanceDetailsKey(updatedInstance.Key), stream);
 
-                        var indexEntries = new IndexEntries(Context);
+                        var indexEntries = new IndexEntries(StorageProvider);
                         indexEntries.UpdateEntity(existingInstance, updatedInstance);
-                    }
                 }
-                catch (AmazonS3Exception awsEx)
+                catch (Exception ex)
                 {
-                    throw new DeploymentException("Failed updating instance.", awsEx);
+                    throw new DeploymentException("Failed updating instance.", ex);
                 }
             }
         }
@@ -448,6 +402,6 @@ namespace Plywood
         public Guid Key { get; set; }
         public string Name { get; set; }
     }
-    
+
     #endregion
 }

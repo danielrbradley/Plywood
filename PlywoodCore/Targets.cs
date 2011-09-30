@@ -16,11 +16,6 @@ namespace Plywood
 {
     public class Targets : ControllerBase
     {
-        [Obsolete]
-        public const string STR_TARGET_INDEX_PATH = ".targets.index";
-        [Obsolete]
-        public const string STR_TARGETS_CONTAINER_PATH = "targets";
-
         public Targets(IStorageProvider provider) : base(provider) { }
 
         public void CreateTarget(Target target)
@@ -154,12 +149,6 @@ namespace Plywood
                     throw new DeploymentException("Failed updating target.", ex);
                 }
             }
-        }
-
-        [Obsolete]
-        public string GetGroupTargetsIndexPath(Guid groupKey)
-        {
-            return string.Format("{0}/{1}/{2}", Groups.STR_GROUPS_CONTAINER_PATH, groupKey.ToString("N"), STR_TARGET_INDEX_PATH);
         }
 
         public bool TargetExists(Guid key)

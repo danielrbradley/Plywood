@@ -16,11 +16,6 @@ namespace Plywood
 {
     public class Versions : ControllerBase
     {
-        [Obsolete]
-        public const string STR_VERSION_INDEX_PATH = ".versions.index";
-        [Obsolete]
-        public const string STR_VERSIONS_CONTAINER_PATH = "versions";
-
         public Versions(IStorageProvider provider) : base(provider) { }
 
         public void CreateVersion(Version version)
@@ -246,18 +241,6 @@ namespace Plywood
                 throw new DeploymentException(string.Format("Failed checking if version with key \"{0}\" exists.", key), ex);
             }
         }
-
-        [Obsolete]
-        public static string GetAppVersionsIndexPath(Guid appKey)
-        {
-            return string.Format("{0}/{1}/{2}", Apps.STR_APPS_CONTAINER_PATH, appKey.ToString("N"), STR_VERSION_INDEX_PATH);
-        }
-
-        [Obsolete]
-        public static string CreateVersionIndexName(Version version)
-        {
-            return String.Format("{0:s} {1} {2}", version.Timestamp, version.VersionNumber, version.Comment);
-        }
     }
 
     #region Entities
@@ -301,8 +284,6 @@ namespace Plywood
         public Guid Key { get; set; }
         public Guid AppKey { get; set; }
         public Guid GroupKey { get; set; }
-        [Obsolete]
-        public string Name { get { return string.Format("{0} {1}", this.VersionNumber, this.Comment); } }
         public string VersionNumber { get; set; }
         public string Comment { get; set; }
         public DateTime Timestamp { get; set; }
@@ -504,8 +485,6 @@ namespace Plywood
         internal string Marker { get; set; }
         public Guid Key { get; set; }
         public DateTime Timestamp { get; set; }
-        [Obsolete]
-        public string Name { get { return string.Format("{0} {1}", this.VersionNumber, this.Comment); } }
         public string VersionNumber { get; set; }
         public string Comment { get; set; }
     }

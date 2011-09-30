@@ -16,11 +16,6 @@ namespace Plywood
 {
     public class Apps : ControllerBase
     {
-        [Obsolete]
-        public const string STR_APP_INDEX_PATH = ".apps.index";
-        [Obsolete]
-        public const string STR_APPS_CONTAINER_PATH = "a";
-
         public Apps(IStorageProvider provider) : base(provider) { }
 
         internal bool AppExists(Guid key)
@@ -181,12 +176,6 @@ namespace Plywood
                     throw new DeploymentException("Failed updating app.", ex);
                 }
             }
-        }
-
-        [Obsolete]
-        public static string GetGroupAppsIndexPath(Guid groupKey)
-        {
-            return string.Format("{0}/{1}/{2}", Groups.STR_GROUPS_CONTAINER_PATH, groupKey.ToString("N"), STR_APP_INDEX_PATH);
         }
     }
 

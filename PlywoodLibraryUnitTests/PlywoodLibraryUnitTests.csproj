@@ -92,10 +92,6 @@
       <Project>{5B7C23D6-CD1D-4BAA-A8A5-F99F43A1C014}</Project>
       <Name>PlywoodCore</Name>
     </ProjectReference>
-    <ProjectReference Include="..\PlywoodIISDeployment\PlywoodIISDeployment.csproj">
-      <Project>{C64EF7CF-8CCB-4F82-85FE-0EB145FBA8E4}</Project>
-      <Name>PlywoodIISDeployment</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

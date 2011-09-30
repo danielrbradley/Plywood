@@ -10,9 +10,6 @@ namespace Plywood
 {
     public class TargetApps : ControllerBase
     {
-        [Obsolete]
-        public const string STR_TARGET_APPS_INDEX_PATH = ".apps.index";
-
         public TargetApps(IStorageProvider provider) : base(provider) { }
 
         public void AddApp(Guid targetKey, Guid appKey)
@@ -53,22 +50,6 @@ namespace Plywood
             {
                 throw new DeploymentException(string.Format("Failed adding app with key \"{0}\" to target \"{1}\".", targetApp.AppKey, targetApp.TargetKey), ex);
             }
-        }
-
-        [Obsolete("Doesn't work no more, use the search methods")]
-        public IEnumerable<Guid> GetTargetAppKeys(Guid targetKey)
-        {
-            try
-            {
-                //var indexes = new Indexes(Context);
-                //var index = indexes.LoadIndex(GetTargetAppsIndexPath(targetKey));
-                //return index.Entries.Select(e => e.Key);
-            }
-            catch (Exception ex)
-            {
-                throw new DeploymentException(string.Format("Failed getting app keys for target \"{0}\".", targetKey), ex);
-            }
-            throw new NotImplementedException();
         }
 
         public TargetAppList SearchTargetApps(Guid targetKey, string query = null, string marker = null, int pageSize = 50)
@@ -158,12 +139,6 @@ namespace Plywood
             {
                 throw new DeploymentException(string.Format("Failed removing app with key \"{0}\" from target \"{1}\".", targetApp.AppKey, targetApp.TargetKey), ex);
             }
-        }
-
-        [Obsolete]
-        public string GetTargetAppsIndexPath(Guid targetKey)
-        {
-            return string.Format("{0}/{1}/{2}", Targets.STR_TARGETS_CONTAINER_PATH, targetKey.ToString("N"), STR_TARGET_APPS_INDEX_PATH);
         }
     }
 }

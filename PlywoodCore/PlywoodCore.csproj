@@ -84,12 +84,6 @@
     <Compile Include="Versions.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\PlywoodIISDeployment\PlywoodIISDeployment.csproj">
-      <Project>{C64EF7CF-8CCB-4F82-85FE-0EB145FBA8E4}</Project>
-      <Name>PlywoodIISDeployment</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <Content Include="Schemas\App.xml" />
     <Content Include="Schemas\LogEntry.xml">
       <SubType>Designer</SubType>

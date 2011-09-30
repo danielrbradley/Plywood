@@ -86,7 +86,6 @@ namespace Plywood.Tests.UnitTesting.Entities
             Assert.AreEqual(originalVersion.GroupKey, secondVersion.GroupKey);
             Assert.AreEqual(originalVersion.AppKey, secondVersion.AppKey);
             Assert.AreEqual(originalVersion.Timestamp, secondVersion.Timestamp);
-            Assert.AreEqual(originalVersion.Name, secondVersion.Name);
             Assert.AreEqual(originalVersion.Comment, secondVersion.Comment);
             Assert.AreEqual(originalVersion.VersionNumber, secondVersion.VersionNumber);
 
@@ -120,7 +119,6 @@ namespace Plywood.Tests.UnitTesting.Entities
             Assert.AreEqual(originalVersion.GroupKey, secondVersion.GroupKey);
             Assert.AreEqual(originalVersion.AppKey, secondVersion.AppKey);
             Assert.AreEqual(originalVersion.Timestamp, secondVersion.Timestamp);
-            Assert.AreEqual(originalVersion.Name, secondVersion.Name);
             Assert.AreEqual(originalVersion.Comment, secondVersion.Comment);
             Assert.AreEqual(originalVersion.VersionNumber, secondVersion.VersionNumber);
 

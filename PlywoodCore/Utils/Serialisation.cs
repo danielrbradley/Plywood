@@ -132,49 +132,6 @@ namespace Plywood.Utils
             return stream;
         }
 
-        [Obsolete("Config is no longer serialised into a single string - each key is stored individually.", true)]
-        public static string Serialise(ControllerConfiguration config)
-        {
-            if (config == null)
-                throw new ArgumentNullException("config", "Configuration cannot be null.");
-
-            var values = new List<KeyValuePair<string, string>>()
-            {
-                new KeyValuePair<string,string>("AwsAccessKeyId", config.AwsAccessKeyId),
-                new KeyValuePair<string,string>("AwsSecretAccessKey", config.AwsSecretAccessKey),
-                new KeyValuePair<string,string>("BucketName", config.BucketName),
-            };
-
-            using (var reader = new StreamReader(Utils.Serialisation.Serialise(values)))
-            {
-                return reader.ReadToEnd();
-            }
-        }
-
-        [Obsolete("Config is no longer serialised into a single string - each key is stored individually.", false)]
-        public static string Serialise(DeploymentConfiguration config)
-        {
-            if (config == null)
-                throw new ArgumentNullException("config", "Configuration cannot be null.");
-
-            var values = new List<KeyValuePair<string, string>>()
-            {
-                new KeyValuePair<string,string>("CheckFrequency", config.CheckFrequency.ToString()),
-                new KeyValuePair<string,string>("AwsAccessKeyId", config.AwsAccessKeyId),
-                new KeyValuePair<string,string>("AwsSecretAccessKey", config.AwsSecretAccessKey),
-                new KeyValuePair<string,string>("BucketName", config.BucketName),
-                new KeyValuePair<string,string>("DeploymentDirectory", config.DeploymentDirectory),
-                new KeyValuePair<string,string>("TargetKey", config.TargetKey.ToString("N")),
-            };
-            if (config.InstanceKey.HasValue)
-                values.Add(new KeyValuePair<string,string>("InstanceKey", config.InstanceKey.Value.ToString("N")));
-
-            using (var reader = new StreamReader(Utils.Serialisation.Serialise(values)))
-            {
-                return reader.ReadToEnd();
-            }
-        }
-
         #endregion
 
         #region Serialisation Helpers

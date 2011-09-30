@@ -17,9 +17,6 @@ namespace Plywood
 {
     public class Groups : ControllerBase
     {
-        [Obsolete]
-        public const string STR_GROUPS_CONTAINER_PATH = "g";
-
         public Groups(IStorageProvider provider) : base(provider) { }
 
         public void CreateGroup(Group group)

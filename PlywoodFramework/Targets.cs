@@ -16,7 +16,7 @@ namespace Plywood
     {
         public Targets(IStorageProvider provider) : base(provider) { }
 
-        public void CreateTarget(Target target)
+        public void Create(Target target)
         {
             if (target == null)
                 throw new ArgumentNullException("target", "Target cannot be null.");
@@ -28,7 +28,7 @@ namespace Plywood
                 try
                 {
                     var groupsController = new Groups(StorageProvider);
-                    if (!groupsController.GroupExists(target.GroupKey))
+                    if (!groupsController.Exists(target.GroupKey))
                         throw new GroupNotFoundException(String.Format("Group with the key \"{0}\" could not be found.", target.GroupKey));
 
                     StorageProvider.PutFile(Paths.GetTargetDetailsKey(target.Key), stream);
@@ -43,9 +43,9 @@ namespace Plywood
             }
         }
 
-        public void DeleteTarget(Guid key)
+        public void Delete(Guid key)
         {
-            var target = GetTarget(key);
+            var target = Get(key);
             try
             {
                 var indexEntries = new IndexEntries(StorageProvider);
@@ -60,7 +60,19 @@ namespace Plywood
             }
         }
 
-        public Target GetTarget(Guid key)
+        public bool Exists(Guid key)
+        {
+            try
+            {
+                return StorageProvider.FileExists(Paths.GetTargetDetailsKey(key));
+            }
+            catch (Exception ex)
+            {
+                throw new DeploymentException(string.Format("Failed getting target with key \"{0}\"", key), ex);
+            }
+        }
+
+        public Target Get(Guid key)
         {
             try
             {
@@ -75,7 +87,7 @@ namespace Plywood
             }
         }
 
-        public TargetList SearchTargets(Guid? groupKey = null, string query = null, string marker = null, int pageSize = 50)
+        public TargetList Search(Guid? groupKey = null, string query = null, string marker = null, int pageSize = 50)
         {
             if (pageSize < 0)
                 throw new ArgumentOutOfRangeException("pageSize", "Page size cannot be less than 0.");
@@ -123,12 +135,12 @@ namespace Plywood
             }
         }
 
-        public void UpdateTarget(Target target)
+        public void Update(Target target)
         {
             if (target == null)
                 throw new ArgumentNullException("target", "Target cannot be null.");
 
-            var existingTarget = GetTarget(target.Key);
+            var existingTarget = Get(target.Key);
             // Don't allow moving between groups.
             target.GroupKey = existingTarget.GroupKey;
 
@@ -146,18 +158,6 @@ namespace Plywood
                 {
                     throw new DeploymentException("Failed updating target.", ex);
                 }
-            }
-        }
-
-        public bool TargetExists(Guid key)
-        {
-            try
-            {
-                return StorageProvider.FileExists(Paths.GetTargetDetailsKey(key));
-            }
-            catch (Exception ex)
-            {
-                throw new DeploymentException(string.Format("Failed getting target with key \"{0}\"", key), ex);
             }
         }
     }

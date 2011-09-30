@@ -16,8 +16,8 @@ namespace Plywood
             {
                 var targets = new Targets(StorageProvider);
                 var apps = new Apps(StorageProvider);
-                var target = targets.GetTarget(targetKey);
-                var app = apps.GetApp(appKey);
+                var target = targets.Get(targetKey);
+                var app = apps.Get(appKey);
 
                 var indexes = new Indexes.IndexEntries(StorageProvider);
                 var targetApp = new TargetApp()
@@ -50,7 +50,7 @@ namespace Plywood
             }
         }
 
-        public TargetAppList SearchTargetApps(Guid targetKey, string query = null, string marker = null, int pageSize = 50)
+        public TargetAppList Search(Guid targetKey, string query = null, string marker = null, int pageSize = 50)
         {
             if (pageSize < 0)
                 throw new ArgumentOutOfRangeException("pageSize", "Page size cannot be less than 0.");
@@ -104,8 +104,8 @@ namespace Plywood
             {
                 var targets = new Targets(StorageProvider);
                 var apps = new Apps(StorageProvider);
-                var target = targets.GetTarget(targetKey);
-                var app = apps.GetApp(appKey);
+                var target = targets.Get(targetKey);
+                var app = apps.Get(appKey);
 
                 var targetApp = new TargetApp()
                 {

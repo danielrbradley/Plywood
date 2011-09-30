@@ -16,7 +16,7 @@ namespace Plywood
     {
         public Versions(IStorageProvider provider) : base(provider) { }
 
-        public void CreateVersion(Version version)
+        public void Create(Version version)
         {
             if (version == null)
                 throw new ArgumentNullException("version", "Version cannot be null.");
@@ -26,7 +26,7 @@ namespace Plywood
             try
             {
                 var appsController = new Apps(StorageProvider);
-                var app = appsController.GetApp(version.AppKey);
+                var app = appsController.Get(version.AppKey);
                 version.GroupKey = app.GroupKey;
 
                 using (var stream = version.Serialise())
@@ -45,9 +45,9 @@ namespace Plywood
             }
         }
 
-        public void DeleteVersion(Guid key)
+        public void Delete(Guid key)
         {
-            var version = GetVersion(key);
+            var version = Get(key);
             try
             {
                 var indexEntries = new IndexEntries(StorageProvider);
@@ -62,7 +62,19 @@ namespace Plywood
             }
         }
 
-        public Version GetVersion(Guid key)
+        public bool Exists(Guid key)
+        {
+            try
+            {
+                return StorageProvider.FileExists(Paths.GetVersionDetailsKey(key));
+            }
+            catch (Exception ex)
+            {
+                throw new DeploymentException(string.Format("Failed checking if version with key \"{0}\" exists.", key), ex);
+            }
+        }
+
+        public Version Get(Guid key)
         {
             try
             {
@@ -77,11 +89,11 @@ namespace Plywood
             }
         }
 
-        public void PullVersion(Guid key, DirectoryInfo directory, bool mergeExistingFiles = false)
+        public void Pull(Guid key, DirectoryInfo directory, bool mergeExistingFiles = false)
         {
             if (!directory.Exists)
                 throw new ArgumentException("Directory must exist.", "directory");
-            if (!VersionExists(key))
+            if (!Exists(key))
                 throw new VersionNotFoundException(string.Format("Could not find the version with key: {0}", key));
             if (!mergeExistingFiles)
             {
@@ -118,7 +130,7 @@ namespace Plywood
             }
         }
 
-        public void PushVersion(DirectoryInfo directory, Guid key)
+        public void Push(DirectoryInfo directory, Guid key)
         {
             if (!directory.Exists)
                 throw new ArgumentException("Directory must exist.", "directory");
@@ -145,7 +157,7 @@ namespace Plywood
             }
         }
 
-        public VersionList SearchAppVersions(Guid appKey, string query = null, string marker = null, int pageSize = 50)
+        public VersionList Search(Guid appKey, string query = null, string marker = null, int pageSize = 50)
         {
             if (pageSize < 0)
                 throw new ArgumentOutOfRangeException("pageSize", "Page size cannot be less than 0.");
@@ -191,7 +203,7 @@ namespace Plywood
             }
         }
 
-        public void UpdateVersion(Version version)
+        public void Update(Version version)
         {
             if (version == null)
                 throw new ArgumentNullException("version", "Version cannot be null.");
@@ -203,7 +215,7 @@ namespace Plywood
             //if (version.GroupKey == Guid.Empty)
             //    throw new ArgumentException("Version group key cannot be empty.", "version.GroupKey");
 
-            var existingVersion = GetVersion(version.Key);
+            var existingVersion = Get(version.Key);
             // Do not allow moving between apps & groups.
             version.AppKey = existingVersion.AppKey;
             version.GroupKey = existingVersion.GroupKey;
@@ -221,18 +233,6 @@ namespace Plywood
                 {
                     throw new DeploymentException("Failed deleting version.", ex);
                 }
-            }
-        }
-
-        internal bool VersionExists(Guid key)
-        {
-            try
-            {
-                return StorageProvider.FileExists(Paths.GetVersionDetailsKey(key));
-            }
-            catch (Exception ex)
-            {
-                throw new DeploymentException(string.Format("Failed checking if version with key \"{0}\" exists.", key), ex);
             }
         }
     }

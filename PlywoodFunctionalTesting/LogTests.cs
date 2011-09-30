@@ -17,9 +17,9 @@ namespace Plywood.Tests.Functional
             Debug.Assert(searchEmpty.InstanceKey == instanceKey);
 
             var logEntry1 = new LogEntry() { InstanceKey = instanceKey, LogContent = "Now this is the story all about how\r\nMy life got flipped, turned upside down\r\nAnd I'd like to take a minute just sit right there\r\nI'll tell you how I became the prince of a town called Bel-air" };
-            logsController.AddLogEntry(logEntry1);
+            logsController.Create(logEntry1);
 
-            var createdLogEntry1 = logsController.GetLogEntry(instanceKey, logEntry1.Timestamp, logEntry1.Status);
+            var createdLogEntry1 = logsController.Get(instanceKey, logEntry1.Timestamp, logEntry1.Status);
             Debug.Assert(createdLogEntry1.Timestamp == logEntry1.Timestamp);
             Debug.Assert(createdLogEntry1.InstanceKey == logEntry1.InstanceKey);
             Debug.Assert(createdLogEntry1.Status == logEntry1.Status);
@@ -31,9 +31,9 @@ namespace Plywood.Tests.Functional
             Debug.Assert(searchSingle.LogEntries.ElementAt(0).Status == LogStatus.Ok);
 
             var logEntry2 = new LogEntry() { InstanceKey = instanceKey, Status = LogStatus.Warning, LogContent = "In west Philadelphia born and raised\r\nOn the playground where I spent most of my days\r\nChilling out, maxing, relaxing all cool\r\nAnd all shooting some b-ball outside of the school\r\nWhen a couple of guys, they were up to no good\r\nStarted making trouble in my neighbourhood\r\nI got in one little fight and my mom got scared\r\nAnd said \"You're moving with your auntie and uncle in Bel-air\"" };
-            logsController.AddLogEntry(logEntry2);
+            logsController.Create(logEntry2);
 
-            var createdLogEntry2 = logsController.GetLogEntry(instanceKey, logEntry2.Timestamp, logEntry2.Status);
+            var createdLogEntry2 = logsController.Get(instanceKey, logEntry2.Timestamp, logEntry2.Status);
             Debug.Assert(createdLogEntry2.Timestamp == logEntry2.Timestamp);
             Debug.Assert(createdLogEntry2.InstanceKey == logEntry2.InstanceKey);
             Debug.Assert(createdLogEntry2.Status == logEntry2.Status);

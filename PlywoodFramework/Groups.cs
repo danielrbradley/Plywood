@@ -17,7 +17,7 @@ namespace Plywood
     {
         public Groups(IStorageProvider provider) : base(provider) { }
 
-        public void CreateGroup(Group group)
+        public void Create(Group group)
         {
             if (group == null)
                 throw new ArgumentNullException("group", "Group cannot be null.");
@@ -38,9 +38,9 @@ namespace Plywood
             }
         }
 
-        public void DeleteGroup(Guid key)
+        public void Delete(Guid key)
         {
-            var group = GetGroup(key);
+            var group = Get(key);
             try
             {
                 var indexEntries = new IndexEntries(StorageProvider);
@@ -55,7 +55,19 @@ namespace Plywood
             }
         }
 
-        public Group GetGroup(Guid key)
+        public bool Exists(Guid key)
+        {
+            try
+            {
+                return StorageProvider.FileExists(Paths.GetGroupDetailsKey(key));
+            }
+            catch (Exception ex)
+            {
+                throw new DeploymentException(string.Format("Failed getting group with key \"{0}\"", key), ex);
+            }
+        }
+
+        public Group Get(Guid key)
         {
             try
             {
@@ -70,19 +82,7 @@ namespace Plywood
             }
         }
 
-        public bool GroupExists(Guid key)
-        {
-            try
-            {
-                return StorageProvider.FileExists(Paths.GetGroupDetailsKey(key));
-            }
-            catch (Exception ex)
-            {
-                throw new DeploymentException(string.Format("Failed getting group with key \"{0}\"", key), ex);
-            }
-        }
-
-        public GroupList SearchGroups(string query = null, string marker = null, int pageSize = 50)
+        public GroupList Search(string query = null, string marker = null, int pageSize = 50)
         {
             if (pageSize < 0)
                 throw new ArgumentOutOfRangeException("pageSize", "Page size cannot be less than 0.");
@@ -124,12 +124,12 @@ namespace Plywood
             }
         }
 
-        public void UpdateGroup(Group group)
+        public void Update(Group group)
         {
             if (group == null)
                 throw new ArgumentNullException("group", "Group cannot be null.");
 
-            var oldGroup = GetGroup(group.Key);
+            var oldGroup = Get(group.Key);
 
             using (var stream = group.Serialise())
             {

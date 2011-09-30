@@ -20,7 +20,7 @@ namespace Plywood.FrameworkFunctionalTests
             StorageProvider = new FsProvider.FileSystemStorageProvider(BaseDirectory);
 
             Group = new Group() { Name = "Target Test Group" };
-            new Groups(StorageProvider).CreateGroup(Group);
+            new Groups(StorageProvider).Create(Group);
         }
 
         [TestCleanup]
@@ -44,54 +44,54 @@ namespace Plywood.FrameworkFunctionalTests
             };
 
             // Exists false
-            Assert.IsFalse(targets.TargetExists(target.Key));
+            Assert.IsFalse(targets.Exists(target.Key));
 
             // Search no result
-            var res1 = targets.SearchTargets(Group.Key);
+            var res1 = targets.Search(Group.Key);
             Assert.AreEqual(0, res1.Targets.Count());
             Assert.IsFalse(res1.IsTruncated);
 
             // Create
-            targets.CreateTarget(target);
+            targets.Create(target);
 
             // Truncated, global search
-            var createSearch1 = targets.SearchTargets(pageSize: 0);
+            var createSearch1 = targets.Search(pageSize: 0);
             Assert.AreEqual(0, createSearch1.Targets.Count());
             Assert.IsTrue(createSearch1.IsTruncated);
 
             // Keyword, group search
-            var keywordGroupResult = targets.SearchTargets(Group.Key, "Test");
+            var keywordGroupResult = targets.Search(Group.Key, "Test");
             Assert.AreEqual(1, keywordGroupResult.Targets.Count());
             Assert.IsFalse(keywordGroupResult.IsTruncated);
 
             // Null group search
-            var nullGroupResult = targets.SearchTargets(Guid.NewGuid(), "Test");
+            var nullGroupResult = targets.Search(Guid.NewGuid(), "Test");
             Assert.AreEqual(1, nullGroupResult.Targets.Count());
 
             // No results search
-            Assert.AreEqual(0, targets.SearchTargets(query: "Updated").Targets.Count());
+            Assert.AreEqual(0, targets.Search(query: "Updated").Targets.Count());
 
             // Get
-            var createdTarget = targets.GetTarget(target.Key);
+            var createdTarget = targets.Get(target.Key);
             Assert.AreEqual(target.Key, createdTarget.Key);
             Assert.AreEqual(target.GroupKey, createdTarget.GroupKey);
             Assert.AreEqual(target.Name, createdTarget.Name);
 
             // Update name
             createdTarget.Name = "Updated Target";
-            targets.UpdateTarget(createdTarget);
+            targets.Update(createdTarget);
 
-            Assert.AreEqual(createdTarget.Name, targets.GetTarget(target.Key).Name);
-            Assert.AreEqual(1, targets.SearchTargets(query: "Updated").Targets.Count());
-            Assert.AreEqual(0, targets.SearchTargets(query: "Test").Targets.Count());
+            Assert.AreEqual(createdTarget.Name, targets.Get(target.Key).Name);
+            Assert.AreEqual(1, targets.Search(query: "Updated").Targets.Count());
+            Assert.AreEqual(0, targets.Search(query: "Test").Targets.Count());
 
             // Delete
-            targets.DeleteTarget(target.Key);
-            Assert.AreEqual(0, targets.SearchTargets().Targets.Count());
-            Assert.AreEqual(0, targets.SearchTargets(Group.Key).Targets.Count());
-            Assert.AreEqual(0, targets.SearchTargets(query: "Updated").Targets.Count());
-            Assert.AreEqual(0, targets.SearchTargets(Group.Key, "Updated").Targets.Count());
-            Assert.IsFalse(targets.TargetExists(target.Key));
+            targets.Delete(target.Key);
+            Assert.AreEqual(0, targets.Search().Targets.Count());
+            Assert.AreEqual(0, targets.Search(Group.Key).Targets.Count());
+            Assert.AreEqual(0, targets.Search(query: "Updated").Targets.Count());
+            Assert.AreEqual(0, targets.Search(Group.Key, "Updated").Targets.Count());
+            Assert.IsFalse(targets.Exists(target.Key));
         }
     }
 }

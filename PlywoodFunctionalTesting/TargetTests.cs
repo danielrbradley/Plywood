@@ -18,8 +18,8 @@ namespace Plywood.Tests.Functional
             Debug.Assert(searchEmpty.Targets.Count() == 0);
 
             var testTarget = new Target() { Name = "Test Target", GroupKey = groupKey };
-            targetsController.CreateTarget(testTarget);
-            var createdTarget = targetsController.GetTarget(testTarget.Key);
+            targetsController.Create(testTarget);
+            var createdTarget = targetsController.Get(testTarget.Key);
             Debug.Assert(createdTarget.Name == testTarget.Name);
             Debug.Assert(createdTarget.GroupKey == testTarget.GroupKey);
 
@@ -30,9 +30,9 @@ namespace Plywood.Tests.Functional
             Debug.Assert(searchSingle.Targets.First().Name == createdTarget.Name);
 
             createdTarget.Tags.Add("Foo", "Bar");
-            targetsController.UpdateTarget(createdTarget);
+            targetsController.Update(createdTarget);
 
-            var taggedTarget = targetsController.GetTarget(testTarget.Key);
+            var taggedTarget = targetsController.Get(testTarget.Key);
             Debug.Assert(taggedTarget.GroupKey == createdTarget.GroupKey);
             Debug.Assert(taggedTarget.Tags.ContainsKey("Foo"));
             Debug.Assert(taggedTarget.Tags["Foo"] == "Bar");
@@ -43,9 +43,9 @@ namespace Plywood.Tests.Functional
             Debug.Assert(searchUpdated.Targets.First().Name == createdTarget.Name);
 
             taggedTarget.Name = "Updated Test Target";
-            targetsController.UpdateTarget(taggedTarget);
+            targetsController.Update(taggedTarget);
 
-            var renamedTarget = targetsController.GetTarget(testTarget.Key);
+            var renamedTarget = targetsController.Get(testTarget.Key);
             Debug.Assert(renamedTarget.Name == taggedTarget.Name);
             Debug.Assert(renamedTarget.GroupKey == taggedTarget.GroupKey);
             var searchRenamed = targetsController.SearchGroupTargets(groupKey);
@@ -56,7 +56,7 @@ namespace Plywood.Tests.Functional
 
             Searching(groupKey, targetsController, createdTarget);
 
-            targetsController.UpdateTarget(testTarget);
+            targetsController.Update(testTarget);
             var searchReset = targetsController.SearchGroupTargets(groupKey);
             Debug.Assert(searchReset.TotalCount == 1);
             Debug.Assert(searchReset.Targets.Count() == 1);
@@ -64,7 +64,7 @@ namespace Plywood.Tests.Functional
             Debug.Assert(searchReset.Targets.First().Name == testTarget.Name);
 
             // Create default test target.
-            targetsController.CreateTarget(new Target() { Key = new Guid("2c50a0af-bc66-41f5-bf52-498118217d12"), GroupKey = new Guid("5615c002-2d9a-46c4-a9a3-26b2b19cd790"), Name = "Test App Server" });
+            targetsController.Create(new Target() { Key = new Guid("2c50a0af-bc66-41f5-bf52-498118217d12"), GroupKey = new Guid("5615c002-2d9a-46c4-a9a3-26b2b19cd790"), Name = "Test App Server" });
 
             return testTarget;
         }
@@ -72,9 +72,9 @@ namespace Plywood.Tests.Functional
         private static void Searching(Guid groupKey, Targets targetsController, Target createdTarget)
         {
             var aSecondTarget = new Target() { Name = "A Second Target", GroupKey = groupKey };
-            targetsController.CreateTarget(aSecondTarget);
+            targetsController.Create(aSecondTarget);
             var zThirdTarget = new Target() { Name = "Z Third Target", GroupKey = groupKey };
-            targetsController.CreateTarget(zThirdTarget);
+            targetsController.Create(zThirdTarget);
 
             var search1 = targetsController.SearchGroupTargets(groupKey);
             Debug.Assert(search1.TotalCount == 3);
@@ -110,8 +110,8 @@ namespace Plywood.Tests.Functional
             Debug.Assert(search6.Targets.Count() == 1);
             Debug.Assert(search6.Targets.ElementAt(0).Key == createdTarget.Key);
 
-            targetsController.DeleteTarget(aSecondTarget.Key);
-            targetsController.DeleteTarget(zThirdTarget.Key);
+            targetsController.Delete(aSecondTarget.Key);
+            targetsController.Delete(zThirdTarget.Key);
 
             var searchDeleted = targetsController.SearchGroupTargets(groupKey);
             Debug.Assert(searchDeleted.TotalCount == 1);

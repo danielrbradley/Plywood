@@ -16,19 +16,7 @@ namespace Plywood
     {
         public Apps(IStorageProvider provider) : base(provider) { }
 
-        internal bool AppExists(Guid key)
-        {
-            try
-            {
-                return StorageProvider.FileExists(Paths.GetAppDetailsKey(key));
-            }
-            catch (Exception ex)
-            {
-                throw new DeploymentException(string.Format("Failed getting app with key \"{0}\"", key), ex);
-            }
-        }
-
-        public void CreateApp(App app)
+        public void Create(App app)
         {
             if (app == null)
                 throw new ArgumentException("App cannot be null.", "app");
@@ -53,9 +41,9 @@ namespace Plywood
             }
         }
 
-        public void DeleteApp(Guid key)
+        public void Delete(Guid key)
         {
-            var app = GetApp(key);
+            var app = Get(key);
             try
             {
                 var indexEntries = new IndexEntries(StorageProvider);
@@ -71,7 +59,19 @@ namespace Plywood
             }
         }
 
-        public App GetApp(Guid key)
+        public bool AppExists(Guid key)
+        {
+            try
+            {
+                return StorageProvider.FileExists(Paths.GetAppDetailsKey(key));
+            }
+            catch (Exception ex)
+            {
+                throw new DeploymentException(string.Format("Failed getting app with key \"{0}\"", key), ex);
+            }
+        }
+
+        public App Get(Guid key)
         {
             try
             {
@@ -86,16 +86,16 @@ namespace Plywood
             }
         }
 
-        public string PushAppRevision(Guid appKey)
+        public string PushRevision(Guid appKey)
         {
-            var app = GetApp(appKey);
+            var app = Get(appKey);
             var thisRevision = String.Format("{0}.{1}", app.MajorVersion, app.Revision);
             app.Revision += 1;
-            UpdateApp(app);
+            Update(app);
             return thisRevision;
         }
 
-        public AppList SearchApps(Guid? groupKey = null, string query = null, string marker = null, int pageSize = 50)
+        public AppList Search(Guid? groupKey = null, string query = null, string marker = null, int pageSize = 50)
         {
             if (pageSize < 0)
                 throw new ArgumentOutOfRangeException("pageSize", "Page size cannot be less than 0.");
@@ -143,12 +143,12 @@ namespace Plywood
             }
         }
 
-        public void UpdateApp(App app)
+        public void Update(App app)
         {
             if (app == null)
                 throw new ArgumentNullException("app", "App cannot be null.");
 
-            var existingApp = GetApp(app.Key);
+            var existingApp = Get(app.Key);
             // Don't allow moving between groups right now as would have to recursively update references from versions and targets within app.
             app.GroupKey = existingApp.GroupKey;
 
@@ -160,7 +160,7 @@ namespace Plywood
                     if (existingApp.GroupKey != app.GroupKey)
                     {
                         var groupsController = new Groups(StorageProvider);
-                        if (!groupsController.GroupExists(app.GroupKey))
+                        if (!groupsController.Exists(app.GroupKey))
                             throw new GroupNotFoundException(string.Format("Group with key \"{0}\" to move app into cannot be found.", app.GroupKey));
                     }
 

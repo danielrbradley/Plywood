@@ -14,7 +14,7 @@ namespace Plywood
 
         public Logs(IStorageProvider provider) : base(provider) { }
 
-        public void AddLogEntry(LogEntry logEntry)
+        public void Create(LogEntry logEntry)
         {
             if (logEntry == null)
                 throw new ArgumentNullException("logEntry", "You cannot add a null log entry.");
@@ -24,7 +24,7 @@ namespace Plywood
             using (var stream = logEntry.Serialise())
             {
                 var instancesController = new Instances(StorageProvider);
-                if (!instancesController.InstanceExists(logEntry.InstanceKey))
+                if (!instancesController.Exists(logEntry.InstanceKey))
                     throw new InstanceNotFoundException(String.Format("Instance with the key \"{0}\" could not be found.", logEntry.InstanceKey));
 
                 try
@@ -40,7 +40,7 @@ namespace Plywood
             }
         }
 
-        public LogEntryPage SearchLogs(Guid instanceKey, string query = null, string marker = null, int pageSize = 50)
+        public LogEntryPage Search(Guid instanceKey, string query = null, string marker = null, int pageSize = 50)
         {
             if (pageSize < 0)
                 throw new ArgumentOutOfRangeException("pageSize", "Page size cannot be less than 0.");
@@ -87,7 +87,7 @@ namespace Plywood
             }
         }
 
-        public LogEntry GetLogEntry(Guid key)
+        public LogEntry Get(Guid key)
         {
             try
             {

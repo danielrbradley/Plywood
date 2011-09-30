@@ -16,7 +16,7 @@ namespace Plywood
     {
         public Instances(IStorageProvider provider) : base(provider) { }
 
-        public void CreateInstance(Instance instance)
+        public void Create(Instance instance)
         {
             if (instance == null)
                 throw new ArgumentNullException("instance", "Instance cannot be null.");
@@ -28,7 +28,7 @@ namespace Plywood
                 try
                 {
                     var targetsController = new Targets(StorageProvider);
-                    if (!targetsController.TargetExists(instance.TargetKey))
+                    if (!targetsController.Exists(instance.TargetKey))
                         throw new TargetNotFoundException(String.Format("Target with the key \"{0}\" could not be found.", instance.TargetKey));
 
                     var indexEntries = new IndexEntries(StorageProvider);
@@ -44,9 +44,9 @@ namespace Plywood
             }
         }
 
-        public void DeleteInstance(Guid key)
+        public void Delete(Guid key)
         {
-            var instance = GetInstance(key);
+            var instance = Get(key);
             try
             {
                 var indexEntries = new IndexEntries(StorageProvider);
@@ -61,7 +61,7 @@ namespace Plywood
             }
         }
 
-        public bool InstanceExists(Guid key)
+        public bool Exists(Guid key)
         {
             try
             {
@@ -73,7 +73,7 @@ namespace Plywood
             }
         }
 
-        public Instance GetInstance(Guid key)
+        public Instance Get(Guid key)
         {
             try
             {
@@ -88,7 +88,7 @@ namespace Plywood
             }
         }
 
-        public InstanceList SearchInstances(Guid targetKey, string query = null, string marker = null, int pageSize = 50)
+        public InstanceList Search(Guid targetKey, string query = null, string marker = null, int pageSize = 50)
         {
             if (pageSize < 0)
                 throw new ArgumentOutOfRangeException("pageSize", "Page size cannot be less than 0.");
@@ -131,12 +131,12 @@ namespace Plywood
             }
         }
 
-        public void UpdateInstance(Instance updatedInstance)
+        public void Update(Instance updatedInstance)
         {
             if (updatedInstance == null)
                 throw new ArgumentNullException("updatedInstance", "Instance cannot be null.");
 
-            var existingInstance = GetInstance(updatedInstance.Key);
+            var existingInstance = Get(updatedInstance.Key);
             // Don't allow moving between targets.
             updatedInstance.TargetKey = existingInstance.TargetKey;
 
@@ -144,10 +144,10 @@ namespace Plywood
             {
                 try
                 {
-                        StorageProvider.PutFile(Paths.GetInstanceDetailsKey(updatedInstance.Key), stream);
+                    StorageProvider.PutFile(Paths.GetInstanceDetailsKey(updatedInstance.Key), stream);
 
-                        var indexEntries = new IndexEntries(StorageProvider);
-                        indexEntries.UpdateEntity(existingInstance, updatedInstance);
+                    var indexEntries = new IndexEntries(StorageProvider);
+                    indexEntries.UpdateEntity(existingInstance, updatedInstance);
                 }
                 catch (Exception ex)
                 {

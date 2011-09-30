@@ -5,6 +5,7 @@ using System.Text;
 using Amazon.S3;
 using Amazon.S3.Model;
 using System.IO;
+using Plywood.Utils;
 
 namespace Plywood
 {
@@ -23,31 +24,23 @@ namespace Plywood
                 {
                     localETag = Utils.Validation.GenerateETag(localKeyStream);
                 }
-                using (var client = new AmazonS3Client(Context.AwsAccessKeyId, Context.AwsSecretAccessKey))
-                {
-                    using (var res = client.GetObjectMetadata(new GetObjectMetadataRequest()
-                    {
-                        BucketName = Context.BucketName,
-                        Key = GetTargetAppVersionInfoPath(targetKey, appKey),
-                    }))
-                    {
-                        if (res.ETag == localETag)
-                            return VersionCheckResult.NotChanged;
-                        else
-                            return VersionCheckResult.Changed;
-                    }
-                }
-            }
-            catch (AmazonS3Exception awsEx)
-            {
-                if (awsEx.StatusCode == System.Net.HttpStatusCode.NotFound)
+                var fileHash = StorageProvider.GetFileHash(Utils.Paths.GetTargetAppVersionKey(targetKey, appKey));
+                if (fileHash == null)
                 {
                     return VersionCheckResult.NotSet;
                 }
+                else if (fileHash == localETag)
+                {
+                    return VersionCheckResult.NotChanged;
+                }
                 else
                 {
-                    throw new DeploymentException(string.Format("Failed checking for version updates for app with key \"{0}\" and target with the key \"{1}\".", appKey, targetKey), awsEx);
+                    return VersionCheckResult.Changed;
                 }
+            }
+            catch (Exception ex)
+            {
+                throw new DeploymentException(string.Format("Failed checking for version updates for app with key \"{0}\" and target with the key \"{1}\".", appKey, targetKey), ex);
             }
         }
 
@@ -55,31 +48,14 @@ namespace Plywood
         {
             try
             {
-                using (var client = new AmazonS3Client(Context.AwsAccessKeyId, Context.AwsSecretAccessKey))
+                using (var stream = StorageProvider.GetFile(Paths.GetTargetAppVersionKey(targetKey, appKey)))
                 {
-                    using (var res = client.GetObject(new GetObjectRequest()
-                    {
-                        BucketName = Context.BucketName,
-                        Key = GetTargetAppVersionInfoPath(targetKey, appKey),
-                    }))
-                    {
-                        using (var stream = res.ResponseStream)
-                        {
-                            return Utils.Serialisation.ParseKey(stream);
-                        }
-                    }
+                    return Utils.Serialisation.ParseKey(stream);
                 }
             }
-            catch (AmazonS3Exception awsEx)
+            catch (Exception ex)
             {
-                if (awsEx.StatusCode == System.Net.HttpStatusCode.NotFound)
-                {
-                    return null;
-                }
-                else
-                {
-                    throw new DeploymentException(string.Format("Failed getting version for app with key \"{0}\" and target with the key \"{1}\".", appKey, targetKey), awsEx);
-                }
+                throw new DeploymentException(string.Format("Failed getting version for app with key \"{0}\" and target with the key \"{1}\".", appKey, targetKey), ex);
             }
         }
 
@@ -87,45 +63,25 @@ namespace Plywood
         {
             try
             {
-                using (var client = new AmazonS3Client(Context.AwsAccessKeyId, Context.AwsSecretAccessKey))
-                {
-                    string targetAppVersionInfoPath = GetTargetAppVersionInfoPath(targetKey, appKey);
+                    string path = Paths.GetTargetAppVersionKey(targetKey, appKey);
                     if (versionKey.HasValue)
                     {
+                        // Set
                         using (var keyStream = Utils.Serialisation.Serialise(versionKey.Value))
                         {
-                            // Put
-                            using (var res = client.PutObject(new PutObjectRequest()
-                            {
-                                BucketName = Context.BucketName,
-                                Key = targetAppVersionInfoPath,
-                                InputStream = keyStream,
-                                GenerateMD5Digest = true,
-                            })) { }
+                            StorageProvider.PutFile(path, keyStream);
                         }
                     }
                     else
                     {
                         // Delete
-                        using (var res = client.DeleteObject(new DeleteObjectRequest()
-                        {
-                            BucketName = Context.BucketName,
-                            Key = targetAppVersionInfoPath,
-                        })) { }
+                        StorageProvider.DeleteFile(path);
                     }
-                }
             }
-            catch (AmazonS3Exception awsEx)
+            catch (Exception ex)
             {
-                throw new DeploymentException(string.Format("Failed setting version for app with key \"{0}\" and target with the key \"{1}\".", appKey, targetKey), awsEx);
+                throw new DeploymentException(string.Format("Failed setting version for app with key \"{0}\" and target with the key \"{1}\".", appKey, targetKey), ex);
             }
         }
-
-        [Obsolete]
-        public static string GetTargetAppVersionInfoPath(Guid targetKey, Guid appKey)
-        {
-            return string.Format("{0}/{1}/{2}.{3}", Apps.STR_APPS_CONTAINER_PATH, appKey.ToString("N"), targetKey.ToString("N"), STR_TARGET_APP_VERSION_INFO_EXTENSION);
-        }
-
     }
 }

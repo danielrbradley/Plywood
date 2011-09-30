@@ -9,47 +9,52 @@ namespace Plywood.Utils
     {
         public static string GetGroupDetailsKey(Guid key)
         {
-            return string.Format("g/{1}/d", key.ToString("N"));
+            return string.Format("g/{0}/d", key.ToString("N"));
         }
 
         public static string GetAppDetailsKey(Guid key)
         {
-            return string.Format("a/{1}/d", key.ToString("N"));
+            return string.Format("a/{0}/d", key.ToString("N"));
         }
 
         public static string GetAppIndexBaseKey(Guid groupKey)
         {
-            return string.Format("g/{1}/ai", groupKey.ToString("N"));
+            return string.Format("g/{0}/ai", groupKey.ToString("N"));
         }
 
         public static string GetVersionDetailsKey(Guid key)
         {
-            return string.Format("v/{1}/d", key.ToString("N"));
+            return string.Format("v/{0}/d", key.ToString("N"));
         }
 
         public static string GetVersionIndexBaseKey(Guid appKey)
         {
-            return string.Format("a/{1}/vi", appKey.ToString("N"));
+            return string.Format("a/{0}/vi", appKey.ToString("N"));
         }
 
         public static string GetTargetDetailsKey(Guid key)
         {
-            return string.Format("t/{1}/d", key.ToString("N"));
+            return string.Format("t/{0}/d", key.ToString("N"));
         }
 
         public static string GetTargetIndexBaseKey(Guid groupKey)
         {
-            return string.Format("g/{1}/ti", groupKey.ToString("N"));
+            return string.Format("g/{0}/ti", groupKey.ToString("N"));
         }
 
         public static string GetInstanceDetailsKey(Guid key)
         {
-            return string.Format("i/{1}/d", key.ToString("N"));
+            return string.Format("i/{0}/d", key.ToString("N"));
         }
 
         public static string GetInstanceIndexBaseKey(Guid targetKey)
         {
-            return string.Format("t/{1}/ii", targetKey.ToString("N"));
+            return string.Format("t/{0}/ii", targetKey.ToString("N"));
+        }
+
+        public static string GetTargetAppVersionKey(Guid targetKey, Guid appKey)
+        {
+            return string.Format("t/{0}/av/{1}", targetKey.ToString("N"), appKey.ToString("N"));
         }
 
     }

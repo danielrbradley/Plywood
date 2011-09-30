@@ -53,6 +53,20 @@ namespace Plywood
         Stream GetFile(FilePath path);
 
         /// <summary>
+        /// Get the hash of a file.
+        /// </summary>
+        /// <param name="path">Path of the file to check.</param>
+        /// <returns>The md5 hash of a file or null if not found.</returns>
+        string GetFileHash(string path);
+
+        /// <summary>
+        /// Get the hash of a file.
+        /// </summary>
+        /// <param name="path">Path of the file to check.</param>
+        /// <returns>The md5 hash of a file or null if not found.</returns>
+        string GetFileHash(FilePath path);
+
+        /// <summary>
         /// Create a new file with the selected content.
         /// </summary>
         /// <param name="path">Absolute unix-style path of the file to create.</param>

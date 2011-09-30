@@ -15,7 +15,7 @@ namespace Plywood.Tests.UnitTesting.EntityIndexing
             var instance = new Instance()
             {
                 Key = new Guid("7dc11e0c-d5c5-11e0-ae84-6ab04724019b"),
-                TargetKey = new Guid("9a28d7be-d5b2-11e0-95ba-0c204924019b"),
+                RoleKey = new Guid("9a28d7be-d5b2-11e0-95ba-0c204924019b"),
                 Name = "Test Instance",
             };
 
@@ -39,7 +39,7 @@ namespace Plywood.Tests.UnitTesting.EntityIndexing
             var instance = new Instance()
             {
                 Key = new Guid("7dc11e0c-d5c5-11e0-ae84-6ab04724019b"),
-                TargetKey = new Guid("9a28d7be-d5b2-11e0-95ba-0c204924019b"),
+                RoleKey = new Guid("9a28d7be-d5b2-11e0-95ba-0c204924019b"),
                 Name = "Test Instance",
             };
 

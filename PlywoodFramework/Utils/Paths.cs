@@ -32,9 +32,9 @@ namespace Plywood.Utils
             return string.Format("a/{0}/vi", appKey.ToString("N"));
         }
 
-        public static string GetTargetDetailsKey(Guid key)
+        public static string GetRoleDetailsKey(Guid key)
         {
-            return string.Format("t/{0}/d", key.ToString("N"));
+            return string.Format("r/{0}/d", key.ToString("N"));
         }
 
         public static string GetTargetIndexBaseKey(Guid groupKey)

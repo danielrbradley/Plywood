@@ -66,7 +66,7 @@ namespace Plywood.Tests.UnitTesting.Entities
             {
                 Key = Guid.NewGuid(),
                 GroupKey = Guid.NewGuid(),
-                TargetKey = Guid.NewGuid(),
+                RoleKey = Guid.NewGuid(),
                 Name = "Test Instance",
                 Tags = new Dictionary<string, string>()
                 {
@@ -83,7 +83,7 @@ namespace Plywood.Tests.UnitTesting.Entities
 
             Assert.AreEqual(originalInstance.Key, secondInstance.Key);
             Assert.AreEqual(originalInstance.GroupKey, secondInstance.GroupKey);
-            Assert.AreEqual(originalInstance.TargetKey, secondInstance.TargetKey);
+            Assert.AreEqual(originalInstance.RoleKey, secondInstance.RoleKey);
             Assert.AreEqual(originalInstance.Name, secondInstance.Name);
 
             Assert.IsNotNull(secondInstance.Tags);
@@ -101,7 +101,7 @@ namespace Plywood.Tests.UnitTesting.Entities
             {
                 Key = Guid.NewGuid(),
                 GroupKey = Guid.NewGuid(),
-                TargetKey = Guid.NewGuid(),
+                RoleKey = Guid.NewGuid(),
                 Name = "Test Instance",
             };
 
@@ -113,7 +113,7 @@ namespace Plywood.Tests.UnitTesting.Entities
 
             Assert.AreEqual(originalInstance.Key, secondInstance.Key);
             Assert.AreEqual(originalInstance.GroupKey, secondInstance.GroupKey);
-            Assert.AreEqual(originalInstance.TargetKey, secondInstance.TargetKey);
+            Assert.AreEqual(originalInstance.RoleKey, secondInstance.RoleKey);
             Assert.AreEqual(originalInstance.Name, secondInstance.Name);
 
             Assert.AreEqual(originalInstance.Tags.Count, secondInstance.Tags.Count);

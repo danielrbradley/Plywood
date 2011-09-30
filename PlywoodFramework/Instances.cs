@@ -20,16 +20,16 @@ namespace Plywood
         {
             if (instance == null)
                 throw new ArgumentNullException("instance", "Instance cannot be null.");
-            if (instance.TargetKey == Guid.Empty)
+            if (instance.RoleKey == Guid.Empty)
                 throw new ArgumentException("Target key cannot be empty.", "instance.TargetKey");
 
             using (var stream = instance.Serialise())
             {
                 try
                 {
-                    var targetsController = new Targets(StorageProvider);
-                    if (!targetsController.Exists(instance.TargetKey))
-                        throw new TargetNotFoundException(String.Format("Target with the key \"{0}\" could not be found.", instance.TargetKey));
+                    var targetsController = new Roles(StorageProvider);
+                    if (!targetsController.Exists(instance.RoleKey))
+                        throw new TargetNotFoundException(String.Format("Target with the key \"{0}\" could not be found.", instance.RoleKey));
 
                     var indexEntries = new IndexEntries(StorageProvider);
 
@@ -138,7 +138,7 @@ namespace Plywood
 
             var existingInstance = Get(updatedInstance.Key);
             // Don't allow moving between targets.
-            updatedInstance.TargetKey = existingInstance.TargetKey;
+            updatedInstance.RoleKey = existingInstance.RoleKey;
 
             using (var stream = updatedInstance.Serialise())
             {
@@ -186,7 +186,7 @@ namespace Plywood
         {
             this.Key = other.Key;
             this.GroupKey = other.GroupKey;
-            this.TargetKey = other.TargetKey;
+            this.RoleKey = other.RoleKey;
             this.Name = other.Name;
             this.Tags = other.Tags;
         }
@@ -195,7 +195,7 @@ namespace Plywood
 
         public Guid Key { get; set; }
         public Guid GroupKey { get; set; }
-        public Guid TargetKey { get; set; }
+        public Guid RoleKey { get; set; }
         public string Name { get; set; }
         public Dictionary<string, string> Tags { get; set; }
 
@@ -218,7 +218,7 @@ namespace Plywood
                 new XElement("instance",
                     new XAttribute("key", instance.Key),
                     new XElement("groupKey", instance.GroupKey),
-                    new XElement("targetKey", instance.TargetKey),
+                    new XElement("targetKey", instance.RoleKey),
                     new XElement("name", instance.Name),
                     new XElement("tags")));
 
@@ -278,7 +278,7 @@ namespace Plywood
             {
                 Key = key,
                 GroupKey = groupKey,
-                TargetKey = targetKey,
+                RoleKey = targetKey,
                 Name = doc.Root.Element("name").Value,
             };
 
@@ -344,9 +344,9 @@ namespace Plywood
             var entries = new List<string>(tokens.Count() + 1);
 
             // Target specific index
-            entries.Add(string.Format("t/{0}/ii/e/{1}", Utils.Indexes.EncodeGuid(TargetKey), filename));
+            entries.Add(string.Format("t/{0}/ii/e/{1}", Utils.Indexes.EncodeGuid(RoleKey), filename));
             entries.AddRange(tokens.Select(token =>
-                string.Format("t/{0}/ii/t/{1}/{2}", Utils.Indexes.EncodeGuid(TargetKey), Indexes.IndexEntries.GetTokenHash(token), filename)));
+                string.Format("t/{0}/ii/t/{1}/{2}", Utils.Indexes.EncodeGuid(RoleKey), Indexes.IndexEntries.GetTokenHash(token), filename)));
 
             // Global index
             entries.Add(string.Format("ii/e/{0}", filename));

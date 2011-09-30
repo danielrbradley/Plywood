@@ -5,6 +5,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlywoodLibraryUnitTests", "
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{DE93DC99-4B72-4C0F-9FF1-5EE75724D209}"
 	ProjectSection(SolutionItems) = preProject
+		CANT_SLEEP.txt = CANT_SLEEP.txt
 		LICENSE-2.0.txt = LICENSE-2.0.txt
 		Local.testsettings = Local.testsettings
 		PATH_STRUCTURES.txt = PATH_STRUCTURES.txt

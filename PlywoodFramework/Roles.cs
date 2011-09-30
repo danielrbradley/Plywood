@@ -12,51 +12,51 @@ using System.IO;
 
 namespace Plywood
 {
-    public class Targets : ControllerBase
+    public class Roles : ControllerBase
     {
-        public Targets(IStorageProvider provider) : base(provider) { }
+        public Roles(IStorageProvider provider) : base(provider) { }
 
-        public void Create(Target target)
+        public void Create(Role role)
         {
-            if (target == null)
-                throw new ArgumentNullException("target", "Target cannot be null.");
-            if (target.GroupKey == Guid.Empty)
-                throw new ArgumentException("Group key cannot be empty.", "target.GroupKey");
+            if (role == null)
+                throw new ArgumentNullException("role", "Role cannot be null.");
+            if (role.GroupKey == Guid.Empty)
+                throw new ArgumentException("Group key cannot be empty.", "role.GroupKey");
 
-            using (var stream = target.Serialise())
+            using (var stream = role.Serialise())
             {
                 try
                 {
                     var groupsController = new Groups(StorageProvider);
-                    if (!groupsController.Exists(target.GroupKey))
-                        throw new GroupNotFoundException(String.Format("Group with the key \"{0}\" could not be found.", target.GroupKey));
+                    if (!groupsController.Exists(role.GroupKey))
+                        throw new GroupNotFoundException(String.Format("Group with the key \"{0}\" could not be found.", role.GroupKey));
 
-                    StorageProvider.PutFile(Paths.GetTargetDetailsKey(target.Key), stream);
+                    StorageProvider.PutFile(Paths.GetRoleDetailsKey(role.Key), stream);
 
                     var indexEntries = new IndexEntries(StorageProvider);
-                    indexEntries.PutEntity(target);
+                    indexEntries.PutEntity(role);
                 }
                 catch (Exception ex)
                 {
-                    throw new DeploymentException("Failed creating target.", ex);
+                    throw new DeploymentException("Failed creating role.", ex);
                 }
             }
         }
 
         public void Delete(Guid key)
         {
-            var target = Get(key);
+            var role = Get(key);
             try
             {
                 var indexEntries = new IndexEntries(StorageProvider);
-                indexEntries.DeleteEntity(target);
+                indexEntries.DeleteEntity(role);
 
-                // TODO: Refactor the solf-delete functionality.
-                StorageProvider.MoveFile(Paths.GetTargetDetailsKey(key), string.Concat("deleted/", Paths.GetTargetDetailsKey(key)));
+                // TODO: Refactor the self-delete functionality.
+                StorageProvider.MoveFile(Paths.GetRoleDetailsKey(key), string.Concat("deleted/", Paths.GetRoleDetailsKey(key)));
             }
             catch (Exception ex)
             {
-                throw new DeploymentException("Failed deleting target.", ex);
+                throw new DeploymentException("Failed deleting role.", ex);
             }
         }
 
@@ -64,30 +64,30 @@ namespace Plywood
         {
             try
             {
-                return StorageProvider.FileExists(Paths.GetTargetDetailsKey(key));
+                return StorageProvider.FileExists(Paths.GetRoleDetailsKey(key));
             }
             catch (Exception ex)
             {
-                throw new DeploymentException(string.Format("Failed getting target with key \"{0}\"", key), ex);
+                throw new DeploymentException(string.Format("Failed getting role with key \"{0}\"", key), ex);
             }
         }
 
-        public Target Get(Guid key)
+        public Role Get(Guid key)
         {
             try
             {
-                using (var stream = StorageProvider.GetFile(Paths.GetTargetDetailsKey(key)))
+                using (var stream = StorageProvider.GetFile(Paths.GetRoleDetailsKey(key)))
                 {
-                    return new Target(stream);
+                    return new Role(stream);
                 }
             }
             catch (Exception ex)
             {
-                throw new DeploymentException(string.Format("Failed getting target with key \"{0}\"", key), ex);
+                throw new DeploymentException(string.Format("Failed getting role with key \"{0}\"", key), ex);
             }
         }
 
-        public TargetList Search(Guid? groupKey = null, string query = null, string marker = null, int pageSize = 50)
+        public RoleList Search(Guid? groupKey = null, string query = null, string marker = null, int pageSize = 50)
         {
             if (pageSize < 0)
                 throw new ArgumentOutOfRangeException("pageSize", "Page size cannot be less than 0.");
@@ -101,9 +101,9 @@ namespace Plywood
                     startLocations = new string[2];
                 else
                     startLocations = new string[1];
-                startLocations[0] = "ti";
+                startLocations[0] = "ri";
                 if (groupKey.HasValue)
-                    startLocations[1] = string.Format("gi/{0}/ti", Utils.Indexes.EncodeGuid(groupKey.Value));
+                    startLocations[1] = string.Format("gi/{0}/ri", Utils.Indexes.EncodeGuid(groupKey.Value));
 
                 IEnumerable<string> basePaths;
 
@@ -116,14 +116,15 @@ namespace Plywood
                 var indexEntries = new IndexEntries(StorageProvider);
                 var rawResults = indexEntries.PerformRawQuery(pageSize, marker, basePaths);
 
-                var targets = rawResults.FileNames.Select(fileName => new TargetListItem(fileName));
-                var list = new TargetList()
+                var items = rawResults.FileNames.Select(fileName => new RoleListItem(fileName));
+
+                var list = new RoleList()
                 {
-                    Targets = targets,
+                    Items = items,
                     Query = query,
                     Marker = marker,
                     PageSize = pageSize,
-                    NextMarker = targets.Any() ? targets.Last().Marker : marker,
+                    NextMarker = items.Any() ? items.Last().Marker : marker,
                     IsTruncated = rawResults.IsTruncated,
                 };
 
@@ -135,28 +136,28 @@ namespace Plywood
             }
         }
 
-        public void Update(Target target)
+        public void Update(Role role)
         {
-            if (target == null)
-                throw new ArgumentNullException("target", "Target cannot be null.");
+            if (role == null)
+                throw new ArgumentNullException("role", "Role cannot be null.");
 
-            var existingTarget = Get(target.Key);
+            var existingRole = Get(role.Key);
             // Don't allow moving between groups.
-            target.GroupKey = existingTarget.GroupKey;
+            role.GroupKey = existingRole.GroupKey;
 
-            using (var stream = target.Serialise())
+            using (var stream = role.Serialise())
             {
                 try
                 {
 
-                    StorageProvider.PutFile(Paths.GetTargetDetailsKey(target.Key), stream);
+                    StorageProvider.PutFile(Paths.GetRoleDetailsKey(role.Key), stream);
 
                     var indexEntries = new IndexEntries(StorageProvider);
-                    indexEntries.UpdateEntity(existingTarget, target);
+                    indexEntries.UpdateEntity(existingRole, role);
                 }
                 catch (Exception ex)
                 {
-                    throw new DeploymentException("Failed updating target.", ex);
+                    throw new DeploymentException("Failed updating role.", ex);
                 }
             }
         }
@@ -164,29 +165,29 @@ namespace Plywood
 
     #region Entities
 
-    public class Target : IIndexableEntity
+    public class Role : IIndexableEntity
     {
         #region Constructors
 
-        public Target()
+        public Role()
         {
             Key = Guid.NewGuid();
             Tags = new Dictionary<string, string>();
         }
 
-        public Target(string source)
-            : this(Target.Parse(source)) { }
+        public Role(string source)
+            : this(Role.Parse(source)) { }
 
-        public Target(Stream source)
-            : this(Target.Parse(source)) { }
+        public Role(Stream source)
+            : this(Role.Parse(source)) { }
 
-        public Target(TextReader source)
-            : this(Target.Parse(source)) { }
+        public Role(TextReader source)
+            : this(Role.Parse(source)) { }
 
-        public Target(XmlTextReader source)
-            : this(Target.Parse(source)) { }
+        public Role(XmlTextReader source)
+            : this(Role.Parse(source)) { }
 
-        public Target(Target prototype)
+        public Role(Role prototype)
         {
             this.Key = prototype.Key;
             this.Name = prototype.Name;
@@ -203,30 +204,30 @@ namespace Plywood
 
         public Stream Serialise()
         {
-            return Target.Serialise(this);
+            return Role.Serialise(this);
         }
 
         #region Static Serialisation Methods
 
-        public static Stream Serialise(Target target)
+        public static Stream Serialise(Role role)
         {
-            if (target == null)
-                throw new ArgumentNullException("target", "Target cannot be null.");
-            if (!Validation.IsNameValid(target.Name))
+            if (role == null)
+                throw new ArgumentNullException("role", "Role cannot be null.");
+            if (!Validation.IsNameValid(role.Name))
                 throw new ArgumentException("Name must be valid (not blank & only a single line).");
 
             var doc = new XDocument(
                 new XDeclaration("1.0", "UTF-8", "yes"),
-                new XElement("target",
-                    new XAttribute("key", target.Key),
-                    new XElement("groupKey", target.GroupKey),
-                    new XElement("name", target.Name),
+                new XElement("role",
+                    new XAttribute("key", role.Key),
+                    new XElement("groupKey", role.GroupKey),
+                    new XElement("name", role.Name),
                     new XElement("tags")));
 
-            if (target.Tags != null && target.Tags.Count > 0)
+            if (role.Tags != null && role.Tags.Count > 0)
             {
                 doc.Root.Element("tags").Add(
-                    target.Tags.Select(t =>
+                    role.Tags.Select(t =>
                         new XElement("tag",
                             new XAttribute("key", t.Key),
                             t.Value
@@ -236,22 +237,22 @@ namespace Plywood
             return Serialisation.Serialise(doc);
         }
 
-        public static Target Parse(string source)
+        public static Role Parse(string source)
         {
             return Parse(new StringReader(source));
         }
 
-        public static Target Parse(Stream source)
+        public static Role Parse(Stream source)
         {
             return Parse(new XmlTextReader(source));
         }
 
-        public static Target Parse(TextReader source)
+        public static Role Parse(TextReader source)
         {
             return Parse(new XmlTextReader(source));
         }
 
-        public static Target Parse(XmlReader source)
+        public static Role Parse(XmlReader source)
         {
             XDocument doc;
             try
@@ -260,20 +261,20 @@ namespace Plywood
             }
             catch (Exception ex)
             {
-                throw new DeserialisationException("Failed deserialising target.", ex);
+                throw new DeserialisationException("Failed deserialising role.", ex);
             }
 
             if (!ValidateTargetXml(doc))
-                throw new DeserialisationException("Serialised target xml is not valid.");
+                throw new DeserialisationException("Serialised role xml is not valid.");
 
             Guid key, groupKey;
 
             if (!Guid.TryParse(doc.Root.Attribute("key").Value, out key))
-                throw new DeserialisationException("Serialised target key is not a valid guid.");
+                throw new DeserialisationException("Serialised role key is not a valid guid.");
             if (!Guid.TryParse(doc.Root.Element("groupKey").Value, out groupKey))
-                throw new DeserialisationException("Serialised target group key is not a valid guid.");
+                throw new DeserialisationException("Serialised role group key is not a valid guid.");
 
-            var target = new Target()
+            var role = new Role()
             {
                 Key = key,
                 GroupKey = groupKey,
@@ -283,20 +284,20 @@ namespace Plywood
             var tagsElement = doc.Root.Element("tags");
             if (tagsElement != null && tagsElement.HasElements)
             {
-                target.Tags = tagsElement.Elements("tag").ToDictionary(t => t.Attribute("key").Value, t => t.Value);
+                role.Tags = tagsElement.Elements("tag").ToDictionary(t => t.Attribute("key").Value, t => t.Value);
             }
             else
             {
-                target.Tags = new Dictionary<string, string>();
+                role.Tags = new Dictionary<string, string>();
             }
 
-            return target;
+            return role;
         }
 
-        public static bool ValidateTargetXml(XDocument targetDoc)
+        public static bool ValidateTargetXml(XDocument roleDoc)
         {
             bool valid = true;
-            targetDoc.Validate(Schemas, (o, e) =>
+            roleDoc.Validate(Schemas, (o, e) =>
             {
                 valid = false;
             });
@@ -314,7 +315,7 @@ namespace Plywood
                         if (schemas == null)
                         {
                             var newSchemas = new XmlSchemaSet();
-                            using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Plywood.Schemas.Target.xsd"))
+                            using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Plywood.Schemas.Role.xsd"))
                             {
                                 newSchemas.Add("", XmlReader.Create(stream));
                             }
@@ -340,23 +341,23 @@ namespace Plywood
             var entries = new List<string>(tokens.Count() + 1);
 
             // Group specific index
-            entries.Add(string.Format("g/{0}/ti/e/{1}", Utils.Indexes.EncodeGuid(GroupKey), filename));
+            entries.Add(string.Format("g/{0}/ri/e/{1}", Utils.Indexes.EncodeGuid(GroupKey), filename));
             entries.AddRange(tokens.Select(token =>
-                string.Format("g/{0}/ti/t/{1}/{2}", Utils.Indexes.EncodeGuid(GroupKey), Indexes.IndexEntries.GetTokenHash(token), filename)));
+                string.Format("g/{0}/ri/t/{1}/{2}", Utils.Indexes.EncodeGuid(GroupKey), Indexes.IndexEntries.GetTokenHash(token), filename)));
 
             // Global index
-            entries.Add(string.Format("ti/e/{0}", filename));
+            entries.Add(string.Format("ri/e/{0}", filename));
             entries.AddRange(tokens.Select(token =>
-                string.Format("ti/t/{0}/{1}", Indexes.IndexEntries.GetTokenHash(token), filename)));
+                string.Format("ri/t/{0}/{1}", Indexes.IndexEntries.GetTokenHash(token), filename)));
 
             return entries;
         }
     }
 
-    public class TargetList
+    public class RoleList
     {
         public Guid GroupKey { get; set; }
-        public IEnumerable<TargetListItem> Targets { get; set; }
+        public IEnumerable<RoleListItem> Items { get; set; }
         public string Query { get; set; }
         public string Marker { get; set; }
         public int PageSize { get; set; }
@@ -364,13 +365,13 @@ namespace Plywood
         public bool IsTruncated { get; set; }
     }
 
-    public class TargetListItem
+    public class RoleListItem
     {
-        public TargetListItem()
+        public RoleListItem()
         {
         }
 
-        public TargetListItem(string path)
+        public RoleListItem(string path)
         {
             var segments = Utils.Indexes.GetIndexFileNameSegments(path);
             if (segments.Length != 4)

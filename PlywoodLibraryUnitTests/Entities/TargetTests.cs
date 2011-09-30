@@ -62,7 +62,7 @@ namespace Plywood.Tests.UnitTesting.Entities
         [TestMethod]
         public void TargetSerialiseDeserialise()
         {
-            var originalTarget = new Target()
+            var originalTarget = new Role()
             {
                 Key = Guid.NewGuid(),
                 Name = "Test Target",
@@ -74,10 +74,10 @@ namespace Plywood.Tests.UnitTesting.Entities
                 }
             };
 
-            Target secondTarget;
+            Role secondTarget;
             using (var stream = originalTarget.Serialise())
             {
-                secondTarget = new Target(stream);
+                secondTarget = new Role(stream);
             }
 
             Assert.AreEqual(originalTarget.Key, secondTarget.Key);
@@ -95,17 +95,17 @@ namespace Plywood.Tests.UnitTesting.Entities
         [TestMethod]
         public void TargetSerialiseDeserialiseNullTags()
         {
-            var originalTarget = new Target()
+            var originalTarget = new Role()
             {
                 Key = Guid.NewGuid(),
                 Name = "Test Target",
                 GroupKey = Guid.NewGuid(),
             };
 
-            Target secondTarget;
+            Role secondTarget;
             using (var stream = originalTarget.Serialise())
             {
-                secondTarget = new Target(stream);
+                secondTarget = new Role(stream);
             }
 
             Assert.AreEqual(originalTarget.Key, secondTarget.Key);

@@ -8,10 +8,10 @@ Entities
 
 Each type of entity has it's own root level folder in which it can store all of its items and indexes:
   g: groups
-  a: apps
+  p: packages
   v: versions
-  t: targets
-  i: instances
+  r: roles
+  s: servers
 
 In an entity's folder there are a list of folders containing the details and sub indexes for each item. The folder name is simply the key (Guid) of the item in lowercase with no hyphenation. E.g:
   /g/3bc0f2892e584967b6e6d0f1b5828a25/

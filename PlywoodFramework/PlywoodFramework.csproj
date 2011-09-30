@@ -74,7 +74,7 @@
     <Compile Include="Groups.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TargetEntities.cs" />
-    <Compile Include="Targets.cs" />
+    <Compile Include="Roles.cs" />
     <Compile Include="Utils\Files.cs" />
     <Compile Include="Utils\Validation.cs" />
     <Compile Include="Versions.cs" />
@@ -88,7 +88,7 @@
       <SubType>Designer</SubType>
     </Content>
     <Content Include="Schemas\Version.xml" />
-    <Content Include="Schemas\Target.xml" />
+    <Content Include="Schemas\Role.xml" />
     <Content Include="Schemas\Group.xml" />
   </ItemGroup>
   <ItemGroup>
@@ -102,7 +102,7 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Schemas\Target.xsd">
+    <EmbeddedResource Include="Schemas\Role.xsd">
       <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>

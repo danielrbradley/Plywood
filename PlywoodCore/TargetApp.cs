@@ -8,6 +8,10 @@ namespace Plywood
 {
     public class TargetApp : IIndexableEntity
     {
+        public TargetApp()
+        {
+        }
+
         public Guid TargetKey { get; set; }
         public string TargetName { get; set; }
         public Guid AppKey { get; set; }

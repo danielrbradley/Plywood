@@ -15,11 +15,12 @@ namespace Plywood
     public class TargetAppList
     {
         public Guid TargetKey { get; set; }
-        public IEnumerable<AppListItem> Apps { get; set; }
+        public IEnumerable<TargetAppListItem> Apps { get; set; }
         public string Query { get; set; }
-        public int Offset { get; set; }
+        public string Marker { get; set; }
         public int PageSize { get; set; }
-        public int TotalCount { get; set; }
+        public string NextMarker { get; set; }
+        public bool IsTruncated { get; set; }
     }
 
     public class TargetAppVersion

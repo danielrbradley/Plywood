@@ -47,6 +47,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Configuration.cs" />
+    <Compile Include="TargetAppListItem.cs" />
     <Compile Include="IPath.cs" />
     <Compile Include="FolderPath.cs" />
     <Compile Include="FileListing.cs" />

@@ -73,10 +73,8 @@
     <Compile Include="EntityIndexing\Targets.cs" />
     <Compile Include="EntityIndexing\Groups.cs" />
     <Compile Include="FilesTest.cs" />
-    <Compile Include="Indexes\GetIndexEntryFromPathTests.cs" />
     <Compile Include="Indexes\SimpleTokeniserTests.cs" />
     <Compile Include="Indexes\StringHashing.cs" />
-    <Compile Include="Indexes\GetIndexEntryPathsTests.cs" />
     <Compile Include="Indexes\TokenHashTests.cs" />
     <Compile Include="Indexes\VersionHashing.cs" />
     <Compile Include="Indexes\VersionTokeniserTests.cs" />

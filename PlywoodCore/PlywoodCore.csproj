@@ -55,8 +55,6 @@
     <Compile Include="Indexes\VersionTokeniser.cs" />
     <Compile Include="Indexes\Hashing.cs" />
     <Compile Include="Indexes\IndexEntries.cs" />
-    <Compile Include="Indexes\IndexEntry.cs" />
-    <Compile Include="Indexes\IndexQueryResult.cs" />
     <Compile Include="Indexes\ITokeniser.cs" />
     <Compile Include="Indexes\RawQueryResult.cs" />
     <Compile Include="IStorageProvider.cs" />

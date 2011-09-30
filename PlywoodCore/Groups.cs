@@ -193,19 +193,6 @@ namespace Plywood
             return Group.Serialise(this);
         }
 
-        [Obsolete]
-        public IndexEntry GetIndexEntry()
-        {
-            return new IndexEntry()
-            {
-                BasePath = "gi",
-                EntryKey = Key,
-                EntryText = Name,
-                SortHash = Hashing.CreateHash(Name),
-                Tokens = new SimpleTokeniser().Tokenise(Name)
-            };
-        }
-
         public IEnumerable<string> GetIndexEntries()
         {
             var filename = string.Format("{0}-{1}-{2}",

@@ -451,12 +451,6 @@ namespace Plywood
 
         #endregion
 
-        [Obsolete]
-        internal Indexes.IndexEntry GetIndexEntry()
-        {
-            throw new NotImplementedException();
-        }
-
         public IEnumerable<string> GetIndexEntries()
         {
             var filename = string.Format("{0}-{1}-{2}-{3}-{4}",

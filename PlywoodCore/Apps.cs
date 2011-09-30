@@ -242,19 +242,6 @@ namespace Plywood
             return App.Serialise(this);
         }
 
-        [Obsolete]
-        public IndexEntry GetIndexEntry()
-        {
-            return new IndexEntry()
-            {
-                BasePath = "gi",
-                EntryKey = Key,
-                EntryText = Name,
-                SortHash = Hashing.CreateHash(Name),
-                Tokens = new SimpleTokeniser().Tokenise(Name)
-            };
-        }
-
         #region Static Serialisation
 
         public static App Parse(XmlReader source)

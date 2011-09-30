@@ -53,7 +53,7 @@ namespace Plywood
                 indexEntries.DeleteEntity(instance);
 
                 // TODO: Refactor the solf-delete functionality.
-                StorageProvider.MoveFile(Paths.GetGroupDetailsKey(key), string.Concat("deleted/", Paths.GetGroupDetailsKey(key)));
+                StorageProvider.MoveFile(Paths.GetInstanceDetailsKey(key), string.Concat("deleted/", Paths.GetInstanceDetailsKey(key)));
             }
             catch (Exception ex)
             {
@@ -88,7 +88,7 @@ namespace Plywood
             }
         }
 
-        public InstanceList Search(Guid targetKey, string query = null, string marker = null, int pageSize = 50)
+        public InstanceList Search(Guid roleKey, string query = null, string marker = null, int pageSize = 50)
         {
             if (pageSize < 0)
                 throw new ArgumentOutOfRangeException("pageSize", "Page size cannot be less than 0.");
@@ -104,10 +104,10 @@ namespace Plywood
                     var tokens = new SimpleTokeniser().Tokenise(query).ToList();
 
                     basePaths = tokens.Distinct().Select(token =>
-                        string.Format("t/{0}/ii/t/{1}", Utils.Indexes.EncodeGuid(targetKey), Indexes.IndexEntries.GetTokenHash(token)));
+                        string.Format("t/{0}/ii/t/{1}", Utils.Indexes.EncodeGuid(roleKey), Indexes.IndexEntries.GetTokenHash(token)));
                 }
                 else
-                    basePaths = new List<string>() { string.Format("t/{0}/ii/e", Utils.Indexes.EncodeGuid(targetKey)) };
+                    basePaths = new List<string>() { string.Format("t/{0}/ii/e", Utils.Indexes.EncodeGuid(roleKey)) };
 
                 var indexEntries = new IndexEntries(StorageProvider);
                 var rawResults = indexEntries.PerformRawQuery(pageSize, marker, basePaths);

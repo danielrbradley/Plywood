@@ -88,13 +88,13 @@
     <Compile Include="MajorVersionValidationTest.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\PlywoodCore\PlywoodCore.csproj">
-      <Project>{5B7C23D6-CD1D-4BAA-A8A5-F99F43A1C014}</Project>
-      <Name>PlywoodCore</Name>
-    </ProjectReference>
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
+    <ProjectReference Include="..\PlywoodFramework\PlywoodFramework.csproj">
+      <Project>{5B7C23D6-CD1D-4BAA-A8A5-F99F43A1C014}</Project>
+      <Name>PlywoodFramework</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

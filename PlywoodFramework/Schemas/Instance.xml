@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<instance key="aa955c87-4305-4040-a7d7-e1b50b0f240c">
+  <groupKey>fe4a6676-5661-41c0-8801-6cfb8c2e9d02</groupKey>
+  <targetKey>f0f319be-c276-4ec7-87ad-2b8f56c29a8a</targetKey>
+  <name>Instance Name</name>
+  <tags>
+    <tag key="tagKey">Tag Value</tag>
+    <tag key="anotherTagKey">Another Tag Value</tag>
+  </tags>
+</instance>

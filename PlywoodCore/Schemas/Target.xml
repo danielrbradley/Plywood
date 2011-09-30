@@ -1,9 +1,0 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
-<target key="f0f319be-c276-4ec7-87ad-2b8f56c29a8a">
-  <groupKey>fe4a6676-5661-41c0-8801-6cfb8c2e9d02</groupKey>
-  <name>Target Name</name>
-  <tags>
-    <tag key="tagKey">Tag Value</tag>
-    <tag key="anotherTagKey">Another Tag Value</tag>
-  </tags>
-</target>

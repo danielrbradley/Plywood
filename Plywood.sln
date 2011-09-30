@@ -1,8 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlywoodCore", "PlywoodCore\PlywoodCore.csproj", "{5B7C23D6-CD1D-4BAA-A8A5-F99F43A1C014}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlywoodLibraryUnitTests", "PlywoodLibraryUnitTests\PlywoodLibraryUnitTests.csproj", "{0D98150E-2914-4442-BA56-42A078692F95}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{DE93DC99-4B72-4C0F-9FF1-5EE75724D209}"
@@ -32,6 +30,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlywoodFsProviderTests", "P
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlywoodS3Provider", "PlywoodS3Provider\PlywoodS3Provider.csproj", "{AC9FA9F1-3F36-4C90-8AC0-3584B0E80E6A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlywoodFramework", "PlywoodFramework\PlywoodFramework.csproj", "{5B7C23D6-CD1D-4BAA-A8A5-F99F43A1C014}"
+EndProject
 Global
 	GlobalSection(TestCaseManagementSettings) = postSolution
 		CategoryFile = Plywood.vsmdi
@@ -45,16 +45,6 @@ Global
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{5B7C23D6-CD1D-4BAA-A8A5-F99F43A1C014}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{5B7C23D6-CD1D-4BAA-A8A5-F99F43A1C014}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{5B7C23D6-CD1D-4BAA-A8A5-F99F43A1C014}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{5B7C23D6-CD1D-4BAA-A8A5-F99F43A1C014}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{5B7C23D6-CD1D-4BAA-A8A5-F99F43A1C014}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{5B7C23D6-CD1D-4BAA-A8A5-F99F43A1C014}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{5B7C23D6-CD1D-4BAA-A8A5-F99F43A1C014}.Release|Any CPU.Build.0 = Release|Any CPU
-		{5B7C23D6-CD1D-4BAA-A8A5-F99F43A1C014}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{5B7C23D6-CD1D-4BAA-A8A5-F99F43A1C014}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{5B7C23D6-CD1D-4BAA-A8A5-F99F43A1C014}.Release|x86.ActiveCfg = Release|Any CPU
 		{0D98150E-2914-4442-BA56-42A078692F95}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{0D98150E-2914-4442-BA56-42A078692F95}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0D98150E-2914-4442-BA56-42A078692F95}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
@@ -145,6 +135,16 @@ Global
 		{AC9FA9F1-3F36-4C90-8AC0-3584B0E80E6A}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{AC9FA9F1-3F36-4C90-8AC0-3584B0E80E6A}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{AC9FA9F1-3F36-4C90-8AC0-3584B0E80E6A}.Release|x86.ActiveCfg = Release|Any CPU
+		{5B7C23D6-CD1D-4BAA-A8A5-F99F43A1C014}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5B7C23D6-CD1D-4BAA-A8A5-F99F43A1C014}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5B7C23D6-CD1D-4BAA-A8A5-F99F43A1C014}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{5B7C23D6-CD1D-4BAA-A8A5-F99F43A1C014}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{5B7C23D6-CD1D-4BAA-A8A5-F99F43A1C014}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{5B7C23D6-CD1D-4BAA-A8A5-F99F43A1C014}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5B7C23D6-CD1D-4BAA-A8A5-F99F43A1C014}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5B7C23D6-CD1D-4BAA-A8A5-F99F43A1C014}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{5B7C23D6-CD1D-4BAA-A8A5-F99F43A1C014}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{5B7C23D6-CD1D-4BAA-A8A5-F99F43A1C014}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

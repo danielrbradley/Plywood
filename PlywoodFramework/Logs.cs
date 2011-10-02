@@ -18,14 +18,14 @@ namespace Plywood
         {
             if (logEntry == null)
                 throw new ArgumentNullException("logEntry", "You cannot add a null log entry.");
-            if (logEntry.InstanceKey == Guid.Empty)
+            if (logEntry.ServerKey == Guid.Empty)
                 throw new ArgumentException("Instance key must be set to a non-empty guid.");
 
             using (var stream = logEntry.Serialise())
             {
                 var instancesController = new Servers(StorageProvider);
-                if (!instancesController.Exists(logEntry.InstanceKey))
-                    throw new InstanceNotFoundException(String.Format("Instance with the key \"{0}\" could not be found.", logEntry.InstanceKey));
+                if (!instancesController.Exists(logEntry.ServerKey))
+                    throw new InstanceNotFoundException(String.Format("Instance with the key \"{0}\" could not be found.", logEntry.ServerKey));
 
                 try
                 {
@@ -40,7 +40,7 @@ namespace Plywood
             }
         }
 
-        public LogEntryPage Search(Guid instanceKey, string query = null, string marker = null, int pageSize = 50)
+        public LogEntryPage Search(Guid serverKey, string query = null, string marker = null, int pageSize = 50)
         {
             if (pageSize < 0)
                 throw new ArgumentOutOfRangeException("pageSize", "Page size cannot be less than 0.");
@@ -49,7 +49,7 @@ namespace Plywood
 
             try
             {
-                var startLocation = string.Format("t/{0}/ai", instanceKey.ToString("N"));
+                var startLocation = string.Format("s/{0}/li", serverKey.ToString("N"));
 
                 var basePaths = new List<string>();
                 if (string.IsNullOrWhiteSpace(query))
@@ -71,9 +71,9 @@ namespace Plywood
 
                 var logPage = new LogEntryPage()
                 {
-                    InstanceKey = instanceKey,
+                    ServerKey = serverKey,
                     Marker = marker,
-                    LogEntries = entries,
+                    Items = entries,
                     PageSize = pageSize,
                     NextMarker = entries.Any() ? entries.Last().Marker : marker,
                     IsTruncated = rawResults.IsTruncated,

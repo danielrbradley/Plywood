@@ -17,6 +17,16 @@ namespace Plywood.Utils
             if (entryPath == null)
                 return new string[0];
 
+            return GetIndexFileName(entryPath).Split('-');
+        }
+
+        public static string GetIndexFileName(string entryPath)
+        {
+            if (entryPath == null)
+            {
+                return string.Empty;
+            }
+
             int lastSlash = entryPath.LastIndexOf('/');
             string fileName;
             if (lastSlash == -1)
@@ -24,7 +34,7 @@ namespace Plywood.Utils
             else
                 fileName = entryPath.Substring(lastSlash + 1);
 
-            return fileName.Split('-');
+            return fileName;
         }
 
         public static string EncodeText(string text)

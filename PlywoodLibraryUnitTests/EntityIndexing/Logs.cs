@@ -14,15 +14,16 @@ namespace Plywood.Tests.UnitTesting.EntityIndexing
         {
             var log = new LogEntry()
             {
+                Key = new Guid("b478053b-c204-497e-9610-b6439dcf9a07"),
                 Timestamp = new DateTime(2011, 09, 04, 23, 15, 23),
-                InstanceKey = new Guid("8d4abbb4-af9f-432f-bce5-e6da5a402469"),
+                ServerKey = new Guid("8d4abbb4-af9f-432f-bce5-e6da5a402469"),
                 Status = LogStatus.Warning,
             };
 
             var expected = new List<string>()
             {
-                "i/8d4abbb4af9f432fbce5e6da5a402469/li/e/F731C69057E9C87F-b",
-                "i/8d4abbb4af9f432fbce5e6da5a402469/li/t/7b83d3f08fa392b79e3f553b585971cd/F731C69057E9C87F-b",
+                "s/8d4abbb4af9f432fbce5e6da5a402469/li/e/F731C69057E9C87F-b-b478053bc204497e9610b6439dcf9a07",
+                "s/8d4abbb4af9f432fbce5e6da5a402469/li/t/7b83d3f08fa392b79e3f553b585971cd/F731C69057E9C87F-b-b478053bc204497e9610b6439dcf9a07",
             };
             var actual = log.GetIndexEntries();
 

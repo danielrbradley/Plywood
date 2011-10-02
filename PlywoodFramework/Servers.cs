@@ -157,7 +157,7 @@ namespace Plywood
         }
     }
 
-    #region Entiies
+    #region Entities
 
     public class Server : IIndexableEntity
     {

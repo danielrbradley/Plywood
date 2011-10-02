@@ -67,8 +67,8 @@ namespace Plywood.Tests.UnitTesting.Entities
                 Timestamp = DateTime.UtcNow,
                 Status = LogStatus.Fatal,
                 GroupKey = Guid.NewGuid(),
-                TargetKey = Guid.NewGuid(),
-                InstanceKey = Guid.NewGuid(),
+                RoleKey = Guid.NewGuid(),
+                ServerKey = Guid.NewGuid(),
                 LogContent = "Test Log Entry",
             };
 
@@ -78,11 +78,12 @@ namespace Plywood.Tests.UnitTesting.Entities
                 secondLogEntry = new LogEntry(stream);
             }
 
+            Assert.AreEqual(originalLogEntry.Key, secondLogEntry.Key);
             Assert.AreEqual(originalLogEntry.Timestamp, secondLogEntry.Timestamp);
             Assert.AreEqual(originalLogEntry.Status, secondLogEntry.Status);
             Assert.AreEqual(originalLogEntry.GroupKey, secondLogEntry.GroupKey);
-            Assert.AreEqual(originalLogEntry.TargetKey, secondLogEntry.TargetKey);
-            Assert.AreEqual(originalLogEntry.InstanceKey, secondLogEntry.InstanceKey);
+            Assert.AreEqual(originalLogEntry.RoleKey, secondLogEntry.RoleKey);
+            Assert.AreEqual(originalLogEntry.ServerKey, secondLogEntry.ServerKey);
             Assert.AreEqual(originalLogEntry.LogContent, secondLogEntry.LogContent);
         }
     }

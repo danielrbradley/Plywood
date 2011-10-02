@@ -37,11 +37,12 @@ namespace Plywood
 
         public LogEntry(LogEntry prototype)
         {
+            this.Key = prototype.Key;
             this.Timestamp = prototype.Timestamp;
             this.Status = prototype.Status;
             this.GroupKey = prototype.GroupKey;
-            this.TargetKey = prototype.TargetKey;
-            this.InstanceKey = prototype.InstanceKey;
+            this.RoleKey = prototype.RoleKey;
+            this.ServerKey = prototype.ServerKey;
             this.LogContent = prototype.LogContent;
         }
 
@@ -51,8 +52,8 @@ namespace Plywood
         public DateTime Timestamp { get; set; }
         public LogStatus Status { get; set; }
         public Guid GroupKey { get; set; }
-        public Guid TargetKey { get; set; }
-        public Guid InstanceKey { get; set; }
+        public Guid RoleKey { get; set; }
+        public Guid ServerKey { get; set; }
         public string LogContent { get; set; }
 
         public Stream Serialise()
@@ -67,15 +68,21 @@ namespace Plywood
             if (logEntry == null)
                 throw new ArgumentNullException("logEntry", "Version cannot be null.");
 
+            DateTime timestamp = logEntry.Timestamp;
+            if (timestamp.Kind != DateTimeKind.Utc)
+            {
+                timestamp = timestamp.ToUniversalTime();
+            }
+
             var doc = new XDocument(
                 new XDeclaration("1.0", "UTF-8", "yes"),
                 new XElement("logEntry",
                     new XAttribute("key", logEntry.Key),
-                    new XElement("timestamp", logEntry.Timestamp),
+                    new XElement("timestamp", timestamp),
                     new XElement("status", logEntry.Status),
                     new XElement("groupKey", logEntry.GroupKey),
-                    new XElement("targetKey", logEntry.TargetKey),
-                    new XElement("instanceKey", logEntry.InstanceKey),
+                    new XElement("targetKey", logEntry.RoleKey),
+                    new XElement("instanceKey", logEntry.ServerKey),
                     new XElement("logContent", logEntry.LogContent)));
 
             return Serialisation.Serialise(doc);
@@ -134,8 +141,8 @@ namespace Plywood
                 Timestamp = timestamp.ToUniversalTime(),
                 Status = status,
                 GroupKey = groupKey,
-                TargetKey = targetKey,
-                InstanceKey = instanceKey,
+                RoleKey = targetKey,
+                ServerKey = instanceKey,
                 LogContent = doc.Root.Element("logContent").Value,
             };
 
@@ -182,19 +189,22 @@ namespace Plywood
 
         public IEnumerable<string> GetIndexEntries()
         {
-            var filename = string.Format("{0}-{1}",
-                Hashing.CreateHash(Timestamp), (char)Status);
+            var filename = string.Format(
+                "{0}-{1}-{2}",
+                Hashing.CreateHash(Timestamp),
+                (char)Status,
+                Utils.Indexes.EncodeGuid(Key));
 
             var entries = new List<string>(1);
-            var tokens = (new SimpleTokeniser()).Tokenise(Status.ToString()).ToList();
+            var tokens = (new SimpleTokeniser()).Tokenise(Enum.GetName(Status.GetType(), Status)).ToList();
 
-            // Instance specific index
-            entries.Add(string.Format("i/{0}/li/e/{1}", Utils.Indexes.EncodeGuid(InstanceKey), filename));
+            // Server specific index
+            entries.Add(string.Format("s/{0}/li/e/{1}", Utils.Indexes.EncodeGuid(ServerKey), filename));
             entries.AddRange(
                 tokens.Select(
                     token =>
-                        string.Format("i/{0}/li/t/{1}/{2}",
-                         Utils.Indexes.EncodeGuid(InstanceKey),
+                        string.Format("s/{0}/li/t/{1}/{2}",
+                         Utils.Indexes.EncodeGuid(ServerKey),
                          Indexes.IndexEntries.GetTokenHash(token),
                          filename)));
 
@@ -204,8 +214,8 @@ namespace Plywood
 
     public class LogEntryPage
     {
-        public Guid InstanceKey { get; set; }
-        public IEnumerable<LogEntryListItem> LogEntries { get; set; }
+        public Guid ServerKey { get; set; }
+        public IEnumerable<LogEntryListItem> Items { get; set; }
         public string Marker { get; set; }
         public string NextMarker { get; set; }
         public int PageSize { get; set; }
@@ -221,15 +231,17 @@ namespace Plywood
         public LogEntryListItem(string path)
         {
             var segments = Utils.Indexes.GetIndexFileNameSegments(path);
-            if (segments.Length != 2)
-                throw new ArgumentException("A log entry path index entry must contain exactly 2 segments.", "path");
+            if (segments.Length != 3)
+                throw new ArgumentException("A log entry path index entry must contain exactly 3 segments.", "path");
 
-            Marker = segments[0];
+            Marker = Utils.Indexes.GetIndexFileName(path);
             Timestamp = Indexes.Hashing.UnHashDate(segments[0]);
             Status = (LogStatus)segments[1][0];
+            Key = Utils.Indexes.DecodeGuid(segments[2]);
         }
 
         internal string Marker { get; set; }
+        public Guid Key { get; set; }
         public DateTime Timestamp { get; set; }
         public LogStatus Status { get; set; }
     }

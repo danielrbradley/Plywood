@@ -25,7 +25,7 @@ namespace Plywood
 
             try
             {
-                var appsController = new Apps(StorageProvider);
+                var appsController = new Packages(StorageProvider);
                 var app = appsController.Get(version.AppKey);
                 version.GroupKey = app.GroupKey;
 

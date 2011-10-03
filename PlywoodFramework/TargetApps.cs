@@ -15,7 +15,7 @@ namespace Plywood
             try
             {
                 var targets = new Roles(StorageProvider);
-                var apps = new Apps(StorageProvider);
+                var apps = new Packages(StorageProvider);
                 var target = targets.Get(targetKey);
                 var app = apps.Get(appKey);
 
@@ -103,7 +103,7 @@ namespace Plywood
             try
             {
                 var targets = new Roles(StorageProvider);
-                var apps = new Apps(StorageProvider);
+                var apps = new Packages(StorageProvider);
                 var target = targets.Get(targetKey);
                 var app = apps.Get(appKey);
 

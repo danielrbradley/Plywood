@@ -58,14 +58,14 @@
   <ItemGroup>
     <Compile Include="CustomAsserts.cs" />
     <Compile Include="CustomAssertTests.cs" />
-    <Compile Include="Entities\AppTests.cs" />
+    <Compile Include="Entities\PackageTests.cs" />
     <Compile Include="Entities\LogEntryTests.cs" />
     <Compile Include="Entities\InstanceTests.cs" />
     <Compile Include="Entities\StorageFilePathTests.cs" />
     <Compile Include="Entities\VersionTests.cs" />
     <Compile Include="Entities\TargetTests.cs" />
     <Compile Include="Entities\GroupTests.cs" />
-    <Compile Include="EntityIndexing\Apps.cs" />
+    <Compile Include="EntityIndexing\Packages.cs" />
     <Compile Include="EntityIndexing\Logs.cs" />
     <Compile Include="EntityIndexing\Servers.cs" />
     <Compile Include="EntityIndexing\TargetApps.cs" />

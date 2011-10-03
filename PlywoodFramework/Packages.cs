@@ -12,31 +12,31 @@ using System.Reflection;
 
 namespace Plywood
 {
-    public class Apps : ControllerBase
+    public class Packages : ControllerBase
     {
-        public Apps(IStorageProvider provider) : base(provider) { }
+        public Packages(IStorageProvider provider) : base(provider) { }
 
-        public void Create(App app)
+        public void Create(Package package)
         {
-            if (app == null)
-                throw new ArgumentException("App cannot be null.", "app");
-            if (app.GroupKey == Guid.Empty)
-                throw new ArgumentException("Group key cannot be empty.", "app.GroupKey");
+            if (package == null)
+                throw new ArgumentException("Package cannot be null.", "package");
+            if (package.GroupKey == Guid.Empty)
+                throw new ArgumentException("Group key cannot be empty.", "package.GroupKey");
 
-            using (var stream = app.Serialise())
+            using (var stream = package.Serialise())
             {
                 try
                 {
                     var indexEntries = new IndexEntries(StorageProvider);
                     // TODO: Check key, name and deployment directory are unique.
 
-                    StorageProvider.PutFile(Paths.GetAppDetailsKey(app.Key), stream);
+                    StorageProvider.PutFile(Paths.GetPackageDetailsKey(package.Key), stream);
 
-                    indexEntries.PutEntity(app);
+                    indexEntries.PutEntity(package);
                 }
                 catch (Exception ex)
                 {
-                    throw new DeploymentException("Failed creating app.", ex);
+                    throw new DeploymentException("Failed creating package.", ex);
                 }
             }
         }
@@ -51,51 +51,51 @@ namespace Plywood
                 indexEntries.DeleteEntity(app);
 
                 // TODO: Refactor the solf-delete functionality.
-                StorageProvider.MoveFile(Paths.GetAppDetailsKey(key), string.Concat("deleted/", Paths.GetAppDetailsKey(key)));
+                StorageProvider.MoveFile(Paths.GetPackageDetailsKey(key), string.Concat("deleted/", Paths.GetPackageDetailsKey(key)));
             }
             catch (Exception ex)
             {
-                throw new DeploymentException("Failed deleting app.", ex);
+                throw new DeploymentException("Failed deleting package.", ex);
             }
         }
 
-        public bool AppExists(Guid key)
+        public bool Exists(Guid key)
         {
             try
             {
-                return StorageProvider.FileExists(Paths.GetAppDetailsKey(key));
+                return StorageProvider.FileExists(Paths.GetPackageDetailsKey(key));
             }
             catch (Exception ex)
             {
-                throw new DeploymentException(string.Format("Failed getting app with key \"{0}\"", key), ex);
+                throw new DeploymentException(string.Format("Failed getting package with key \"{0}\"", key), ex);
             }
         }
 
-        public App Get(Guid key)
+        public Package Get(Guid key)
         {
             try
             {
-                using (var stream = StorageProvider.GetFile(Paths.GetAppDetailsKey(key)))
+                using (var stream = StorageProvider.GetFile(Paths.GetPackageDetailsKey(key)))
                 {
-                    return new App(stream);
+                    return new Package(stream);
                 }
             }
             catch (Exception ex)
             {
-                throw new DeploymentException(string.Format("Failed getting app with key \"{0}\"", key), ex);
+                throw new DeploymentException(string.Format("Failed getting package with key \"{0}\"", key), ex);
             }
         }
 
-        public string PushRevision(Guid appKey)
+        public string PushRevision(Guid packageKey)
         {
-            var app = Get(appKey);
-            var thisRevision = String.Format("{0}.{1}", app.MajorVersion, app.Revision);
-            app.Revision += 1;
-            Update(app);
+            var package = Get(packageKey);
+            var thisRevision = String.Format("{0}.{1}", package.MajorVersion, package.Revision);
+            package.Revision += 1;
+            Update(package);
             return thisRevision;
         }
 
-        public AppList Search(Guid? groupKey = null, string query = null, string marker = null, int pageSize = 50)
+        public PackageList Search(Guid? groupKey = null, string query = null, string marker = null, int pageSize = 50)
         {
             if (pageSize < 0)
                 throw new ArgumentOutOfRangeException("pageSize", "Page size cannot be less than 0.");
@@ -109,9 +109,9 @@ namespace Plywood
                     startLocations = new string[2];
                 else
                     startLocations = new string[1];
-                startLocations[0] = "ai";
+                startLocations[0] = "pi";
                 if (groupKey.HasValue)
-                    startLocations[1] = string.Format("g/{0}/ai", Utils.Indexes.EncodeGuid(groupKey.Value));
+                    startLocations[1] = string.Format("g/{0}/pi", Utils.Indexes.EncodeGuid(groupKey.Value));
 
                 IEnumerable<string> basePaths;
 
@@ -124,10 +124,10 @@ namespace Plywood
                 var indexEntries = new IndexEntries(StorageProvider);
                 var rawResults = indexEntries.PerformRawQuery(pageSize, marker, basePaths);
 
-                var apps = rawResults.FileNames.Select(fileName => new AppListItem(fileName));
-                var list = new AppList()
+                var apps = rawResults.FileNames.Select(fileName => new PackageListItem(fileName));
+                var list = new PackageList()
                 {
-                    Apps = apps,
+                    Items = apps,
                     GroupKey = groupKey,
                     Query = query,
                     Marker = marker,
@@ -140,39 +140,39 @@ namespace Plywood
             }
             catch (Exception ex)
             {
-                throw new DeploymentException("Failed searcing apps.", ex);
+                throw new DeploymentException("Failed searcing packages.", ex);
             }
         }
 
-        public void Update(App app)
+        public void Update(Package package)
         {
-            if (app == null)
-                throw new ArgumentNullException("app", "App cannot be null.");
+            if (package == null)
+                throw new ArgumentNullException("package", "Package cannot be null.");
 
-            var existingApp = Get(app.Key);
+            var existingPackage = Get(package.Key);
             // Don't allow moving between groups right now as would have to recursively update references from versions and targets within app.
-            app.GroupKey = existingApp.GroupKey;
+            package.GroupKey = existingPackage.GroupKey;
 
-            using (var stream = app.Serialise())
+            using (var stream = package.Serialise())
             {
                 try
                 {
                     // This will not currently get called.
-                    if (existingApp.GroupKey != app.GroupKey)
+                    if (existingPackage.GroupKey != package.GroupKey)
                     {
                         var groupsController = new Groups(StorageProvider);
-                        if (!groupsController.Exists(app.GroupKey))
-                            throw new GroupNotFoundException(string.Format("Group with key \"{0}\" to move app into cannot be found.", app.GroupKey));
+                        if (!groupsController.Exists(package.GroupKey))
+                            throw new GroupNotFoundException(string.Format("Group with key \"{0}\" to move package into cannot be found.", package.GroupKey));
                     }
 
-                    StorageProvider.PutFile(Paths.GetAppDetailsKey(app.Key), stream);
+                    StorageProvider.PutFile(Paths.GetPackageDetailsKey(package.Key), stream);
 
                     var indexEntries = new IndexEntries(StorageProvider);
-                    indexEntries.UpdateEntity(existingApp, app);
+                    indexEntries.UpdateEntity(existingPackage, package);
                 }
                 catch (Exception ex)
                 {
-                    throw new DeploymentException("Failed updating app.", ex);
+                    throw new DeploymentException("Failed updating package.", ex);
                 }
             }
         }
@@ -180,31 +180,31 @@ namespace Plywood
 
     #region Entities
 
-    public class App : IIndexableEntity
+    public class Package : IIndexableEntity
     {
 
         #region Constructors
 
-        public App()
+        public Package()
         {
             Key = Guid.NewGuid();
             MajorVersion = "0.1";
             Tags = new Dictionary<string, string>();
         }
 
-        public App(string source)
-            : this(App.Parse(source)) { }
+        public Package(string source)
+            : this(Package.Parse(source)) { }
 
-        public App(Stream source)
-            : this(App.Parse(source)) { }
+        public Package(Stream source)
+            : this(Package.Parse(source)) { }
 
-        public App(TextReader source)
-            : this(App.Parse(source)) { }
+        public Package(TextReader source)
+            : this(Package.Parse(source)) { }
 
-        public App(XmlReader source)
-            : this(App.Parse(source)) { }
+        public Package(XmlReader source)
+            : this(Package.Parse(source)) { }
 
-        public App(App other)
+        public Package(Package other)
         {
             this.DeploymentDirectory = other.DeploymentDirectory;
             this.GroupKey = other.GroupKey;
@@ -227,12 +227,12 @@ namespace Plywood
 
         public Stream Serialise()
         {
-            return App.Serialise(this);
+            return Package.Serialise(this);
         }
 
         #region Static Serialisation
 
-        public static App Parse(XmlReader source)
+        public static Package Parse(XmlReader source)
         {
             XDocument doc;
             try
@@ -241,23 +241,23 @@ namespace Plywood
             }
             catch (Exception ex)
             {
-                throw new DeserialisationException("Failed deserialising app.", ex);
+                throw new DeserialisationException("Failed deserialising package.", ex);
             }
 
-            if (!ValidateAppXml(doc))
-                throw new DeserialisationException("Serialised app xml is not valid.");
+            if (!ValidateXml(doc))
+                throw new DeserialisationException("Serialised package xml is not valid.");
 
             Guid key, groupKey;
             int revision;
 
             if (!Guid.TryParse(doc.Root.Attribute("key").Value, out key))
-                throw new DeserialisationException("Serialised app key is not a valid guid.");
+                throw new DeserialisationException("Serialised package key is not a valid guid.");
             if (!Guid.TryParse(doc.Root.Element("groupKey").Value, out groupKey))
-                throw new DeserialisationException("Serialised app group key is not a valid guid.");
+                throw new DeserialisationException("Serialised package group key is not a valid guid.");
             if (!int.TryParse(doc.Root.Element("revision").Value, out revision))
-                throw new DeserialisationException("Serialised app revision is not a valid integer.");
+                throw new DeserialisationException("Serialised package revision is not a valid integer.");
 
-            var app = new App()
+            var package = new Package()
             {
                 Key = key,
                 GroupKey = groupKey,
@@ -270,55 +270,55 @@ namespace Plywood
             var tagsElement = doc.Root.Element("tags");
             if (tagsElement != null && tagsElement.HasElements)
             {
-                app.Tags = tagsElement.Elements("tag").ToDictionary(t => t.Attribute("key").Value, t => t.Value);
+                package.Tags = tagsElement.Elements("tag").ToDictionary(t => t.Attribute("key").Value, t => t.Value);
             }
 
-            return app;
+            return package;
         }
 
-        public static App Parse(TextReader source)
+        public static Package Parse(TextReader source)
         {
             return Parse(new XmlTextReader(source));
         }
 
-        public static App Parse(Stream source)
+        public static Package Parse(Stream source)
         {
             return Parse(new XmlTextReader(source));
         }
 
-        public static App Parse(string source)
+        public static Package Parse(string source)
         {
             return Parse(new StringReader(source));
         }
 
-        public static Stream Serialise(App app)
+        public static Stream Serialise(Package package)
         {
-            if (app == null)
-                throw new ArgumentNullException("app", "App cannot be null.");
-            if (!Validation.IsNameValid(app.Name))
+            if (package == null)
+                throw new ArgumentNullException("package", "Package cannot be null.");
+            if (!Validation.IsNameValid(package.Name))
                 throw new ArgumentException("Name must be valid (not blank & only a single line).");
-            if (!Validation.IsDirectoryNameValid(app.DeploymentDirectory))
+            if (!Validation.IsDirectoryNameValid(package.DeploymentDirectory))
                 throw new ArgumentException("Deployment directory must be a valid directory name.");
-            if (!Validation.IsMajorVersionValid(app.MajorVersion))
+            if (!Validation.IsMajorVersionValid(package.MajorVersion))
                 throw new ArgumentException("Major version must be numbers separated by '.'");
-            if (app.Revision < 0)
-                throw new ArgumentOutOfRangeException("app.Revision", app.Revision, "App revision must be a positive integer.");
+            if (package.Revision < 0)
+                throw new ArgumentOutOfRangeException("package.Revision", package.Revision, "Package revision must be a positive integer.");
 
             var doc = new XDocument(
                 new XDeclaration("1.0", "UTF-8", "yes"),
-                new XElement("app",
-                    new XAttribute("key", app.Key),
-                    new XElement("groupKey", app.GroupKey),
-                    new XElement("name", app.Name),
-                    new XElement("deploymentDirectory", app.DeploymentDirectory),
-                    new XElement("majorVersion", app.MajorVersion),
-                    new XElement("revision", app.Revision),
+                new XElement("package",
+                    new XAttribute("key", package.Key),
+                    new XElement("groupKey", package.GroupKey),
+                    new XElement("name", package.Name),
+                    new XElement("deploymentDirectory", package.DeploymentDirectory),
+                    new XElement("majorVersion", package.MajorVersion),
+                    new XElement("revision", package.Revision),
                     new XElement("tags")));
 
-            if (app.Tags != null && app.Tags.Count > 0)
+            if (package.Tags != null && package.Tags.Count > 0)
             {
                 doc.Root.Element("tags").Add(
-                    app.Tags.Select(t =>
+                    package.Tags.Select(t =>
                         new XElement("tag",
                             new XAttribute("key", t.Key),
                             t.Value
@@ -328,7 +328,7 @@ namespace Plywood
             return Serialisation.Serialise(doc);
         }
 
-        public static bool ValidateAppXml(XDocument appDoc)
+        public static bool ValidateXml(XDocument appDoc)
         {
             bool valid = true;
             appDoc.Validate(Schemas, (o, e) =>
@@ -349,7 +349,7 @@ namespace Plywood
                         if (schemas == null)
                         {
                             var newSchemas = new XmlSchemaSet();
-                            using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Plywood.Schemas.App.xsd"))
+                            using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Plywood.Schemas.Package.xsd"))
                             {
                                 newSchemas.Add("", XmlReader.Create(stream));
                             }
@@ -368,30 +368,32 @@ namespace Plywood
 
         public IEnumerable<string> GetIndexEntries()
         {
-            var filename = string.Format("{0}-{1}-{2}-{3}-{4}",
-                Hashing.CreateHash(Name), Utils.Indexes.EncodeGuid(Key), Utils.Indexes.EncodeGuid(GroupKey), Utils.Indexes.EncodeText(Name), Utils.Indexes.EncodeText(MajorVersion));
+            var filename = string.Format("{0}-{1}-{2}-{3}",
+                Hashing.CreateHash(Name), Utils.Indexes.EncodeGuid(Key), Utils.Indexes.EncodeText(Name), Utils.Indexes.EncodeText(MajorVersion));
 
             var tokens = (new SimpleTokeniser()).Tokenise(Name).ToList();
             var entries = new List<string>(tokens.Count() + 1);
 
+            // TODO: Could also index the package major version numbers?
+
             // Group specific index
-            entries.Add(string.Format("g/{0}/ai/e/{1}", Utils.Indexes.EncodeGuid(GroupKey), filename));
+            entries.Add(string.Format("g/{0}/pi/e/{1}", Utils.Indexes.EncodeGuid(GroupKey), filename));
             entries.AddRange(tokens.Select(token =>
-                string.Format("g/{0}/ai/t/{1}/{2}", Utils.Indexes.EncodeGuid(GroupKey), Indexes.IndexEntries.GetTokenHash(token), filename)));
+                string.Format("g/{0}/pi/t/{1}/{2}", Utils.Indexes.EncodeGuid(GroupKey), Indexes.IndexEntries.GetTokenHash(token), filename)));
 
             // Global index
-            entries.Add(string.Format("ai/e/{0}", filename));
+            entries.Add(string.Format("pi/e/{0}", filename));
             entries.AddRange(tokens.Select(token =>
-                string.Format("ai/t/{0}/{1}", Indexes.IndexEntries.GetTokenHash(token), filename)));
+                string.Format("pi/t/{0}/{1}", Indexes.IndexEntries.GetTokenHash(token), filename)));
 
             return entries;
         }
     }
 
-    public class AppList
+    public class PackageList
     {
         public Guid? GroupKey { get; set; }
-        public IEnumerable<AppListItem> Apps { get; set; }
+        public IEnumerable<PackageListItem> Items { get; set; }
         public string Query { get; set; }
         public string Marker { get; set; }
         public int PageSize { get; set; }
@@ -399,28 +401,26 @@ namespace Plywood
         public bool IsTruncated { get; set; }
     }
 
-    public class AppListItem
+    public class PackageListItem
     {
-        public AppListItem()
+        public PackageListItem()
         {
         }
 
-        public AppListItem(string path)
+        public PackageListItem(string path)
         {
             var segments = Utils.Indexes.GetIndexFileNameSegments(path);
-            if (segments.Length != 5)
-                throw new ArgumentException("An app path index entry must contain exactly 5 segments.", "path");
+            if (segments.Length != 4)
+                throw new ArgumentException("A package path index entry must contain exactly 4 segments.", "path");
 
-            Marker = segments[0];
+            Marker = Utils.Indexes.GetIndexFileName(path);
             Key = Utils.Indexes.DecodeGuid(segments[1]);
-            GroupKey = Utils.Indexes.DecodeGuid(segments[2]);
-            Name = Utils.Indexes.DecodeText(segments[3]);
-            MajorVersion = Utils.Indexes.DecodeText(segments[4]);
+            Name = Utils.Indexes.DecodeText(segments[2]);
+            MajorVersion = Utils.Indexes.DecodeText(segments[3]);
         }
 
         internal string Marker { get; set; }
         public Guid Key { get; set; }
-        public Guid GroupKey { get; set; }
         public string Name { get; set; }
         public string MajorVersion { get; set; }
     }

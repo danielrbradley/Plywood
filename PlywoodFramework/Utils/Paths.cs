@@ -12,9 +12,9 @@ namespace Plywood.Utils
             return string.Format("g/{0}/d", key.ToString("N"));
         }
 
-        public static string GetAppDetailsKey(Guid key)
+        public static string GetPackageDetailsKey(Guid key)
         {
-            return string.Format("a/{0}/d", key.ToString("N"));
+            return string.Format("p/{0}/d", key.ToString("N"));
         }
 
         public static string GetAppIndexBaseKey(Guid groupKey)

@@ -70,7 +70,7 @@
     <Compile Include="Utils\Paths.cs" />
     <Compile Include="Utils\Registry.cs" />
     <Compile Include="Utils\Serialisation.cs" />
-    <Compile Include="Apps.cs" />
+    <Compile Include="Packages.cs" />
     <Compile Include="Groups.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TargetEntities.cs" />
@@ -80,7 +80,7 @@
     <Compile Include="Versions.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Schemas\App.xml" />
+    <Content Include="Schemas\Package.xml" />
     <Content Include="Schemas\LogEntry.xml">
       <SubType>Designer</SubType>
     </Content>
@@ -92,7 +92,7 @@
     <Content Include="Schemas\Group.xml" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Schemas\App.xsd">
+    <EmbeddedResource Include="Schemas\Package.xsd">
       <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>

@@ -128,6 +128,7 @@ namespace Plywood
                 var list = new AppList()
                 {
                     Apps = apps,
+                    GroupKey = groupKey,
                     Query = query,
                     Marker = marker,
                     PageSize = pageSize,
@@ -389,7 +390,7 @@ namespace Plywood
 
     public class AppList
     {
-        public Guid GroupKey { get; set; }
+        public Guid? GroupKey { get; set; }
         public IEnumerable<AppListItem> Apps { get; set; }
         public string Query { get; set; }
         public string Marker { get; set; }

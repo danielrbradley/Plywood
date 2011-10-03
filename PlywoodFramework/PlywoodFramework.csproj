@@ -43,7 +43,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Configuration.cs" />
     <Compile Include="TargetAppListItem.cs" />
     <Compile Include="IPath.cs" />
     <Compile Include="FolderPath.cs" />
@@ -68,7 +67,6 @@
     <Compile Include="Utils\Hooks.cs" />
     <Compile Include="Utils\Indexes.cs" />
     <Compile Include="Utils\Paths.cs" />
-    <Compile Include="Utils\Registry.cs" />
     <Compile Include="Utils\Serialisation.cs" />
     <Compile Include="Packages.cs" />
     <Compile Include="Groups.cs" />

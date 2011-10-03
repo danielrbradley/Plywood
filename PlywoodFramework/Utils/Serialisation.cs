@@ -23,67 +23,6 @@ namespace Plywood.Utils
             return remoteKey;
         }
 
-        public static ControllerConfiguration ParseControllerConfiguration(TextReader source)
-        {
-            var properties = Utils.Serialisation.ReadProperties(source);
-
-            if (!properties.ContainsKey("AwsAccessKeyId"))
-                throw new DeserialisationException("Failed deserialising controller configuration: missing property \"AwsAccessKeyId\"");
-            if (!properties.ContainsKey("AwsSecretAccessKey"))
-                throw new DeserialisationException("Failed deserialising controller configuration: missing property \"AwsSecretAccessKey\"");
-            if (!properties.ContainsKey("BucketName"))
-                throw new DeserialisationException("Failed deserialising controller configuration: missing property \"BucketName\"");
-
-            return new ControllerConfiguration()
-            {
-                AwsAccessKeyId = properties["AwsAccessKeyId"],
-                AwsSecretAccessKey = properties["AwsSecretAccessKey"],
-                BucketName = properties["BucketName"],
-            };
-        }
-
-        public static DeploymentConfiguration ParsePullConfiguration(TextReader source)
-        {
-            var properties = Utils.Serialisation.ReadProperties(source);
-
-            if (!properties.ContainsKey("AwsAccessKeyId"))
-                throw new DeserialisationException("Failed deserialising pull configuration: missing property \"AwsAccessKeyId\"");
-            if (!properties.ContainsKey("AwsSecretAccessKey"))
-                throw new DeserialisationException("Failed deserialising pull configuration: missing property \"AwsSecretAccessKey\"");
-            if (!properties.ContainsKey("BucketName"))
-                throw new DeserialisationException("Failed deserialising pull configuration: missing property \"BucketName\"");
-            if (!properties.ContainsKey("CheckFrequency"))
-                throw new DeserialisationException("Failed deserialising pull configuration: missing property \"CheckFrequency\"");
-            if (!properties.ContainsKey("DeploymentDirectory"))
-                throw new DeserialisationException("Failed deserialising pull configuration: missing property \"DeploymentDirectory\"");
-            if (!properties.ContainsKey("TargetKey"))
-                throw new DeserialisationException("Failed deserialising pull configuration: missing property \"TargetKey\"");
-
-            TimeSpan checkFrequency;
-            Guid targetKey;
-
-            if (!TimeSpan.TryParse(properties["CheckFrequency"], out checkFrequency))
-                throw new DeserialisationException("Failed deserialising pull configuration: invalid property value for \"CheckFrequency\"");
-            if (!Guid.TryParseExact(properties["TargetKey"], "N", out targetKey))
-                throw new DeserialisationException("Failed deserialising pull configuration: invalid property value for \"TargetKey\"");
-
-            var config = new DeploymentConfiguration()
-            {
-                CheckFrequency = checkFrequency,
-                AwsAccessKeyId = properties["AwsAccessKeyId"],
-                AwsSecretAccessKey = properties["AwsSecretAccessKey"],
-                BucketName = properties["BucketName"],
-                DeploymentDirectory = properties["DeploymentDirectory"],
-                TargetKey = targetKey,
-            };
-
-            Guid instanceKey;
-            if (properties.ContainsKey("InstanceKey") && Guid.TryParseExact(properties["InstanceKey"], "N", out instanceKey))
-                config.InstanceKey = instanceKey;
-
-            return config;
-        }
-
         #endregion
 
         #region Entity Parsing Overloads
@@ -96,26 +35,6 @@ namespace Plywood.Utils
         public static Guid ParseKey(Stream source)
         {
             return ParseKey(new StreamReader(source));
-        }
-
-        public static ControllerConfiguration ParseControllerConfiguration(string source)
-        {
-            return ParseControllerConfiguration(new StringReader(source));
-        }
-
-        public static ControllerConfiguration ParseControllerConfiguration(Stream source)
-        {
-            return ParseControllerConfiguration(new StreamReader(source));
-        }
-
-        public static DeploymentConfiguration ParsePullConfiguration(string source)
-        {
-            return ParsePullConfiguration(new StringReader(source));
-        }
-
-        public static DeploymentConfiguration ParsePullConfiguration(Stream source)
-        {
-            return ParsePullConfiguration(new StreamReader(source));
         }
 
         #endregion

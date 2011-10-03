@@ -64,7 +64,6 @@
     <Compile Include="Exceptions.cs" />
     <Compile Include="TargetApps.cs" />
     <Compile Include="Indexes\SimpleTokeniser.cs" />
-    <Compile Include="Utils\Hooks.cs" />
     <Compile Include="Utils\Indexes.cs" />
     <Compile Include="Utils\Paths.cs" />
     <Compile Include="Utils\Serialisation.cs" />

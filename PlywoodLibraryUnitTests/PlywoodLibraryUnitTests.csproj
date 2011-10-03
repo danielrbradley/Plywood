@@ -78,8 +78,6 @@
     <Compile Include="Indexes\TokenHashTests.cs" />
     <Compile Include="Indexes\VersionHashing.cs" />
     <Compile Include="Indexes\VersionTokeniserTests.cs" />
-    <Compile Include="KeyValuePairDeSerialiseTest.cs" />
-    <Compile Include="HooksTest.cs" />
     <Compile Include="TimestampFromKeyTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ReverseOrderDateSerialiseationTest.cs" />

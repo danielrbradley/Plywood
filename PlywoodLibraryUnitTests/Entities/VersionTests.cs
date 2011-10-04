@@ -66,7 +66,7 @@ namespace Plywood.Tests.UnitTesting.Entities
             {
                 Key = Guid.NewGuid(),
                 GroupKey = Guid.NewGuid(),
-                AppKey = Guid.NewGuid(),
+                PackageKey = Guid.NewGuid(),
                 VersionNumber = "0.1",
                 Comment = "Test Version",
                 Tags = new Dictionary<string, string>()
@@ -84,7 +84,7 @@ namespace Plywood.Tests.UnitTesting.Entities
 
             Assert.AreEqual(originalVersion.Key, secondVersion.Key);
             Assert.AreEqual(originalVersion.GroupKey, secondVersion.GroupKey);
-            Assert.AreEqual(originalVersion.AppKey, secondVersion.AppKey);
+            Assert.AreEqual(originalVersion.PackageKey, secondVersion.PackageKey);
             Assert.AreEqual(originalVersion.Timestamp, secondVersion.Timestamp);
             Assert.AreEqual(originalVersion.Comment, secondVersion.Comment);
             Assert.AreEqual(originalVersion.VersionNumber, secondVersion.VersionNumber);
@@ -104,7 +104,7 @@ namespace Plywood.Tests.UnitTesting.Entities
             {
                 Key = Guid.NewGuid(),
                 GroupKey = Guid.NewGuid(),
-                AppKey = Guid.NewGuid(),
+                PackageKey = Guid.NewGuid(),
                 VersionNumber = "0.2",
                 Comment = "Test Version",
             };
@@ -117,7 +117,7 @@ namespace Plywood.Tests.UnitTesting.Entities
 
             Assert.AreEqual(originalVersion.Key, secondVersion.Key);
             Assert.AreEqual(originalVersion.GroupKey, secondVersion.GroupKey);
-            Assert.AreEqual(originalVersion.AppKey, secondVersion.AppKey);
+            Assert.AreEqual(originalVersion.PackageKey, secondVersion.PackageKey);
             Assert.AreEqual(originalVersion.Timestamp, secondVersion.Timestamp);
             Assert.AreEqual(originalVersion.Comment, secondVersion.Comment);
             Assert.AreEqual(originalVersion.VersionNumber, secondVersion.VersionNumber);

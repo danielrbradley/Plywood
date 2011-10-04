@@ -20,14 +20,14 @@ namespace Plywood
         {
             if (version == null)
                 throw new ArgumentNullException("version", "Version cannot be null.");
-            if (version.AppKey == Guid.Empty)
-                throw new ArgumentException("App key cannot be empty.", "version.AppKey");
+            if (version.PackageKey == Guid.Empty)
+                throw new ArgumentException("Package key cannot be empty.", "version.PackageKey");
 
             try
             {
-                var appsController = new Packages(StorageProvider);
-                var app = appsController.Get(version.AppKey);
-                version.GroupKey = app.GroupKey;
+                var packagesController = new Packages(StorageProvider);
+                var package = packagesController.Get(version.PackageKey);
+                version.GroupKey = package.GroupKey;
 
                 using (var stream = version.Serialise())
                 {
@@ -126,7 +126,7 @@ namespace Plywood
             }
             catch (Exception ex)
             {
-                throw new DeploymentException(string.Format("Failed pushing to version with key \"{0}\"", key), ex);
+                throw new DeploymentException(string.Format("Failed pulling to version with key \"{0}\"", key), ex);
             }
         }
 
@@ -157,7 +157,7 @@ namespace Plywood
             }
         }
 
-        public VersionList Search(Guid appKey, string query = null, string marker = null, int pageSize = 50)
+        public VersionList Search(Guid packageKey, string query = null, string marker = null, int pageSize = 50)
         {
             if (pageSize < 0)
                 throw new ArgumentOutOfRangeException("pageSize", "Page size cannot be less than 0.");
@@ -176,22 +176,23 @@ namespace Plywood
                     tokens.AddRange(tokens.Where(t => Utils.Validation.IsMajorVersionValid(t)).SelectMany(t => versionTokeniser.Tokenise(t)));
 
                     basePaths = tokens.Distinct().Select(token =>
-                        string.Format("a/{0}/vi/t/{1}", Utils.Indexes.EncodeGuid(appKey), Indexes.IndexEntries.GetTokenHash(token)));
+                        string.Format("p/{0}/vi/t/{1}", Utils.Indexes.EncodeGuid(packageKey), Indexes.IndexEntries.GetTokenHash(token)));
                 }
                 else
-                    basePaths = new List<string>() { string.Format("a/{0}/vi/e", Utils.Indexes.EncodeGuid(appKey)) };
+                    basePaths = new List<string>() { string.Format("p/{0}/vi/e", Utils.Indexes.EncodeGuid(packageKey)) };
 
                 var indexEntries = new IndexEntries(StorageProvider);
                 var rawResults = indexEntries.PerformRawQuery(pageSize, marker, basePaths);
 
-                var apps = rawResults.FileNames.Select(fileName => new VersionListItem(fileName));
+                var versions = rawResults.FileNames.Select(fileName => new VersionListItem(fileName));
                 var list = new VersionList()
                 {
-                    Versions = apps,
+                    PackageKey = packageKey,
+                    Items = versions,
                     Query = query,
                     Marker = marker,
                     PageSize = pageSize,
-                    NextMarker = apps.Any() ? apps.Last().Marker : marker,
+                    NextMarker = versions.Any() ? versions.Last().Marker : marker,
                     IsTruncated = rawResults.IsTruncated,
                 };
 
@@ -199,7 +200,7 @@ namespace Plywood
             }
             catch (Exception ex)
             {
-                throw new DeploymentException("Failed searcing groups.", ex);
+                throw new DeploymentException("Failed searcing versions.", ex);
             }
         }
 
@@ -209,15 +210,10 @@ namespace Plywood
                 throw new ArgumentNullException("version", "Version cannot be null.");
             if (version.Key == Guid.Empty)
                 throw new ArgumentException("Version key cannot be empty.", "version.Key");
-            // Disabled these checks as we automatically resolve them for now.
-            //if (version.AppKey == Guid.Empty)
-            //    throw new ArgumentException("Version app key cannot be empty.", "version.AppKey");
-            //if (version.GroupKey == Guid.Empty)
-            //    throw new ArgumentException("Version group key cannot be empty.", "version.GroupKey");
 
             var existingVersion = Get(version.Key);
             // Do not allow moving between apps & groups.
-            version.AppKey = existingVersion.AppKey;
+            version.PackageKey = existingVersion.PackageKey;
             version.GroupKey = existingVersion.GroupKey;
 
             using (var stream = version.Serialise())
@@ -231,7 +227,7 @@ namespace Plywood
                 }
                 catch (Exception ex)
                 {
-                    throw new DeploymentException("Failed deleting version.", ex);
+                    throw new DeploymentException("Failed updating version.", ex);
                 }
             }
         }
@@ -265,7 +261,7 @@ namespace Plywood
         private Version(Version other)
         {
             this.Key = other.Key;
-            this.AppKey = other.AppKey;
+            this.PackageKey = other.PackageKey;
             this.GroupKey = other.GroupKey;
             this.VersionNumber = other.VersionNumber;
             this.Comment = other.Comment;
@@ -276,7 +272,7 @@ namespace Plywood
         #endregion
 
         public Guid Key { get; set; }
-        public Guid AppKey { get; set; }
+        public Guid PackageKey { get; set; }
         public Guid GroupKey { get; set; }
         public string VersionNumber { get; set; }
         public string Comment { get; set; }
@@ -304,7 +300,7 @@ namespace Plywood
                 new XElement("version",
                     new XAttribute("key", version.Key),
                     new XElement("groupKey", version.GroupKey),
-                    new XElement("appKey", version.AppKey),
+                    new XElement("packageKey", version.PackageKey),
                     new XElement("timestamp", version.Timestamp),
                     new XElement("versionNumber", version.VersionNumber),
                     new XElement("comment", version.Comment),
@@ -353,15 +349,15 @@ namespace Plywood
             if (!ValidateVersionXml(doc))
                 throw new DeserialisationException("Serialised version xml is not valid.");
 
-            Guid key, groupKey, appKey;
+            Guid key, groupKey, packageKey;
             DateTime localTimestamp;
 
             if (!Guid.TryParse(doc.Root.Attribute("key").Value, out key))
                 throw new DeserialisationException("Serialised version key is not a valid guid.");
             if (!Guid.TryParse(doc.Root.Element("groupKey").Value, out groupKey))
                 throw new DeserialisationException("Serialised version group key is not a valid guid.");
-            if (!Guid.TryParse(doc.Root.Element("appKey").Value, out appKey))
-                throw new DeserialisationException("Serialised version app key is not a valid guid.");
+            if (!Guid.TryParse(doc.Root.Element("packageKey").Value, out packageKey))
+                throw new DeserialisationException("Serialised version package key is not a valid guid.");
             if (!DateTime.TryParse(doc.Root.Element("timestamp").Value, out localTimestamp))
                 throw new DeserialisationException("Serialised version timestamp is not a valid datetime.");
 
@@ -369,7 +365,7 @@ namespace Plywood
             {
                 Key = key,
                 GroupKey = groupKey,
-                AppKey = appKey,
+                PackageKey = packageKey,
                 Timestamp = localTimestamp.ToUniversalTime(),
                 VersionNumber = doc.Root.Element("versionNumber").Value,
                 Comment = doc.Root.Element("comment").Value,
@@ -437,10 +433,10 @@ namespace Plywood
 
             var entries = new List<string>(tokens.Count() + 1);
 
-            // App specific index
-            entries.Add(string.Format("a/{0}/vi/e/{1}", Utils.Indexes.EncodeGuid(AppKey), filename));
+            // Package specific index
+            entries.Add(string.Format("p/{0}/vi/e/{1}", Utils.Indexes.EncodeGuid(PackageKey), filename));
             entries.AddRange(tokens.Select(token =>
-                string.Format("a/{0}/vi/t/{1}/{2}", Utils.Indexes.EncodeGuid(AppKey), Indexes.IndexEntries.GetTokenHash(token), filename)));
+                string.Format("p/{0}/vi/t/{1}/{2}", Utils.Indexes.EncodeGuid(PackageKey), Indexes.IndexEntries.GetTokenHash(token), filename)));
 
             return entries;
         }
@@ -448,8 +444,8 @@ namespace Plywood
 
     public class VersionList
     {
-        public Guid AppKey { get; set; }
-        public IEnumerable<VersionListItem> Versions { get; set; }
+        public Guid PackageKey { get; set; }
+        public IEnumerable<VersionListItem> Items { get; set; }
         public string Query { get; set; }
         public string Marker { get; set; }
         public int PageSize { get; set; }
@@ -469,7 +465,7 @@ namespace Plywood
             if (segments.Length != 5)
                 throw new ArgumentException("A version path index entry must contain exactly 5 segments.", "path");
 
-            Marker = segments[0];
+            Marker = Utils.Indexes.GetIndexFileName(path);
             Key = Utils.Indexes.DecodeGuid(segments[1]);
             Comment = Utils.Indexes.DecodeText(segments[2]);
             VersionNumber = Utils.Indexes.DecodeText(segments[3]);

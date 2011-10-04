@@ -15,7 +15,7 @@ namespace Plywood.Tests.UnitTesting.EntityIndexing
             var version = new Version()
             {
                 Key = new Guid("7dc11e0c-d5c5-11e0-ae84-6ab04724019b"),
-                AppKey = new Guid("9a28d7be-d5b2-11e0-95ba-0c204924019b"),
+                PackageKey = new Guid("9a28d7be-d5b2-11e0-95ba-0c204924019b"),
                 Comment = "Test Version",
                 VersionNumber = "1.2.3",
                 Timestamp = new DateTime(2011, 09, 03, 1, 40, 17),
@@ -41,7 +41,7 @@ namespace Plywood.Tests.UnitTesting.EntityIndexing
             var version = new Version()
             {
                 Key = new Guid("7dc11e0c-d5c5-11e0-ae84-6ab04724019b"),
-                AppKey = new Guid("9a28d7be-d5b2-11e0-95ba-0c204924019b"),
+                PackageKey = new Guid("9a28d7be-d5b2-11e0-95ba-0c204924019b"),
                 Comment = "Test Version",
                 VersionNumber = "1.2.3",
                 Timestamp = new DateTime(2011, 09, 03, 1, 40, 17),

@@ -171,9 +171,6 @@ namespace Plywood
                 if (!string.IsNullOrWhiteSpace(query))
                 {
                     var tokens = new SimpleTokeniser().Tokenise(query).ToList();
-                    var versionTokeniser = new VersionTokeniser();
-                    // Tokenise any tokens that look like versions
-                    tokens.AddRange(tokens.Where(t => Utils.Validation.IsMajorVersionValid(t)).SelectMany(t => versionTokeniser.Tokenise(t)));
 
                     basePaths = tokens.Distinct().Select(token =>
                         string.Format("p/{0}/vi/t/{1}", Utils.Indexes.EncodeGuid(packageKey), Indexes.IndexEntries.GetTokenHash(token)));
@@ -200,7 +197,7 @@ namespace Plywood
             }
             catch (Exception ex)
             {
-                throw new DeploymentException("Failed searcing versions.", ex);
+                throw new DeploymentException("Failed searching versions.", ex);
             }
         }
 

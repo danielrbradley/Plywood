@@ -19,10 +19,10 @@ namespace Plywood.FrameworkFunctionalTests
 
             StorageProvider = new FsProvider.FileSystemStorageProvider(BaseDirectory);
 
-            Group = new Group() { Name = "Instance Test Group" };
+            Group = new Group() { Name = "Server Test Group" };
             new Groups(StorageProvider).Create(Group);
 
-            Role = new Role() { Name = "Instance Test Role", GroupKey = Group.Key };
+            Role = new Role() { Name = "Server Test Role", GroupKey = Group.Key };
             new Roles(StorageProvider).Create(Role);
         }
 

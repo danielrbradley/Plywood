@@ -4,7 +4,7 @@
     <xs:complexType>
       <xs:sequence>
         <xs:element name="groupKey" type="xs:string" />
-        <xs:element name="appKey" type="xs:string" />
+        <xs:element name="packageKey" type="xs:string" />
         <xs:element name="timestamp" type="xs:dateTime" />
         <xs:element name="versionNumber" type="xs:string" />
         <xs:element name="comment" type="xs:string" />

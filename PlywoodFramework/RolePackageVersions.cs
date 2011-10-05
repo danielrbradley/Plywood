@@ -7,11 +7,9 @@ using Plywood.Utils;
 
 namespace Plywood
 {
-    public class TargetAppVersions : ControllerBase
+    public class RolePackageVersions : ControllerBase
     {
-        public const string STR_TARGET_APP_VERSION_INFO_EXTENSION = "target-version";
-
-        public TargetAppVersions(IStorageProvider provider) : base(provider) { }
+        public RolePackageVersions(IStorageProvider provider) : base(provider) { }
 
         public VersionCheckResult TargetAppVersionChanged(Guid targetKey, Guid appKey, Guid localVersionKey)
         {
@@ -22,7 +20,7 @@ namespace Plywood
                 {
                     localETag = Utils.Validation.GenerateETag(localKeyStream);
                 }
-                var fileHash = StorageProvider.GetFileHash(Utils.Paths.GetTargetAppVersionKey(targetKey, appKey));
+                var fileHash = StorageProvider.GetFileHash(Utils.Paths.GetRolePackageVersionKey(targetKey, appKey));
                 if (fileHash == null)
                 {
                     return VersionCheckResult.NotSet;
@@ -38,7 +36,7 @@ namespace Plywood
             }
             catch (Exception ex)
             {
-                throw new DeploymentException(string.Format("Failed checking for version updates for app with key \"{0}\" and target with the key \"{1}\".", appKey, targetKey), ex);
+                throw new DeploymentException(string.Format("Failed checking for version updates for package with key \"{0}\" for server role with the key \"{1}\".", appKey, targetKey), ex);
             }
         }
 
@@ -46,14 +44,14 @@ namespace Plywood
         {
             try
             {
-                using (var stream = StorageProvider.GetFile(Paths.GetTargetAppVersionKey(targetKey, appKey)))
+                using (var stream = StorageProvider.GetFile(Paths.GetRolePackageVersionKey(targetKey, appKey)))
                 {
                     return Utils.Serialisation.ParseKey(stream);
                 }
             }
             catch (Exception ex)
             {
-                throw new DeploymentException(string.Format("Failed getting version for app with key \"{0}\" and target with the key \"{1}\".", appKey, targetKey), ex);
+                throw new DeploymentException(string.Format("Failed getting version for package with key \"{0}\" for server role with the key \"{1}\".", appKey, targetKey), ex);
             }
         }
 
@@ -61,7 +59,7 @@ namespace Plywood
         {
             try
             {
-                    string path = Paths.GetTargetAppVersionKey(targetKey, appKey);
+                    string path = Paths.GetRolePackageVersionKey(targetKey, appKey);
                     if (versionKey.HasValue)
                     {
                         // Set

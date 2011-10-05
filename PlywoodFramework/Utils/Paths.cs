@@ -32,9 +32,9 @@ namespace Plywood.Utils
             return string.Format("s/{0}/d", key.ToString("N"));
         }
 
-        public static string GetTargetAppVersionKey(Guid targetKey, Guid appKey)
+        public static string GetRolePackageVersionKey(Guid roleKey, Guid packageKey)
         {
-            return string.Format("t/{0}/av/{1}", targetKey.ToString("N"), appKey.ToString("N"));
+            return string.Format("r/{0}/pv/{1}", roleKey.ToString("N"), packageKey.ToString("N"));
         }
 
         public static string GetLogDetailsPath(Guid logKey)

@@ -15,7 +15,7 @@ namespace Plywood
     public class RolePackageList
     {
         public Guid RoleKey { get; set; }
-        public IEnumerable<RolePackageListItem> Packages { get; set; }
+        public IEnumerable<RolePackageListItem> Items { get; set; }
         public string Query { get; set; }
         public string Marker { get; set; }
         public int PageSize { get; set; }

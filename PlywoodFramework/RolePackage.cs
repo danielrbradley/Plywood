@@ -6,79 +6,88 @@ using Plywood.Indexes;
 
 namespace Plywood
 {
-    public class RolePackage : IIndexableEntity
+    internal class RolePackage : IIndexableEntity
     {
         public RolePackage()
         {
         }
 
-        public Guid TargetKey { get; set; }
-        public string TargetName { get; set; }
-        public Guid AppKey { get; set; }
-        public string AppName { get; set; }
-        public string AppDeploymentDirectory { get; set; }
+        public RolePackage(Role role, Package package)
+        {
+            this.RoleKey = role.Key;
+            this.RoleName = role.Name;
+            this.PackageDeploymentDirectory = package.DeploymentDirectory;
+            this.PackageKey = package.Key;
+            this.PackageName = package.Name;
+        }
+
+        public Guid RoleKey { get; set; }
+        public string RoleName { get; set; }
+        public Guid PackageKey { get; set; }
+        public string PackageName { get; set; }
+        public string PackageDeploymentDirectory { get; set; }
 
         public IEnumerable<string> GetIndexEntries()
         {
             var entries = new List<string>();
-            entries.AddRange(GetTargetIndexEntries());
-            entries.AddRange(GetAppIndexEntries());
+            entries.AddRange(GetRoleIndexEntries());
+            entries.AddRange(GetPackageIndexEntries());
             return entries;
         }
 
-        private IEnumerable<string> GetTargetIndexEntries()
+        private IEnumerable<string> GetRoleIndexEntries()
         {
-            // Target Index: /t/{t-guid}/ai/{token/global}/{app-name-hash}-{app-guid}-{app-name}-{app-deployment-dir}
+            // Role Package Index: /r/{role-guid}/pi/{token/global}/{pkg-name-hash}-{pkg-guid}-{pkg-name}-{pkg-deployment-dir}
             var filename = string.Format(
                 "{0}-{1}-{2}-{3}",
-                Hashing.CreateHash(this.AppName),
-                Utils.Indexes.EncodeGuid(this.AppKey),
-                Utils.Indexes.EncodeText(this.AppName),
-                Utils.Indexes.EncodeText(this.AppDeploymentDirectory));
+                Hashing.CreateHash(this.PackageName),
+                Utils.Indexes.EncodeGuid(this.PackageKey),
+                Utils.Indexes.EncodeText(this.PackageName),
+                Utils.Indexes.EncodeText(this.PackageDeploymentDirectory));
 
-            var tokens = (new SimpleTokeniser()).Tokenise(this.AppName).ToList();
+            var tokens = (new SimpleTokeniser()).Tokenise(this.PackageName).ToList();
             var entries = new List<string>(tokens.Count() + 1);
 
             entries.Add(
                 string.Format(
-                "t/{0}/ai/e/{1}", 
-                Utils.Indexes.EncodeGuid(this.TargetKey), 
+                "r/{0}/pi/e/{1}", 
+                Utils.Indexes.EncodeGuid(this.RoleKey), 
                 filename));
 
             entries.AddRange(
                 tokens.Select(token =>
                     string.Format(
-                        "t/{0}/ai/t/{1}/{2}", 
-                        Utils.Indexes.EncodeGuid(this.TargetKey), 
+                        "r/{0}/pi/t/{1}/{2}", 
+                        Utils.Indexes.EncodeGuid(this.RoleKey), 
                         Indexes.IndexEntries.GetTokenHash(token), 
                         filename)));
 
             return entries;
         }
 
-        private IEnumerable<string> GetAppIndexEntries()
+        private IEnumerable<string> GetPackageIndexEntries()
         {
-            // App Index: /a/{a-guid}/ti/{token/global}/{target-name-hash}-{target-guid}-{target-name}
+            // Package Role Index: /p/{pkg-guid}/ri/{token/global}/{role-name-hash}-{role-guid}-{role-name}
             var filename = string.Format(
                 "{0}-{1}-{2}",
-                Hashing.CreateHash(this.TargetName),
-                Utils.Indexes.EncodeGuid(this.TargetKey),
-                Utils.Indexes.EncodeText(this.TargetName));
+                Hashing.CreateHash(this.RoleName),
+                Utils.Indexes.EncodeGuid(this.RoleKey),
+                Utils.Indexes.EncodeText(this.RoleName));
 
-            var tokens = (new SimpleTokeniser()).Tokenise(this.TargetName).ToList();
+            var tokens = (new SimpleTokeniser()).Tokenise(this.RoleName).ToList();
             var entries = new List<string>(tokens.Count() + 1);
 
             entries.Add(
                 string.Format(
-                "a/{0}/ti/e/{1}", 
-                Utils.Indexes.EncodeGuid(this.AppKey), 
+                "p/{0}/ri/e/{1}", 
+                Utils.Indexes.EncodeGuid(this.PackageKey), 
                 filename));
 
             entries.AddRange(
                 tokens.Select(token =>
                     string.Format(
-                        "a/{0}/ti/t/{1}/{2}", 
-                        Utils.Indexes.EncodeGuid(this.AppKey), 
+                        "p/{0}/ri/t/{1}/{2}", 
+                        Utils.Indexes.EncodeGuid(this.PackageKey), 
                         Indexes.IndexEntries.GetTokenHash(token), 
                         filename)));
 

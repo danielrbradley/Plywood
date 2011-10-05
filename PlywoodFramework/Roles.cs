@@ -149,6 +149,9 @@ namespace Plywood
             {
                 try
                 {
+                    // Update package roles indexes
+                    var rolePackages = new RolePackages(StorageProvider);
+                    rolePackages.Update(existingRole, role);
 
                     StorageProvider.PutFile(Paths.GetRoleDetailsKey(role.Key), stream);
 

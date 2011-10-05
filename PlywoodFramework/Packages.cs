@@ -165,6 +165,10 @@ namespace Plywood
                             throw new GroupNotFoundException(string.Format("Group with key \"{0}\" to move package into cannot be found.", package.GroupKey));
                     }
 
+                    // Update role package indexes
+                    var rolePackages = new RolePackages(StorageProvider);
+                    rolePackages.Update(existingPackage, package);
+
                     StorageProvider.PutFile(Paths.GetPackageDetailsKey(package.Key), stream);
 
                     var indexEntries = new IndexEntries(StorageProvider);

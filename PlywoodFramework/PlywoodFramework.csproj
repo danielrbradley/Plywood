@@ -43,6 +43,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="PackageRoleList.cs" />
+    <Compile Include="PackageRoleListItem.cs" />
     <Compile Include="RolePackageListItem.cs" />
     <Compile Include="IPath.cs" />
     <Compile Include="FolderPath.cs" />
@@ -59,7 +61,7 @@
     <Compile Include="Servers.cs" />
     <Compile Include="FilePath.cs" />
     <Compile Include="RolePackage.cs" />
-    <Compile Include="TargetAppVersions.cs" />
+    <Compile Include="RolePackageVersions.cs" />
     <Compile Include="ControllerBase.cs" />
     <Compile Include="Exceptions.cs" />
     <Compile Include="RolePackages.cs" />

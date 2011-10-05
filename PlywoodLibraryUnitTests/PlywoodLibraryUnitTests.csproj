@@ -68,7 +68,9 @@
     <Compile Include="EntityIndexing\Packages.cs" />
     <Compile Include="EntityIndexing\Logs.cs" />
     <Compile Include="EntityIndexing\Servers.cs" />
-    <Compile Include="EntityIndexing\TargetApps.cs" />
+    <Compile Include="EntityIndexing\TargetApps.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="EntityIndexing\Versions.cs" />
     <Compile Include="EntityIndexing\Roles.cs" />
     <Compile Include="EntityIndexing\Groups.cs" />

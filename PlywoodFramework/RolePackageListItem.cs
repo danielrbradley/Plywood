@@ -6,19 +6,19 @@ using Plywood.Indexes;
 
 namespace Plywood
 {
-    public class TargetAppListItem
+    public class RolePackageListItem
     {
-        public TargetAppListItem()
+        public RolePackageListItem()
         {
         }
 
-        public TargetAppListItem(string path)
+        public RolePackageListItem(string path)
         {
             var segments = Utils.Indexes.GetIndexFileNameSegments(path);
             if (segments.Length != 4)
-                throw new ArgumentException("An app path index entry must contain exactly 4 segments.", "path");
+                throw new ArgumentException("A package path index entry must contain exactly 4 segments.", "path");
 
-            this.Marker = segments[0];
+            this.Marker = Utils.Indexes.GetIndexFileName(path);
             this.Key = Utils.Indexes.DecodeGuid(segments[1]);
             this.Name = Utils.Indexes.DecodeText(segments[2]);
             this.DeploymentDirectory = Utils.Indexes.DecodeText(segments[3]);

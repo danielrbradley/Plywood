@@ -12,7 +12,7 @@ namespace Plywood.Tests.UnitTesting.EntityIndexing
         [TestMethod]
         public void GetTargetAppIndexPathsTestBasic()
         {
-            var app = new TargetApp()
+            var app = new RolePackage()
             {
                 TargetKey = new Guid("8d4abbb4-af9f-432f-bce5-e6da5a402469"),
                 TargetName = "Test Target",

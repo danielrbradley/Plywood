@@ -380,7 +380,7 @@ namespace Plywood
             if (segments.Length != 3)
                 throw new ArgumentException("An server path index entry must contain exactly 3 segments.", "path");
 
-            Marker = segments[0];
+            Marker = Utils.Indexes.GetIndexFileName(path);
             Key = Utils.Indexes.DecodeGuid(segments[1]);
             Name = Utils.Indexes.DecodeText(segments[2]);
         }

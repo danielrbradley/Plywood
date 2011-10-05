@@ -6,9 +6,9 @@ using Plywood.Indexes;
 
 namespace Plywood
 {
-    public class TargetApps : ControllerBase
+    public class RolePackages : ControllerBase
     {
-        public TargetApps(IStorageProvider provider) : base(provider) { }
+        public RolePackages(IStorageProvider provider) : base(provider) { }
 
         public void AddApp(Guid targetKey, Guid appKey)
         {
@@ -20,7 +20,7 @@ namespace Plywood
                 var app = apps.Get(appKey);
 
                 var indexes = new Indexes.IndexEntries(StorageProvider);
-                var targetApp = new TargetApp()
+                var targetApp = new RolePackage()
                 {
                     TargetKey = target.Key,
                     TargetName = target.Name,
@@ -37,7 +37,7 @@ namespace Plywood
             }
         }
 
-        public void AddApp(TargetApp targetApp)
+        public void AddApp(RolePackage targetApp)
         {
             try
             {
@@ -50,7 +50,7 @@ namespace Plywood
             }
         }
 
-        public TargetAppList Search(Guid targetKey, string query = null, string marker = null, int pageSize = 50)
+        public RolePackageList Search(Guid targetKey, string query = null, string marker = null, int pageSize = 50)
         {
             if (pageSize < 0)
                 throw new ArgumentOutOfRangeException("pageSize", "Page size cannot be less than 0.");
@@ -77,12 +77,12 @@ namespace Plywood
                 var indexEntries = new IndexEntries(StorageProvider);
                 var rawResults = indexEntries.PerformRawQuery(pageSize, marker, basePaths);
 
-                var apps = rawResults.FileNames.Select(fileName => new TargetAppListItem(fileName));
+                var apps = rawResults.FileNames.Select(fileName => new RolePackageListItem(fileName));
 
-                var list = new TargetAppList()
+                var list = new RolePackageList()
                 {
-                    Apps = apps,
-                    TargetKey = targetKey,
+                    Packages = apps,
+                    RoleKey = targetKey,
                     Query = query,
                     Marker = marker,
                     PageSize = pageSize,
@@ -107,7 +107,7 @@ namespace Plywood
                 var target = targets.Get(targetKey);
                 var app = apps.Get(appKey);
 
-                var targetApp = new TargetApp()
+                var targetApp = new RolePackage()
                 {
                     TargetKey = target.Key,
                     TargetName = target.Name,
@@ -126,7 +126,7 @@ namespace Plywood
             throw new NotImplementedException();
         }
 
-        public void RemoveApp(TargetApp targetApp)
+        public void RemoveApp(RolePackage targetApp)
         {
             try
             {

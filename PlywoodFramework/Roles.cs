@@ -377,7 +377,7 @@ namespace Plywood
             if (segments.Length != 4)
                 throw new ArgumentException("A target entity path index entry must contain exactly 4 segments.", "path");
 
-            Marker = segments[0];
+            Marker = Utils.Indexes.GetIndexFileName(path);
             Key = Utils.Indexes.DecodeGuid(segments[1]);
             GroupKey = Utils.Indexes.DecodeGuid(segments[2]);
             Name = Utils.Indexes.DecodeText(segments[3]);

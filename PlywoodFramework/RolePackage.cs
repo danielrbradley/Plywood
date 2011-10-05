@@ -6,9 +6,9 @@ using Plywood.Indexes;
 
 namespace Plywood
 {
-    public class TargetApp : IIndexableEntity
+    public class RolePackage : IIndexableEntity
     {
-        public TargetApp()
+        public RolePackage()
         {
         }
 

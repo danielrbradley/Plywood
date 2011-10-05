@@ -12,10 +12,10 @@ using Plywood.Indexes;
 
 namespace Plywood
 {
-    public class TargetAppList
+    public class RolePackageList
     {
-        public Guid TargetKey { get; set; }
-        public IEnumerable<TargetAppListItem> Apps { get; set; }
+        public Guid RoleKey { get; set; }
+        public IEnumerable<RolePackageListItem> Packages { get; set; }
         public string Query { get; set; }
         public string Marker { get; set; }
         public int PageSize { get; set; }
@@ -23,7 +23,7 @@ namespace Plywood
         public bool IsTruncated { get; set; }
     }
 
-    public class TargetAppVersion
+    public class RolePackageVersion
     {
         public string ETag { get; set; }
         public Guid Key { get; set; }

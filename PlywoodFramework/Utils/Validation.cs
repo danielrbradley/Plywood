@@ -29,15 +29,15 @@ namespace Plywood.Utils
                 return Regex.IsMatch(majorVersion, @"^(?:\d+\.)*\d+$");
         }
 
-        public static string GenerateETag(Stream stream)
+        public static string GenerateHash(Stream stream)
         {
             var crypto = new MD5CryptoServiceProvider();
-            return GenerateETag(stream, crypto);
+            return GenerateHash(stream, crypto);
         }
 
-        public static string GenerateETag(Stream stream, MD5 crypto)
+        public static string GenerateHash(Stream stream, MD5 crypto)
         {
-            return String.Format("\"{0}\"", BitConverter.ToString(crypto.ComputeHash(stream)).Replace("-", string.Empty).ToLower());
+            return BitConverter.ToString(crypto.ComputeHash(stream)).Replace("-", string.Empty).ToLower();
         }
     }
 }

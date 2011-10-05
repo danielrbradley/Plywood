@@ -14,6 +14,8 @@ namespace Plywood.FrameworkFunctionalTests
         public void Init()
         {
             var tempDir = new DirectoryInfo(@"C:\plywdtmp");
+            if (!tempDir.Exists) tempDir.Create();
+
             var baseDir = tempDir.CreateSubdirectory(Guid.NewGuid().ToString());
             BaseDirectory = baseDir.FullName;
 

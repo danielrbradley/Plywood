@@ -29,7 +29,7 @@ namespace Plywood
         public Guid Key { get; set; }
     }
 
-    public enum VersionCheckResult
+    public enum VersionStatus
     {
         NotChanged,
         Changed,

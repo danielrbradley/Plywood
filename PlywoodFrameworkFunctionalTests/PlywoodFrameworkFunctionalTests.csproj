@@ -49,6 +49,7 @@
     <Compile Include="GroupTests.cs" />
     <Compile Include="LogTests.cs" />
     <Compile Include="RolePackageTests.cs" />
+    <Compile Include="RolePackageVersionTests.cs" />
     <Compile Include="ServerTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RoleTests.cs" />

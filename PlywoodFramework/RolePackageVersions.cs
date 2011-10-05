@@ -11,55 +11,60 @@ namespace Plywood
     {
         public RolePackageVersions(IStorageProvider provider) : base(provider) { }
 
-        public VersionCheckResult TargetAppVersionChanged(Guid targetKey, Guid appKey, Guid localVersionKey)
+        public VersionStatus CheckStatus(Guid roleKey, Guid packageKey, Guid currentVersionKey)
         {
             try
             {
                 string localETag;
-                using (var localKeyStream = Utils.Serialisation.Serialise(localVersionKey))
+                using (var localKeyStream = Utils.Serialisation.Serialise(currentVersionKey))
                 {
-                    localETag = Utils.Validation.GenerateETag(localKeyStream);
+                    localETag = Utils.Validation.GenerateHash(localKeyStream);
                 }
-                var fileHash = StorageProvider.GetFileHash(Utils.Paths.GetRolePackageVersionKey(targetKey, appKey));
+                var fileHash = StorageProvider.GetFileHash(Utils.Paths.GetRolePackageVersionKey(roleKey, packageKey));
                 if (fileHash == null)
                 {
-                    return VersionCheckResult.NotSet;
+                    return VersionStatus.NotSet;
                 }
                 else if (fileHash == localETag)
                 {
-                    return VersionCheckResult.NotChanged;
+                    return VersionStatus.NotChanged;
                 }
                 else
                 {
-                    return VersionCheckResult.Changed;
+                    return VersionStatus.Changed;
                 }
             }
             catch (Exception ex)
             {
-                throw new DeploymentException(string.Format("Failed checking for version updates for package with key \"{0}\" for server role with the key \"{1}\".", appKey, targetKey), ex);
+                throw new DeploymentException(string.Format("Failed checking for version updates for package with key \"{0}\" for server role with the key \"{1}\".", packageKey, roleKey), ex);
             }
         }
 
-        public Guid? GetTargetAppVersion(Guid targetKey, Guid appKey)
+        public Guid? Get(Guid roleKey, Guid packageKey)
         {
             try
             {
-                using (var stream = StorageProvider.GetFile(Paths.GetRolePackageVersionKey(targetKey, appKey)))
+                using (var stream = StorageProvider.GetFile(Paths.GetRolePackageVersionKey(roleKey, packageKey)))
                 {
                     return Utils.Serialisation.ParseKey(stream);
                 }
             }
+            catch (FileNotFoundException)
+            {
+                // Version has not been set.
+                return null;
+            }
             catch (Exception ex)
             {
-                throw new DeploymentException(string.Format("Failed getting version for package with key \"{0}\" for server role with the key \"{1}\".", appKey, targetKey), ex);
+                throw new DeploymentException(string.Format("Failed getting version for package with key \"{0}\" for server role with the key \"{1}\".", packageKey, roleKey), ex);
             }
         }
 
-        public void SetTargetAppVersion(Guid targetKey, Guid appKey, Guid? versionKey)
+        public void Set(Guid roleKey, Guid packageKey, Guid? versionKey)
         {
             try
             {
-                    string path = Paths.GetRolePackageVersionKey(targetKey, appKey);
+                    string path = Paths.GetRolePackageVersionKey(roleKey, packageKey);
                     if (versionKey.HasValue)
                     {
                         // Set
@@ -76,7 +81,7 @@ namespace Plywood
             }
             catch (Exception ex)
             {
-                throw new DeploymentException(string.Format("Failed setting version for app with key \"{0}\" and target with the key \"{1}\".", appKey, targetKey), ex);
+                throw new DeploymentException(string.Format("Failed setting version for package with key \"{0}\" for server role with the key \"{1}\".", packageKey, roleKey), ex);
             }
         }
     }

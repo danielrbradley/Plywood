@@ -43,7 +43,15 @@ namespace Plywood.FsProvider
 
         public System.IO.Stream GetFile(FilePath path)
         {
-            return File.OpenRead(GetFsPath(path));
+            var fsPath = GetFsPath(path);
+            try
+            {
+                return File.OpenRead(fsPath);
+            }
+            catch (DirectoryNotFoundException dnfex)
+            {
+                throw new FileNotFoundException(dnfex.Message, fsPath, dnfex);
+            }
         }
 
         public string GetFileHash(string path)

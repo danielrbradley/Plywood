@@ -57,6 +57,7 @@ namespace Plywood
         /// </summary>
         /// <param name="path">Path of the file to check.</param>
         /// <returns>The md5 hash of a file or null if not found.</returns>
+        /// <remarks>String must be lowercase with no dashes or surrounding quotes.</remarks>
         string GetFileHash(string path);
 
         /// <summary>

@@ -11,6 +11,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		PATH_STRUCTURES.txt = PATH_STRUCTURES.txt
 		Plywood.vsmdi = Plywood.vsmdi
 		README.txt = README.txt
+		synchronising-packages.txt = synchronising-packages.txt
 		TASKS.txt = TASKS.txt
 		TraceAndTestImpact.testsettings = TraceAndTestImpact.testsettings
 	EndProjectSection

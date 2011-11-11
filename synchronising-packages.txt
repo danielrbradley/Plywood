@@ -1,0 +1,28 @@
+This is a quick brainstorm of what the pull down service needs to be able to do.
+
+Procedure
+=========
+
+1) Determine all outstanding syncronisations.
+2) Download all required files into a temporary directory.
+3) Lock local database.
+4) For each package to be synchronised:
+  Upgrading: 
+    1) Run old pre-upgrade hook.
+    2) Run new pre-upgrade hook.
+	3) Copy all files.
+	4) Run new post-upgrade hook.
+  Installing:
+    1) Run pre-install hook.
+	2) Copy all files.
+	3) Run post-install hook.
+  Uninstalling:
+    1) Run uninstalling hook.
+	2) Remove all files.
+5) Remove temporary directory.
+
+
+Storage
+=======
+
+Package Key -> Version Key, Version Number

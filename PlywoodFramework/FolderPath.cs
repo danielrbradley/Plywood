@@ -1,24 +1,37 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-
-namespace Plywood
+﻿namespace Plywood
 {
+    using System;
+    using System.Text.RegularExpressions;
+
+    /// <summary>
+    /// Reppresents a path specifically to a folder.
+    /// </summary>
     public class FolderPath : IPath
     {
+        /// <summary>
+        /// Initializes a new instance of the FolderPath class with a null value.
+        /// </summary>
         public FolderPath()
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of the FolderPath class with an initial value.
+        /// </summary>
+        /// <param name="value">Initial value of the folder path.</param>
         public FolderPath(string value)
         {
             this.Value = value;
         }
 
+        /// <summary>
+        /// Gets or sets the value of the folder path.
+        /// </summary>
         public string Value { get; set; }
 
+        /// <summary>
+        /// Gets a value indicating whether the current value of the folder path is valid.
+        /// </summary>
         public bool IsValid
         {
             get
@@ -28,7 +41,7 @@ namespace Plywood
         }
 
         /// <summary>
-        /// Throws an exception if the current path is not valid.
+        /// Ensures the FolderPath is valid, otherwise throws an exception.
         /// </summary>
         /// <exception cref="FormatException">Thrown if the path is not in a valid format.</exception>
         public void EnsureValidity()

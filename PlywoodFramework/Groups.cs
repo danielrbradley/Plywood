@@ -1,26 +1,40 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Diagnostics;
-using System.IO;
-using Plywood.Utils;
-using Plywood.Indexes;
-using System.Xml.Schema;
-using System.Reflection;
-using System.Xml;
-using System.Xml.Linq;
-
-namespace Plywood
+﻿namespace Plywood
 {
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
+    using System.Reflection;
+    using System.Xml;
+    using System.Xml.Linq;
+    using System.Xml.Schema;
+    using Plywood.Indexes;
+    using Plywood.Utils;
+
+    /// <summary>
+    /// Provides methods to interact with groups.
+    /// </summary>
     public class Groups : ControllerBase
     {
-        public Groups(IStorageProvider provider) : base(provider) { }
+        /// <summary>
+        /// Initializes a new instance of the Groups class with the given storage provider.
+        /// </summary>
+        /// <param name="provider">Provider the controller will use to access the storage platform.</param>
+        public Groups(IStorageProvider provider)
+            : base(provider)
+        {
+        }
 
+        /// <summary>
+        /// Creates a new group.
+        /// </summary>
+        /// <param name="group">Details of the group to create.</param>
         public void Create(Group group)
         {
             if (group == null)
+            {
                 throw new ArgumentNullException("group", "Group cannot be null.");
+            }
 
             using (var stream = group.Serialise())
             {
@@ -38,9 +52,13 @@ namespace Plywood
             }
         }
 
+        /// <summary>
+        /// Deletes an existing group.
+        /// </summary>
+        /// <param name="key">Identifier of the group to delete.</param>
         public void Delete(Guid key)
         {
-            var group = Get(key);
+            var group = this.Get(key);
             try
             {
                 var indexEntries = new IndexEntries(StorageProvider);
@@ -55,6 +73,11 @@ namespace Plywood
             }
         }
 
+        /// <summary>
+        /// Checks if a group with a given key exists.
+        /// </summary>
+        /// <param name="key">Identifier of the group to check existance of.</param>
+        /// <returns>true if a group with the key exists; otherwise false.</returns>
         public bool Exists(Guid key)
         {
             try
@@ -67,6 +90,11 @@ namespace Plywood
             }
         }
 
+        /// <summary>
+        /// Gets a group.
+        /// </summary>
+        /// <param name="key">Identifier of the group to get.</param>
+        /// <returns>A group object or null if not found.</returns>
         public Group Get(Guid key)
         {
             try
@@ -82,25 +110,42 @@ namespace Plywood
             }
         }
 
+        /// <summary>
+        /// Search groups and return a page of results.
+        /// </summary>
+        /// <param name="query">Set of terms (case insensitive) to query against the group names.</param>
+        /// <param name="marker">Marker indicating the offset to take results logically after (null for first page).</param>
+        /// <param name="pageSize">Maximum number of results to return in the returned result set (0 - 100)</param>
+        /// <returns>A list of groups matching the criteria.</returns>
         public GroupList Search(string query = null, string marker = null, int pageSize = 50)
         {
             if (pageSize < 0)
+            {
                 throw new ArgumentOutOfRangeException("pageSize", "Page size cannot be less than 0.");
+            }
+
             if (pageSize > 100)
+            {
                 throw new ArgumentOutOfRangeException("pageSize", "Page size cannot be greater than 100.");
+            }
 
             try
             {
                 IEnumerable<string> basePaths;
 
-                if (!string.IsNullOrWhiteSpace(query))
+                bool queryIsSpecified = !string.IsNullOrWhiteSpace(query);
+                if (queryIsSpecified)
+                {
                     basePaths = new SimpleTokeniser().Tokenise(query).Select(token =>
                         string.Format("gi/t/{0}", Indexes.IndexEntries.GetTokenHash(token)));
+                }
                 else
+                {
                     basePaths = new List<string>()
                     {
                         "gi/e",
                     };
+                }
 
                 var indexEntries = new IndexEntries(StorageProvider);
                 var rawResults = indexEntries.PerformRawQuery(pageSize, marker, basePaths);
@@ -124,12 +169,18 @@ namespace Plywood
             }
         }
 
+        /// <summary>
+        /// Update the details of an existing group.
+        /// </summary>
+        /// <param name="group">Updated details of the group.</param>
         public void Update(Group group)
         {
             if (group == null)
-                throw new ArgumentNullException("group", "Group cannot be null.");
+            {
+                throw new ArgumentNullException("group", "group is null.");
+            }
 
-            var oldGroup = Get(group.Key);
+            var oldGroup = this.Get(group.Key);
 
             using (var stream = group.Serialise())
             {
@@ -146,215 +197,5 @@ namespace Plywood
                 }
             }
         }
-    }
-
-    public class Group : IIndexableEntity
-    {
-
-        #region Constructors
-
-        public Group()
-        {
-            Key = Guid.NewGuid();
-        }
-
-        public Group(string source)
-            : this(Group.Parse(source)) { }
-
-        public Group(Stream source)
-            : this(Group.Parse(source)) { }
-
-        public Group(TextReader source)
-            : this(Group.Parse(source)) { }
-
-        public Group(XmlTextReader source)
-            : this(Group.Parse(source)) { }
-
-        public Group(Group other)
-        {
-            this.Key = other.Key;
-            this.Name = other.Name;
-            this.Tags = other.Tags;
-        }
-
-        #endregion
-
-        public Guid Key { get; set; }
-        public string Name { get; set; }
-        public Dictionary<string, string> Tags { get; set; }
-
-        public Stream Serialise()
-        {
-            return Group.Serialise(this);
-        }
-
-        public IEnumerable<string> GetIndexEntries()
-        {
-            var filename = string.Format("{0}-{1}-{2}",
-                Hashing.CreateHash(Name), Utils.Indexes.EncodeGuid(Key), Utils.Indexes.EncodeText(Name));
-
-            var tokens = (new SimpleTokeniser()).Tokenise(Name).ToList();
-            var entries = new List<string>(tokens.Count() + 1);
-
-            entries.Add(string.Format("gi/e/{0}", filename));
-            entries.AddRange(tokens.Select(token =>
-                string.Format("gi/t/{0}/{1}", Indexes.IndexEntries.GetTokenHash(token), filename)));
-
-            return entries;
-        }
-
-        #region Static Serialisation Methods
-
-        public static Stream Serialise(Group group)
-        {
-            if (group == null)
-                throw new ArgumentNullException("group", "Group cannot be null.");
-            if (!Validation.IsNameValid(group.Name))
-                throw new ArgumentException("Name must be valid (not blank & only a single line).");
-
-            var doc = new XDocument(
-                new XDeclaration("1.0", "UTF-8", "yes"),
-                new XElement("group",
-                    new XAttribute("key", group.Key),
-                    new XElement("name", group.Name),
-                    new XElement("tags")));
-
-            if (group.Tags != null && group.Tags.Count > 0)
-            {
-                doc.Root.Element("tags").Add(
-                    group.Tags.Select(t =>
-                        new XElement("tag",
-                            new XAttribute("key", t.Key),
-                            t.Value
-                            )));
-            }
-
-            return Serialisation.Serialise(doc);
-        }
-
-        public static Group Parse(string source)
-        {
-            return Parse(new StringReader(source));
-        }
-
-        public static Group Parse(Stream source)
-        {
-            return Parse(new XmlTextReader(source));
-        }
-
-        public static Group Parse(TextReader source)
-        {
-            return Parse(new XmlTextReader(source));
-        }
-
-        public static Group Parse(XmlReader source)
-        {
-            XDocument doc;
-            try
-            {
-                doc = XDocument.Load(source);
-            }
-            catch (Exception ex)
-            {
-                throw new DeserialisationException("Failed deserialising group.", ex);
-            }
-
-            if (!ValidateGroupXml(doc))
-                throw new DeserialisationException("Serialised group xml is not valid.");
-
-            Guid key;
-
-            if (!Guid.TryParse(doc.Root.Attribute("key").Value, out key))
-                throw new DeserialisationException("Serialised group key is not a valid guid.");
-
-            var group = new Group()
-            {
-                Key = key,
-                Name = doc.Root.Element("name").Value,
-            };
-
-            var tagsElement = doc.Root.Element("tags");
-            if (tagsElement != null && tagsElement.HasElements)
-            {
-                group.Tags = tagsElement.Elements("tag").ToDictionary(t => t.Attribute("key").Value, t => t.Value);
-            }
-            else
-            {
-                group.Tags = new Dictionary<string, string>();
-            }
-
-            return group;
-        }
-
-        public static bool ValidateGroupXml(XDocument groupDoc)
-        {
-            bool valid = true;
-            groupDoc.Validate(Schemas, (o, e) =>
-            {
-                valid = false;
-            });
-            return valid;
-        }
-
-        public static XmlSchemaSet Schemas
-        {
-            get
-            {
-                if (schemas == null)
-                {
-                    lock (schemasLock)
-                    {
-                        if (schemas == null)
-                        {
-                            var newSchemas = new XmlSchemaSet();
-                            using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Plywood.Schemas.Group.xsd"))
-                            {
-                                newSchemas.Add("", XmlReader.Create(stream));
-                            }
-                            schemas = newSchemas;
-                        }
-                    }
-                }
-                return schemas;
-            }
-        }
-
-        private static XmlSchemaSet schemas;
-        private static object schemasLock = new object();
-
-        #endregion
-
-    }
-
-    public class GroupList
-    {
-        public IEnumerable<GroupListItem> Groups { get; set; }
-        public string Query { get; set; }
-        public string Marker { get; set; }
-        public string NextMarker { get; set; }
-        public int PageSize { get; set; }
-        public bool IsTruncated { get; set; }
-    }
-
-    public class GroupListItem
-    {
-        public GroupListItem()
-        {
-        }
-
-        public GroupListItem(string path)
-        {
-            var segments = Utils.Indexes.GetIndexFileNameSegments(path);
-            if (segments.Length != 3)
-                throw new ArgumentException("A group path index entry does not contain exactly 3 segments.", "path");
-
-            Marker = Utils.Indexes.GetIndexFileName(path);
-            Key = Utils.Indexes.DecodeGuid(segments[1]);
-            Name = Utils.Indexes.DecodeText(segments[2]);
-        }
-
-        internal string Marker { get; set; }
-        public Guid Key { get; set; }
-        public string Name { get; set; }
     }
 }

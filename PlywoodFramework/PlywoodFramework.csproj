@@ -43,6 +43,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Group.cs" />
+    <Compile Include="GroupList.cs" />
+    <Compile Include="GroupListItem.cs" />
     <Compile Include="PackageRoleList.cs" />
     <Compile Include="PackageRoleListItem.cs" />
     <Compile Include="RolePackageListItem.cs" />

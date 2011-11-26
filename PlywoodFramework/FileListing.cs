@@ -1,9 +1,6 @@
 ﻿namespace Plywood
 {
-    using System;
     using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
 
     /// <summary>
     /// Represents a listing of files returned from a storage provider.

@@ -89,6 +89,24 @@ namespace Plywood
             }
         }
 
+        public void TransferTo(Guid key, IStorageProvider targetProvider)
+        {
+            var localVersion = this.Get(key);
+            if (localVersion == null)
+                throw new VersionNotFoundException(string.Format("Could not find the version with key: {0}", key));
+
+            var targetVersions = new Versions(targetProvider);
+            if (targetVersions.Exists(key))
+                targetVersions.Create(localVersion);
+
+            // TODO: Make transfer go directly between providers rather than through a temporary folder.
+            var tempDirectory = new DirectoryInfo(Path.Combine(Path.GetTempPath(), Path.GetRandomFileName()));
+            tempDirectory.Create();
+            this.Pull(key, tempDirectory);
+            targetVersions.Push(tempDirectory, key);
+            tempDirectory.Delete(true);
+        }
+
         public void Pull(Guid key, DirectoryInfo directory, bool mergeExistingFiles = false)
         {
             if (!directory.Exists)

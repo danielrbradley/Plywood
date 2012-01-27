@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("PlywoodCore")]
+[assembly: AssemblyTitle("Plywood Framework")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Daniel Bradley")]
+[assembly: AssemblyCompany("Plywood")]
 [assembly: AssemblyProduct("Plywood")]
-[assembly: AssemblyCopyright("Copyright © Daniel Bradley 2011")]
+[assembly: AssemblyCopyright("Copyright © Plywood 2011")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

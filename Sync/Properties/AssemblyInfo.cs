@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Plywood File System Provider")]
+[assembly: AssemblyTitle("Plywood Sync Library")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Plywood")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("7674b6ee-3658-44dd-8e34-4f5376f86a47")]
+[assembly: Guid("2d86814a-bc8e-4b60-b425-a454f3c018ca")]
 
 // Version information for an assembly consists of the following four values:
 //

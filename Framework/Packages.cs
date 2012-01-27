@@ -86,6 +86,31 @@ namespace Plywood
             }
         }
 
+        public PackageList List(Guid? groupKey = null, string query = null)
+        {
+            var currentList = new PackageList() { IsTruncated = true };
+            var items = new List<PackageListItem>();
+            string lastMarker = null;
+
+            while (currentList.IsTruncated)
+            {
+                currentList = this.Search(groupKey, query, lastMarker, GlobalConstants.MaxPageSize);
+                items.AddRange(currentList.Items);
+                lastMarker = currentList.NextMarker;
+            }
+
+            return new PackageList()
+            {
+                GroupKey = groupKey,
+                Query = query,
+                IsTruncated = false,
+                Marker = null,
+                NextMarker = lastMarker,
+                Items = items,
+                PageSize = items.Count,
+            };
+        }
+
         public string PushRevision(Guid packageKey)
         {
             var package = Get(packageKey);

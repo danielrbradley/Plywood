@@ -17,7 +17,7 @@ In an entity's folder there are a list of folders containing the details and sub
   /g/3bc0f2892e584967b6e6d0f1b5828a25/
 is the full path to the directory of the group object with key "3bc0f289-2e58-4967-b6e6-d0f1b5828a25".
 
-In an entity's directory there will be an details file containg the properties of the entity serialised in XML. This file is named "d" and would result in a path to the file such as:
+In an entity's directory there will be an details file containing the properties of the entity serialised in XML. This file is named "d" and would result in a path to the file such as:
   /g/3bc0f2892e584967b6e6d0f1b5828a25/d
 
 NOTE: For details of the formats of these files, please see the XSD schemas and example xml files in the "Schemas" folder of the "PlywoodCore" project.
@@ -28,7 +28,7 @@ Version files are stored in a folder named "c" for "content":
 Version Files
 -------------
 
-In the directory of a version (e.g. "/v/56ed6820c39049f09760802aea44905f/") there is a directory containg all of the content files that actually constitute that version. This folder is named "c" resulting in the root path of the content of a specific version looking like:
+In the directory of a version (e.g. "/v/56ed6820c39049f09760802aea44905f/") there is a directory containing all of the content files that actually constitute that version. This folder is named "c" resulting in the root path of the content of a specific version looking like:
 
   /v/56ed6820c39049f09760802aea44905f/c/
 
@@ -36,14 +36,14 @@ In the directory of a version (e.g. "/v/56ed6820c39049f09760802aea44905f/") ther
 Indexes
 -------
 
-The indexes in plywood take advantage of the ability of the underlying storage system to list keys of objects in ascending order with a specifc prefix and logically after a specified key. Using these features we create empty placeholder files which use only their file name to hold information about an index row. 
+The indexes in plywood take advantage of the ability of the underlying storage system to list keys of objects in ascending order with a specific prefix and logically after a specified key. Using these features we create empty placeholder files which use only their file name to hold information about an index row. 
 
-All listing of items is done soley by listing the index objects. No content of any file is loaded to perform a listing.
+All listing of items is done solely by listing the index objects. No content of any file is loaded to perform a listing.
 
 Index Container Folders
 -----------------------
 
-Within one entity there may be multiple indexes e.g. a group entity would have an apps index and a targets index. Therefore the naming convension should be the entity letter (a or t in the example) followed by the letter 'i'. E.g.
+Within one entity there may be multiple indexes e.g. a group entity would have an apps index and a targets index. Therefore the naming convention should be the entity letter (a or t in the example) followed by the letter 'i'. E.g.
 Group app index folder:
   /g/3bc0f2892e584967b6e6d0f1b5828a25/ai/
 Target instance index folder:
@@ -58,8 +58,8 @@ Inside an index there are two primary partitions to the index: everything and to
 
 The everything partition simply contains all of the index entries. However, the tokenised partitions only contain the index entries that contain the given tokens. 
 
-The everything partion is contained in a folder named "e", the tokeninsed partitions are in an folder named "t". Within the tokenised folder each token has its own folder which is simply a (algorithm to be confirmed - md5 or preferable only 64 bit?) hash of the token. E.g.
-Group app everying index folder:
+The everything partition is contained in a folder named "e", the tokenised partitions are in an folder named "t". Within the tokenised folder each token has its own folder which is simply a (algorithm to be confirmed - md5 or preferable only 64 bit?) hash of the token. E.g.
+Group app everything index folder:
   /g/3bc0f2892e584967b6e6d0f1b5828a25/ai/e/
 Group app "test" token index folder:
   /g/3bc0f2892e584967b6e6d0f1b5828a25/ai/t/098f6bcd4621d373cade4e832627b4f6/

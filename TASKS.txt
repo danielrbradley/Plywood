@@ -20,13 +20,13 @@ Framework _- In no particular order
  1 > Put a file named the instance key/name with a new guid on each check.
  2 > Check S3 last modified times.
 
-> Re-write syncronisation functions to clean up code.
+> Re-write synchronisation functions to clean up code.
 
 > Improve pull service code.
 
-> Introduce plugin layer.
- > Extract tag & file hook implementations to plugins.
- > Implement IIS setup as a plugin.
+> Introduce plug-in layer.
+ > Extract tag & file hook implementations to plug-ins.
+ > Implement IIS setup as a plug-in.
 
 > Improve exception handling.
 
@@ -44,6 +44,6 @@ Framework _- In no particular order
 
 > Create version cleanup functions to reduce redundant storage and therefore costs.
 
-> Add app dependancies to allow ordered installations and encapsulate required components
+> Add app dependencies to allow ordered installations and encapsulate required components
 
 > Add indexing of custom tags.

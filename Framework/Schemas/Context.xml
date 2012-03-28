@@ -1,0 +1,8 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<context>
+  <name>Context.Path</name>
+  <tags>
+    <tag key="tagKey">Tag Value</tag>
+    <tag key="anotherTagKey">Another Tag Value</tag>
+  </tags>
+</context>

@@ -60,6 +60,7 @@
     <Compile Include="ContextHierarchyTests.cs" />
     <Compile Include="CustomAsserts.cs" />
     <Compile Include="CustomAssertTests.cs" />
+    <Compile Include="Entities\ContextTests.cs" />
     <Compile Include="Entities\PackageTests.cs" />
     <Compile Include="Entities\LogEntryTests.cs" />
     <Compile Include="Entities\InstanceTests.cs" />

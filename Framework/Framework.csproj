@@ -88,6 +88,7 @@
     <Compile Include="Versions.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Schemas\Context.xml" />
     <Content Include="Schemas\Package.xml" />
     <Content Include="Schemas\LogEntry.xml">
       <SubType>Designer</SubType>
@@ -126,6 +127,11 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Schemas\LogEntry.xsd">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Schemas\Context.xsd">
       <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>

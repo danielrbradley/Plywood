@@ -13,11 +13,12 @@ namespace Plywood
         {
             get
             {
-                return Context.GetNamespaceKey(this.Hierarchy.FullName);
+                return Context.GetNamespaceKey(this.Name);
             }
         }
 
-        public ContextHierarchy Hierarchy { get; set; }
+        public string Name { get; set; }
+        public ContextHierarchy Hierarchy { get { return new ContextHierarchy(this.Name); } }
         public Dictionary<string, string> Tags { get; set; }
 
         public IEnumerable<string> GetIndexEntries()

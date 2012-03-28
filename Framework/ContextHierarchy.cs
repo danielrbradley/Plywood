@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Security.Cryptography;
 
 namespace Plywood
 {
@@ -17,6 +18,14 @@ namespace Plywood
         public ContextHierarchy(string hierarchy)
         {
             this.hierarchy = hierarchy;
+        }
+
+        public Guid Key
+        {
+            get
+            {
+                return ContextHierarchy.GetKey(this.hierarchy);
+            }
         }
 
         public string FullName
@@ -67,9 +76,28 @@ namespace Plywood
             }
         }
 
+        public string InContextOf(string parent)
+        {
+            if (!this.hierarchy.StartsWith(parent))
+                throw new ArgumentException("context is not a decendant of specified parent.", "parent");
+
+            if (parent.Last() == '.')
+                return this.hierarchy.Substring(parent.Length);
+            else
+                return this.hierarchy.Substring(parent.Length + 1);
+        }
+
         public override string ToString()
         {
             return this.hierarchy;
+        }
+
+        public static Guid GetKey(string hierarchy)
+        {
+            var md5 = MD5.Create();
+            var inputBytes = System.Text.Encoding.UTF8.GetBytes(hierarchy);
+            var hash = md5.ComputeHash(inputBytes);
+            return new Guid(hash);
         }
 
         public static string GetName(string hierarchy)

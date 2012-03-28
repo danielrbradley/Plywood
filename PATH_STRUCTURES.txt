@@ -7,7 +7,7 @@ Entities
 --------
 
 Each type of entity has it's own root level folder in which it can store all of its items and indexes:
-  n: namespaces
+  c: contexts
   p: packages
   v: versions
   r: roles
@@ -49,7 +49,7 @@ Group app index folder:
 Target instance index folder:
   /t/44d81279d41643f8a4592c0271342795/ii/
 
-Also at the root level is the global groups indexes in the folder "/gi/".
+Also at the root level is the global groups indexes in the folder "/ci/".
 
 Index Partitions
 ----------------

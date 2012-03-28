@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Security.Cryptography;
 using System.IO;
+using Plywood.Indexes;
 
 namespace Plywood
 {
@@ -13,7 +14,7 @@ namespace Plywood
         {
             get
             {
-                return Context.GetNamespaceKey(this.Name);
+                return this.Hierarchy.Key;
             }
         }
 
@@ -21,17 +22,47 @@ namespace Plywood
         public ContextHierarchy Hierarchy { get { return new ContextHierarchy(this.Name); } }
         public Dictionary<string, string> Tags { get; set; }
 
+        /// <example>
+        /// Some.Context.Path
+        /// -> /ci/../index-entry
+        ///    /c/{Some}/ci/../index-entry
+        ///    /c/{Some.Context}/ci/../index-entry
+        /// </example>
         public IEnumerable<string> GetIndexEntries()
         {
-            throw new NotImplementedException();
-        }
+            var indexKey = string.Format(
+                "{0}-{1}",
+                Hashing.CreateHash(this.Name), 
+                Utils.Indexes.EncodeText(this.Name));
 
-        public static Guid GetNamespaceKey(string name)
-        {
-            var md5 = MD5.Create();
-            var inputBytes = System.Text.Encoding.UTF8.GetBytes(name);
-            var hash = md5.ComputeHash(inputBytes);
-            return new Guid(hash);
+            // TODO: Create better tokeniser that splits based on case change or "."
+            var tokens = (new SimpleTokeniser()).Tokenise(this.Name).ToList();
+
+            yield return string.Format("ci/e/{0}", indexKey);
+            foreach (var token in tokens)
+            {
+                yield return string.Format("ci/t/{0}/{1}", Indexes.IndexEntries.GetTokenHash(token), indexKey);
+            }
+
+            ContextHierarchy currentHierarchy = this.Hierarchy.Parent;
+            while (currentHierarchy != null)
+            {
+                yield return string.Format(
+                    "c/{0}/ci/e/{1}",
+                    Utils.Indexes.EncodeGuid(currentHierarchy.Key),
+                    indexKey);
+
+                foreach (var token in tokens)
+                {
+                    yield return string.Format(
+                        "c/{0}/ci/t/{1}/{2}",
+                        Utils.Indexes.EncodeGuid(currentHierarchy.Key),
+                        Indexes.IndexEntries.GetTokenHash(token),
+                        indexKey);
+                }
+
+                currentHierarchy = currentHierarchy.Parent;
+            }
         }
     }
 }

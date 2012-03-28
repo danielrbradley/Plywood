@@ -47,6 +47,9 @@
     <Compile Include="Group.cs" />
     <Compile Include="GroupList.cs" />
     <Compile Include="GroupListItem.cs" />
+    <Compile Include="Package.cs" />
+    <Compile Include="PackageList.cs" />
+    <Compile Include="PackageListItem.cs" />
     <Compile Include="PackageRoleList.cs" />
     <Compile Include="PackageRoleListItem.cs" />
     <Compile Include="RolePackageListItem.cs" />

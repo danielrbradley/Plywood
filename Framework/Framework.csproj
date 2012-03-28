@@ -43,10 +43,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ContextHierarchy.cs" />
     <Compile Include="GlobalConstants.cs" />
     <Compile Include="Group.cs" />
     <Compile Include="GroupList.cs" />
     <Compile Include="GroupListItem.cs" />
+    <Compile Include="Context.cs" />
     <Compile Include="Package.cs" />
     <Compile Include="PackageList.cs" />
     <Compile Include="PackageListItem.cs" />

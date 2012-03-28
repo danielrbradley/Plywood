@@ -57,6 +57,7 @@
     </CodeAnalysisDependentAssemblyPaths>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ContextHierarchyTests.cs" />
     <Compile Include="CustomAsserts.cs" />
     <Compile Include="CustomAssertTests.cs" />
     <Compile Include="Entities\PackageTests.cs" />

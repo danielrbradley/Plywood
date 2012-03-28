@@ -7,7 +7,7 @@ Entities
 --------
 
 Each type of entity has it's own root level folder in which it can store all of its items and indexes:
-  g: groups
+  n: namespaces
   p: packages
   v: versions
   r: roles

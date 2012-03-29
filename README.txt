@@ -55,44 +55,44 @@ Core Concepts
 Example Plywood Setup Structure
 -------------------------------
 
-Groups
-|- Department Group A
-  |- Apps
+Contexts
+|- Company.ProductA
+  |- Packages
    |- Web App 1
     |- Versions
      |- 1.0.0 GA Release
      |- 1.0.1 Alpha Release
-  |- Targets
+  |- Roles
    |- Staging Server
     |- Apps
      |- Web App 1 : 1.0.1
-    |- Instances
+    |- Servers
      |- Test Instance
       |- Update Logs
    |- Production Server
     |- Apps
     ||- Web App 1 : 1.0.0
-    |-Instances
+    |-Servers
      |- Zone A Instance
       |- Update Logs
      |- Zone B Instance
       |- Update Logs
 
-Groups
+Contexts
 ------
-Groups are nothing more than a high-level divide within the system to separate applications, targets and the versions. Arguably these are not so vital as multiple instances could also be set up. However, that would then introduce the need to manage more instances of the system which is an undesirable maintenance requirement.
+Contexts are nothing more than a high-level divide within the system to separate applications, targets and the versions. Arguably these are not so vital as multiple instances could also be set up. However, that would then introduce the need to manage more instances of the system which is an undesirable maintenance requirement.
 
-Apps
+Packages
 ----
-Apps (applications) are the individual units which can be deployed. An app would represent either a single web application, service or other deployable unit.
+Packages are the individual units which can be deployed. A package could be something such as a single web application, service or other deployable unit.
 
 Versions
 --------
 Versions sit within apps and represent a single deployable state of a single application at a single point of time. Hence, versions have timestamps by which they are naturally ordered.
 
-Targets
+Roles
 -------
-A target at its fundamental level is a set of applications each at a specific version. Targets are used to represent one or many physical machines and are therefore used to specify the applications (and versions) that should be deployed on to each machine in that target group.
+A role at its fundamental level is the set of packages to be deployed to a set of machines. Roles are used to represent one or many physical machines and are therefore used to specify the applications (and versions) that should be deployed on to each machine in that target group.
 
 Tags
 ----

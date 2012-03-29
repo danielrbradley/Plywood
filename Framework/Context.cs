@@ -223,5 +223,15 @@ namespace Plywood
         private static object schemasLock = new object();
 
         #endregion
+
+        public string GetDetailsPath()
+        {
+            return Context.GetDetailsPath(this.Key);
+        }
+
+        public static string GetDetailsPath(Guid key)
+        {
+            return string.Format("c/{0}/d", key.ToString("N"));
+        }
     }
 }

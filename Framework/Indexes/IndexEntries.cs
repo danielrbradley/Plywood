@@ -79,7 +79,14 @@ namespace Plywood.Indexes
             {
                 paths.AsParallel().ForAll(path =>
                 {
-                    StorageProvider.DeleteFile(path);
+                    try
+                    {
+                        StorageProvider.DeleteFile(path);
+                    }
+                    catch (FileNotFoundException)
+                    {
+                        // Ignore missing index entries.
+                    }
                 });
             }
             catch (Exception ex)

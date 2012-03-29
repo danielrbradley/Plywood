@@ -21,13 +21,13 @@ namespace Plywood
         public ContextListItem(string path)
         {
             var segments = Utils.Indexes.GetIndexFileNameSegments(path);
-            if (segments.Length != 3)
+            if (segments.Length != 2)
             {
-                throw new ArgumentException("A context path index entry does not contain exactly 3 segments.", "path");
+                throw new ArgumentException("A context path index entry does not contain exactly 2 segments.", "path");
             }
 
             this.Marker = Utils.Indexes.GetIndexFileName(path);
-            this.Name = Utils.Indexes.DecodeText(segments[2]);
+            this.Name = Utils.Indexes.DecodeText(segments[1]);
         }
 
         /// <summary>

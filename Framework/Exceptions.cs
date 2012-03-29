@@ -21,6 +21,14 @@ namespace Plywood
         public DeserialisationException(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
     }
 
+    public class ContextNotFoundException : DeploymentException
+    {
+        public ContextNotFoundException() : base() { }
+        public ContextNotFoundException(string message) : base(message) { }
+        public ContextNotFoundException(string message, Exception ex) : base(message, ex) { }
+        public ContextNotFoundException(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
+    }
+
     public class GroupNotFoundException : DeploymentException
     {
         public GroupNotFoundException() : base() { }

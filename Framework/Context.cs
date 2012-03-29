@@ -42,6 +42,9 @@ namespace Plywood
 
         #endregion
 
+        /// <summary>
+        /// Gets the key identifier of the context.
+        /// </summary>
         public Guid Key
         {
             get
@@ -50,8 +53,19 @@ namespace Plywood
             }
         }
 
+        /// <summary>
+        /// Gets or sets the name of the context.
+        /// </summary>
         public string Name { get; set; }
+
+        /// <summary>
+        /// Gets the heirachy model for the context name.
+        /// </summary>
         public ContextHierarchy Hierarchy { get { return new ContextHierarchy(this.Name); } }
+
+        /// <summary>
+        /// Gets or sets the collection of tags and their values of the context.
+        /// </summary>
         public Dictionary<string, string> Tags { get; set; }
 
         public IEnumerable<string> GetIndexEntries()

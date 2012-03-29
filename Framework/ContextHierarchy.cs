@@ -11,10 +11,6 @@ namespace Plywood
     {
         private string hierarchy;
 
-        public ContextHierarchy()
-        {
-        }
-
         public ContextHierarchy(string hierarchy)
         {
             this.hierarchy = hierarchy;
@@ -33,10 +29,6 @@ namespace Plywood
             get
             {
                 return hierarchy;
-            }
-            set
-            {
-                this.hierarchy = value;
             }
         }
 
@@ -78,13 +70,13 @@ namespace Plywood
 
         public string InContextOf(string parent)
         {
+            if (!parent.EndsWith("."))
+                parent = parent + ".";
+
             if (!this.hierarchy.StartsWith(parent))
                 throw new ArgumentException("context is not a decendant of specified parent.", "parent");
 
-            if (parent.Last() == '.')
-                return this.hierarchy.Substring(parent.Length);
-            else
-                return this.hierarchy.Substring(parent.Length + 1);
+            return this.hierarchy.Substring(parent.Length);
         }
 
         public override string ToString()

@@ -44,6 +44,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ContextHierarchy.cs" />
+    <Compile Include="ContextList.cs" />
+    <Compile Include="ContextListItem.cs" />
     <Compile Include="GlobalConstants.cs" />
     <Compile Include="Group.cs" />
     <Compile Include="GroupList.cs" />
